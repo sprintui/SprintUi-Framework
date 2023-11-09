@@ -311,7 +311,7 @@ function transpilesUIp(page, pageName) {
 
             // Loop through lines until the closing </UseScript> tag is found
             while (i < lines.length && !lines[i].includes("</UseScript>")) {
-              scriptContent += lines[i];
+              scriptContent += lines[i] + "\n";
               i++;
             }
 
