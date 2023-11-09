@@ -128,22 +128,6 @@ Now that you have the basics down, let's delve into using SwiftUI (suip) within 
    </UseScript>
    ```
 
-## AOS Animation Integration
-
-1. **AOS Animation Setup:**
-   ```jsx
-   <UseStyles href="https://unpkg.com/aos@2.3.1/dist/aos.css" head={true} />
-   <UseScript src="https://unpkg.com/aos@2.3.1/dist/aos.js" head={true} />
-   ```
-
-   ```jsx
-   <UseScript head={false}>
-     document.addEventListener("swiftReady", function() {
-       AOS.init();
-     });
-   </UseScript>
-   ```
-
 ## SwiftUI Page Structure
 
 Now, let's structure your SwiftUI page, keeping in mind the script execution order:
@@ -151,25 +135,6 @@ Now, let's structure your SwiftUI page, keeping in mind the script execution ord
 ```jsx
 <UseStyles>
   /* Put your CSS here */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
-
-  body {
-    font-family: 'Roboto', sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    color: #333;
-    background: #f4f4f4;
-  }
-
-  .container {
-    /* Your container styles */
-  }
-
-  /* Additional Styles */
 </UseStyles>
 
 <UseScript head={false}>
@@ -179,15 +144,10 @@ Now, let's structure your SwiftUI page, keeping in mind the script execution ord
 </UseScript>
 
 return (
-  <div class="container">
-    <div class="row">
-      <div class="col-12">
-        <h1 class="tc">Swift UI</h1>
+ 
         <!-- Content Here -->
-        <a href="https://github.com/babymonie/swiftui" class="btn btn-primary">Documentation</a>
-      </div>
-    </div>
-  </div>
+      
+ 
 );
 
 ```
@@ -198,50 +158,11 @@ Congratulations! Your SwiftUI project is now ready for the world to see. Simply 
 
 In the current version of suip, customization of the loading and not found pages involves making changes directly in the app file. Follow the steps below to customize these pages according to your preferences:
 
-## Loading Page Customization
-
-1. Open the `app.js` file.
-
-2. Scroll down to the `app.init` section.
-
-3. Find the first initialization for the loading page, it might look something like this:
-   ```jsx
-  app.init(
-  here is the not found content
-  `
-<div style="display:flex;justify-content:center;align-items:center;height:100vh;width:100vw;">
-<h1>Loading...</h1>
-</div>
-
-`
-);
-
-   ```
-
-4. Customize the content within the loading function to suit your design and preferences.
-
-## Not Found Page Customization
-
-1. Still in the `app.js` file.
+ in the `app.js` file.
 
 2. Scroll down further to the second `app.init` section.
 
-3. Locate the initialization for the not found page:
-   ```jsx
-   app.init(
-  `
-<div style="display:flex;justify-content:center;align-items:center;height:100vh;width:100vw;">
-<h1>Not Found</h1>
-</div>
-`,
-
-loading content
-
-);
-
-   ```
-
-4. Customize the content within the not found function to create a personalized not found page.
+3. and edit it to your liking.
 
 ## Note on Custom CSS
 
