@@ -13,7 +13,6 @@ Welcome to the SwiftUI framework! We're excited to have you on board. Below is a
 2. **Understanding the Project Structure**
    - `server.js`: Basic project setup in development mode.
    - `public`: All your public files, including a `pages` folder.
-   - `env`: Configuration file for development mode with port and host settings.
    - `build.js`: Script for production build. After running this, `server.js` is not needed, and routes will point to `index.html`.
    - `pages`: Folder within `public` where your SwiftUI project files reside.
    
