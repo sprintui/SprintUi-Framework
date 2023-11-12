@@ -1,6 +1,6 @@
 Certainly! Here's the improved Markdown layout for your guide, and I've also added a section seeking help for adding support for SprintUI (suip) to VSCode and other languages:
 
-```markdown
+
 # Sprint UI Framework
 
 ![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1
