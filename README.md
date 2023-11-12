@@ -1,6 +1,3 @@
-
-# Sprint UI Framework
-
 ![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1
 
 Welcome to the SprintUI framework! We're excited to have you on board. Below is a guide to get you started with building and deploying your projects using this framework.
