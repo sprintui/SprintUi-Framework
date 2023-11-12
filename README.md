@@ -139,6 +139,7 @@ In the current version of suip, customization of the loading and not found pages
 
 2. Edit the loading and not found pages to your liking.
 
+
 ## Note on Custom CSS
 
 As of the current version, there is no provision for custom CSS specifically for loading and not found pages. Therefore, you will need to handle the styling and layout manually within the respective functions.
@@ -146,6 +147,11 @@ As of the current version, there is no provision for custom CSS specifically for
 In future versions, the development team aims to enhance the developer experience by providing additional customization options, including the ability to apply custom CSS to loading and not found pages.
 
 Feel free to experiment and get creative with the design of these pages, and stay tuned for future updates that may introduce more customization features.
+
+
+# See a Working Example
+
+Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https://sprintui.nggapps.xyz).
 
 # Help Needed
 
