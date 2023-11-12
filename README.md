@@ -1,5 +1,3 @@
-Certainly! Here's the improved Markdown layout for your guide, and I've also added a section seeking help for adding support for SprintUI (suip) to VSCode and other languages:
-
 
 # Sprint UI Framework
 
@@ -156,4 +154,3 @@ Feel free to experiment and get creative with the design of these pages, and sta
 
 We are actively seeking assistance from individuals who can contribute to adding support for SprintUI. If you have the skills and interest in improving the developer experience with SprintUI, please get in touch with us. Your collaboration will be highly valued.
 
-```
