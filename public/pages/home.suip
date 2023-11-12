@@ -71,7 +71,7 @@ body{
 
 
 
-  document.addEventListener("swiftReady", function() {
+  document.addEventListener("sprintReady", function() {
       // Swift is ready to use, do your stuff here
 
 
