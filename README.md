@@ -1,5 +1,9 @@
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) -V1
+Certainly! Here's the improved Markdown layout for your guide, and I've also added a section seeking help for adding support for SprintUI (suip) to VSCode and other languages:
 
+```markdown
+# Sprint UI Framework
+
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1
 
 Welcome to the SprintUI framework! We're excited to have you on board. Below is a guide to get you started with building and deploying your projects using this framework.
 
@@ -16,7 +20,7 @@ Welcome to the SprintUI framework! We're excited to have you on board. Below is 
    - `public`: All your public files, including a `pages` folder.
    - `build.js`: Script for production build. After running this, `server.js` is not needed, and routes will point to `index.html`.
    - `pages`: Folder within `public` where your SprintUI project files reside.
-   
+
 ## Development Mode
 
 1. Run the server in development mode:
@@ -47,8 +51,7 @@ Welcome to the SprintUI framework! We're excited to have you on board. Below is 
    <script src="app.build.min.js"></script>
    ```
 
-
-# Learing SUIP
+# Learning SprintUI (suip)
 
 Now that you have the basics down, let's delve into using SprintUI (suip) within your project. Follow the steps below to make the most of this powerful framework:
 
@@ -57,15 +60,14 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 1. **Linking External Styles and Scripts:**
    ```jsx
    <UseStyles href="https://unpkg.com/aos@2.3.1/dist/aos.css" />
-   <UseStyles href="https://fonts.googleapis.com/css2?family=Inter:wght@300;600;900&display=swap" />
-   <UseStyles href="https://cdn.jsdelivr.net/npm/daisyui@3.9.1/dist/full.css" />
+   <!-- Add more links as needed -->
    <UseScript src="https://cdn.tailwindcss.com" head={true} />
    ```
 
 2. **Setting Local Styles:**
    ```jsx
    <UseStyles>
-     font-family: 'Inter', sans-serif;
+     /* Your local styles here */
    </UseStyles>
    ```
 
@@ -78,12 +80,7 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 4. **Custom CSS:**
    ```jsx
    <UseStyles>
-     *{
-       margin: 0;
-       padding: 0;
-       box-sizing: border-box;
-       font-family: 'Inter', sans-serif;
-     }
+     /* Your custom CSS here */
    </UseStyles>
    ```
 
@@ -104,16 +101,7 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 
    ```jsx
    return (
-     <div class="flex items-center justify-center h-screen bg-base-200">
-       <!-- Show Query -->
-       <div class="card shadow-lg compact side bg-base-100">
-         <div class="card-body">
-           <div class="justify-center card-title">Query</div>
-           <div id="query" class="justify-center card-title"></div>
-         </div>
-       </div>
-       <Link to="/" class="btn btn-primary">Home</Link>
-     </div>
+     <!-- Your JSX here -->
    );
    ```
 
@@ -130,8 +118,6 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 
 ## SprintUI Page Structure
 
-Now, let's structure your SprintUI page, keeping in mind the script execution order:
-
 ```jsx
 <UseStyles>
   /* Put your CSS here */
@@ -144,25 +130,19 @@ Now, let's structure your SprintUI page, keeping in mind the script execution or
 </UseScript>
 
 return (
- 
-        <!-- Content Here -->
-      
- 
+  <!-- Your JSX here -->
 );
-
 ```
 
 Congratulations! Your SprintUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
 
 # Customizing Loading and Not Found Pages
 
-In the current version of suip, customization of the loading and not found pages involves making changes directly in the app file. Follow the steps below to customize these pages according to your preferences:
+In the current version of suip, customization of the loading and not found pages involves making changes directly in the `app.js` file.
 
- in the `app.js` file.
+1. Open `app.js` and scroll down to the second `app.init` section.
 
-2. Scroll down further to the second `app.init` section.
-
-3. and edit it to your liking.
+2. Edit the loading and not found pages to your liking.
 
 ## Note on Custom CSS
 
@@ -172,3 +152,8 @@ In future versions, the development team aims to enhance the developer experienc
 
 Feel free to experiment and get creative with the design of these pages, and stay tuned for future updates that may introduce more customization features.
 
+# Help Needed
+
+We are actively seeking assistance from individuals who can contribute to adding support for SprintUI. If you have the skills and interest in improving the developer experience with SprintUI, please get in touch with us. Your collaboration will be highly valued.
+
+```
