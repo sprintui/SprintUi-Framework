@@ -389,7 +389,6 @@ async function fetchPagesToTranspile(routes) {
     try {
       const response = await fetch(`${baseUrl}/pages/${route}`, {
         headers: {
-          "x-req-from-swift": "true",
           mode: "cors",
         },
       });
@@ -688,11 +687,11 @@ async function main() {
   
           rootElement.innerHTML = page;
           clearInterval(interval);
-          const swiftReady = setInterval(async () => {
+          const sprintReady = setInterval(async () => {
             if (this.assetsLoaded && this.hooksLoaded) {
-              const swiftReadyEvent = new Event("swiftReady");
-              document.dispatchEvent(swiftReadyEvent);
-              clearInterval(swiftReady);
+              const sprintReadyEvent = new Event("sprintReady");
+              document.dispatchEvent(sprintReadyEvent);
+              clearInterval(sprintReady);
             }
           }, 500);
         }
