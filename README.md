@@ -1,20 +1,20 @@
-# SwiftUI Framework - V1
+# SPRINTUI Framework - V1
 
-Welcome to the SwiftUI framework! We're excited to have you on board. Below is a guide to get you started with building and deploying your projects using this framework.
+Welcome to the SprintUI framework! We're excited to have you on board. Below is a guide to get you started with building and deploying your projects using this framework.
 
 ## Getting Started
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/babymonie/swiftui/
-   cd swiftui
+   git clone https://github.com/babymonie/sprintui/
+   cd sprintui
    ```
 
 2. **Understanding the Project Structure**
    - `server.js`: Basic project setup in development mode.
    - `public`: All your public files, including a `pages` folder.
    - `build.js`: Script for production build. After running this, `server.js` is not needed, and routes will point to `index.html`.
-   - `pages`: Folder within `public` where your SwiftUI project files reside.
+   - `pages`: Folder within `public` where your SprintUI project files reside.
    
 ## Development Mode
 
@@ -23,9 +23,9 @@ Welcome to the SwiftUI framework! We're excited to have you on board. Below is a
    node server.js
    ```
 
-2. Open your browser and navigate to `http://[host]:[port]` to start building your SwiftUI project.
+2. Open your browser and navigate to `http://[host]:[port]` to start building your SprintUI project.
 
-3. For SwiftUI syntax, refer to the files in the `pages` folder. It's a mix of HTML and JavaScript. Get familiar with it before moving to production.
+3. For SprintUI syntax, refer to the files in the `pages` folder. It's a mix of HTML and JavaScript. Get familiar with it before moving to production.
 
 ## Production Deployment
 
@@ -49,7 +49,7 @@ Welcome to the SwiftUI framework! We're excited to have you on board. Below is a
 
 # Learing SUIP
 
-Now that you have the basics down, let's delve into using SwiftUI (suip) within your project. Follow the steps below to make the most of this powerful framework:
+Now that you have the basics down, let's delve into using SprintUI (suip) within your project. Follow the steps below to make the most of this powerful framework:
 
 ## Adding Styles and Scripts
 
@@ -92,7 +92,7 @@ Now that you have the basics down, let's delve into using SwiftUI (suip) within 
    ```jsx
    let query = useQuery();
    <UseScript>
-     document.addEventListener("swiftReady", function () {
+     document.addEventListener("sprintReady", function () {
        const queryElement = document.getElementById("query");
        if (queryElement) {
          queryElement.innerHTML = JSON.stringify(query) || "";
@@ -121,15 +121,15 @@ Now that you have the basics down, let's delve into using SwiftUI (suip) within 
 1. **Handling suip Ready Event:**
    ```jsx
    <UseScript head={false}>
-     document.addEventListener("swiftReady", function() {
-       // Swift is ready to use, do your stuff here
+     document.addEventListener("sprintReady", function() {
+       // Sprint is ready to use, do your stuff here
      });
    </UseScript>
    ```
 
-## SwiftUI Page Structure
+## SprintUI Page Structure
 
-Now, let's structure your SwiftUI page, keeping in mind the script execution order:
+Now, let's structure your SprintUI page, keeping in mind the script execution order:
 
 ```jsx
 <UseStyles>
@@ -137,8 +137,8 @@ Now, let's structure your SwiftUI page, keeping in mind the script execution ord
 </UseStyles>
 
 <UseScript head={false}>
-  document.addEventListener("swiftReady", function() {
-    // Swift is ready to use, do your stuff here
+  document.addEventListener("sprintReady", function() {
+    // Sprint is ready to use, do your stuff here
   });
 </UseScript>
 
@@ -151,7 +151,7 @@ return (
 
 ```
 
-Congratulations! Your SwiftUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
+Congratulations! Your SprintUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
 
 # Customizing Loading and Not Found Pages
 
