@@ -40,16 +40,17 @@
 - Optimization: Improved HTML optimization for enhanced performance.
 - New Build Arguments: Introducing new arguments for the build process, offering more flexibility and customization.
 - AutoTransfer Command: Enhanced the autotransfer command for automating the transfer of build files to the public folder. It now intelligently handles imports, streamlining the development process
-- Temporarily exclude routes/pages: using the provided build arguments with -exclude with the routes/pages in comma 
-Changed
+- Temporarily exclude routes/pages: using the provided build arguments with -exclude with the routes/pages in comma
+
+### Changed
 - Optimization: Improved HTML optimization for enhanced performance.
-Deprecated
+### Deprecated
 - None
-Removed
+### Removed
 - None
-Security
+### Security
 - None
-Notes
+### Notes
 Future Commands: While specific commands are currently in the planning stage, be prepared for more commands in future updates. Stay tuned for additional features and improvements.
 
 Message From Devs:
