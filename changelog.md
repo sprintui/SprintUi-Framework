@@ -47,6 +47,7 @@
 - Optimization: Improved HTML optimization for enhanced performance.
 ### Fixed
 - Bug in exclusion: If you exclude a file named "test2," for example, it erroneously excludes "test" as well.
+- Don't know why but some browsers don't always emit onloaded event, so nothing would happen and it would be stuck on loading...
 ### Deprecated
 - None
 ### Removed
