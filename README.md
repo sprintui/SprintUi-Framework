@@ -183,14 +183,7 @@ return (
 Congratulations! Your SprintUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
 
 # Customizing Loading and Not Found Pages
-
-In the current version of suip, customization of the loading and not found pages involves making changes directly in the `app.js` file.
-
-1. Open `app.js` and scroll down to the second `app.init` section.
-
-2. Edit the loading and not found pages to your liking.
-
-
+In the present version of suip, there is no built-in support for customizing the loading and not found pages. However, you can still achieve this by navigating to your built file, scrolling to the `app.init` section, and modifying the HTML there. Please be aware that I am actively working on a solution that will be available very soon.
 ## Note on Custom CSS
 
 As of the current version, there is no provision for custom CSS specifically for loading and not found pages. Therefore, you will need to handle the styling and layout manually within the respective functions.
