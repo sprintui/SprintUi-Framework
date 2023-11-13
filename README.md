@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.1
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.2
 
 **Welcome to the SprintUI Framework!**
 
@@ -32,19 +32,36 @@ We're thrilled to have you on board. Let's get started with building and deployi
 
 ## Production Deployment
 
-1. Build your project for production:
+Certainly! Here's an updated section for your documentation:
+
+1. **Build your project for production:**
    ```bash
    node build.js
    ```
 
-2. After the build, you'll find a new file named `app.build.min.js`.
+2. Open the `index.html` file located in the `public` folder.
 
-3. Move `app.build.min.js` to the `public` folder.
+3. Update the script source within the HTML file to point to the newly generated build file:
 
-4. Open `index.html` in the `public` folder and update the script source to the new build file:
    ```html
    <script src="app.build.min.js"></script>
    ```
+
+Additionally, for an optimized workflow, it is recommended to use the following commands:
+
+- Use `-at` (autoTransfer) argument for the initial build to automatically transfer the build to the `public` folder and update the script source in `index.html`.
+
+  ```bash
+  node build.js -at
+  ```
+
+- Use `-t` (transfer) argument for subsequent builds to only transfer the new builds to the `public` folder.
+
+  ```bash
+  node build.js -t
+  ```
+
+By following these recommendations, you can streamline the build and transfer process, ensuring an efficient and organized development workflow for your SprintUI project.
 
 5. Finally deploying on a server:
 
@@ -163,13 +180,7 @@ Go to changelogs.md to see changelogs.
 
 # Upcoming Features
 
-In the upcoming 1.2 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it.
-
-But wait, there's more! We're thrilled to introduce an additional exciting feature: build arguments. Executing these arguments is a breeze; for instance, you can utilize npm run build -autoTransfer. While specific commands are currently in the planning stage, be prepared for more commands in future updates. As of now, we have:
-
-- **AutoTransfer Command:** This command, autotransfer, automates the transfer of build files to the public folder. It intelligently handles imports, making your development process even more seamless.
-
-- **File Exclusion Command:** Similar to what was mentioned earlier, this command allows you to exclude specific files, all through the simplicity of the command line.
+In the upcoming 1.3 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it.
 
 Stay tuned for the release!
 
