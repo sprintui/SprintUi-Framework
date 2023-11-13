@@ -360,7 +360,6 @@ function transpilesUIp(page, pageName) {
 
           break;
 
-        case line.includes(");"):
           inSUIP = false;
 
           break;
@@ -369,16 +368,17 @@ function transpilesUIp(page, pageName) {
           if (inSUIP) {
             if (line.includes("<Link")) {
               const to = line.match(/to=['"]([^'"]+)['"]/)[1];
+
+              const className = line.match(/className=['"]([^'"]+)['"]/)[1];
+
+              const id = line.match(/id=['"]([^'"]+)['"]/)[1];
+
               const children = line
                 .match(/>[^<]+</)[0]
                 .replace(">", "")
                 .replace("<", "");
-              html += `<a onclick="app.navigateTo('${to}')" title="${to}" style="cursor:pointer;">${children}</a>`;
-            } else if (line.includes("<UseImage")) {
-              const src = line.match(
-                /<UseImage src=['"]([^'"]+)['"]\s*\/?>/
-              )[1];
-              html += "<img src='" + src + "' />";
+              line = `<a onclick="app.navigateTo('${to}')" title="${to}" class="${className}" id="${id}">${children}</a>`;
+              html += line;
             } else {
               html += line;
             }
@@ -745,7 +745,7 @@ async function main() {
   
       
         this.render();
-      
+  
     },
   };
   
