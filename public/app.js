@@ -706,11 +706,19 @@ const app = {
                   id = "";
                 }
 
-                const children = line
-                  .match(/>[^<]+</)[0]
-                  .replace(">", "")
-                  .replace("<", "");
-                line = `<a onclick="app.navigateTo('${to}')" title="${to}" class="${className}" id="${id}">${children}</a>`;
+                //just replace link with a tag so if its incased on any other tag it will be removed
+                line = line.replace("<Link", "<a");
+                line = line.replace("</Link>", "</a>");
+
+                line = line.replace(
+                  `to="${to}"`,
+                  `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
+                );
+                line = line.replace(
+                  `className="${className}"`,
+                  `class="${className}"`
+                );
+
                 html += line;
               } else {
                 html += line;
