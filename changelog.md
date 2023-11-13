@@ -32,3 +32,33 @@
 
 - Scripts will now wait for the "sprintReady" event before executing by default. Use `autoReady={false}` in the script to disable this behavior.
 - The console feature provides valuable information about the built files, assisting in the verification of the build process.
+
+## Version 1.2 - 11/13/2023
+
+
+### Added
+- Optimization: Improved HTML optimization for enhanced performance.
+- New Build Arguments: Introducing new arguments for the build process, offering more flexibility and customization.
+- AutoTransfer Command: Enhanced the autotransfer command for automating the transfer of build files to the public folder. It now intelligently handles imports, streamlining the development process
+- Temporarily exclude routes/pages: using the provided build arguments with -exclude with the routes/pages in comma 
+Changed
+- Optimization: Improved HTML optimization for enhanced performance.
+Deprecated
+- None
+Removed
+- None
+Security
+- None
+Notes
+Future Commands: While specific commands are currently in the planning stage, be prepared for more commands in future updates. Stay tuned for additional features and improvements.
+
+Message From Devs:
+We extend our sincere apologies for the delay in introducing the highly anticipated exclusion feature in the upcoming 1.2 update. Our commitment to delivering a high-quality and reliable framework is unwavering, and we understand the inconvenience caused by this delay.
+
+The exclusion feature, designed to empower you to exclude specific files from the build using the pages.sui configuration, aims to provide greater control over your project. This functionality allows you to bid farewell to unwanted test pages in your production build by easily configuring the settings to ignore them.
+
+While our team actively works to expedite the release of this feature, we recognize the importance of providing a temporary solution. Therefore, until the full feature is implemented, we encourage you to utilize the build argument if you need to exclude files from the build.
+
+Your understanding and patience during this period are greatly appreciated. We value your contribution to the SprintUI community and are committed to delivering an enhanced development experience in the upcoming update.
+
+Thank you for your continued support.
