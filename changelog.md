@@ -41,6 +41,7 @@
 - New Build Arguments: Introducing new arguments for the build process, offering more flexibility and customization.
 - AutoTransfer Command: Enhanced the autotransfer command for automating the transfer of build files to the public folder. It now intelligently handles imports, streamlining the development process
 - Temporarily exclude routes/pages: using the provided build arguments with -exclude with the routes/pages in comma
+- Added build.min.js, if you want a smaller file on your disk.
 
 ### Changed
 - Optimization: Improved HTML optimization for enhanced performance.
