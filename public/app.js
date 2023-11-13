@@ -326,7 +326,7 @@ const app = {
     const url = getCurrentUrl();
     const urlObject = new URL(url);
     let path = urlObject.pathname.split("/")[1] || "home";
-    console.log(path);
+
     const page = this.pages[path];
     if (
       document.getElementById("root").innerHTML !== this.loadingMessage ||
@@ -373,7 +373,7 @@ const app = {
         hooks: [],
       };
 
-      for (const line of lines) {
+      for (let line of lines) {
         let match;
 
         switch (true) {
@@ -680,7 +680,7 @@ const app = {
 
             break;
 
-          case line.includes(");"):
+          case line.includes(")"):
             inSUIP = false;
 
             break;
@@ -689,16 +689,17 @@ const app = {
             if (inSUIP) {
               if (line.includes("<Link")) {
                 const to = line.match(/to=['"]([^'"]+)['"]/)[1];
+
+                const className = line.match(/className=['"]([^'"]+)['"]/)[1];
+
+                const id = line.match(/id=['"]([^'"]+)['"]/)[1];
+
                 const children = line
                   .match(/>[^<]+</)[0]
                   .replace(">", "")
                   .replace("<", "");
-                html += `<a onclick="app.navigateTo('${to}')" title="${to}" style="cursor:pointer;">${children}</a>`;
-              } else if (line.includes("<UseImage")) {
-                const src = line.match(
-                  /<UseImage src=['"]([^'"]+)['"]\s*\/?>/
-                )[1];
-                html += "<img src='" + src + "' />";
+                line = `<a onclick="app.navigateTo('${to}')" title="${to}" class="${className}" id="${id}">${children}</a>`;
+                html += line;
               } else {
                 html += line;
               }
