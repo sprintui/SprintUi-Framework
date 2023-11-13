@@ -1,6 +1,9 @@
+
 ![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.1
 
-Welcome to the SprintUI framework! We're excited to have you on board. Below is a guide to get you started with building and deploying your projects using this framework.
+**Welcome to the SprintUI Framework!**
+
+We're thrilled to have you on board. Let's get started with building and deploying your projects using this powerful framework.
 
 ## Getting Started
 
@@ -42,60 +45,18 @@ Welcome to the SprintUI framework! We're excited to have you on board. Below is 
    ```html
    <script src="app.build.min.js"></script>
    ```
+
 5. Finally deploying on a server:
-## Deploying on Apache Server
 
-If you're deploying on an Apache server, follow these additional steps to ensure the framework works correctly. Create an `.htaccess` file in your project root directory with the following content:
+### Deploying on Apache Server
 
-```apache
-RewriteEngine On
-
-# Exclude /assets from the rules
-RewriteRule ^assets/ - [L]
-
-# Rewrite all other routes to index.html
-RewriteCond %{REQUEST_URI} !^/index\.html$
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ /index.html [L]
-```
+If you're deploying on an Apache server, follow these additional steps to ensure the framework works correctly. Create an `.htaccess` file in your project root directory with the provided content.
 
 **Note:** In production, your assets might not load correctly because they are being called from a route called `/assets`, which is not physical. To fix this, create a physical folder and bring all asset files there.
 
-## Deploying with Express Server
+### Deploying with Express Server
 
-If you're using Express for deployment, copy the following code:
-
-```javascript
-const express = require("express");
-const app = express();
-
-app.get("*", (req, res, next) => {
-   // Remove this if you want to have a physical route instead of /assets/assets
-   if (req.url.includes("assets")) {
-    if (
-      !fs.existsSync(
-        path.join(__dirname, "public", req.url.replace("/assets", ""))
-      )
-    ) {
-      return res.status(404).send("Not found");
-    } else {
-      return res.sendFile(
-        path.join(__dirname, "public", req.url.replace("/assets", ""))
-      );
-    }
-  } else {
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
-  }
-});
-
-app.listen(3000, () => {
-  console.log("Server is running on port 3000");
-});
-```
-
-**Note:** Modify the code according to your project structure, and ensure that the necessary packages (`express`, `fs`, and `path`) are installed using `npm install express fs path`. Adjust the port number (`3000` in this example) based on your requirements.
-
+If you're using Express for deployment, copy the provided code. Modify the code according to your project structure and ensure that the necessary packages (`express`, `fs`, and `path`) are installed using `npm install express fs path`. Adjust the port number (`3000` in this example) based on your requirements.
 
 # Learning SprintUI (suip)
 
@@ -155,10 +116,8 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 
 1. **Handling suip Ready Event:**
    ```jsx
-   <UseScript head={false}>
-     document.addEventListener("sprintReady", function() {
-       // Sprint is ready to use, do your stuff here
-     });
+   <UseScript head={false} autoReady={true}>
+    //your code runs after all assets are ready
    </UseScript>
    ```
 
@@ -170,9 +129,9 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 </UseStyles>
 
 <UseScript head={false}>
-  document.addEventListener("sprintReady", function() {
+
     // Sprint is ready to use, do your stuff here
-  });
+
 </UseScript>
 
 return (
@@ -183,7 +142,9 @@ return (
 Congratulations! Your SprintUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
 
 # Customizing Loading and Not Found Pages
+
 In the present version of suip, there is no built-in support for customizing the loading and not found pages. However, you can still achieve this by navigating to your built file, scrolling to the `app.init` section, and modifying the HTML there. Please be aware that I am actively working on a solution that will be available very soon.
+
 ## Note on Custom CSS
 
 As of the current version, there is no provision for custom CSS specifically for loading and not found pages. Therefore, you will need to handle the styling and layout manually within the respective functions.
@@ -192,31 +153,26 @@ In future versions, the development team aims to enhance the developer experienc
 
 Feel free to experiment and get creative with the design of these pages, and stay tuned for future updates that may introduce more customization features.
 
-
-
-
 # See a Working Example
 
 Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https://sprintui.nggapps.xyz).
 
-
 # Changelogs
-go to changelogs.md to see changelogs.
+
+Go to changelogs.md to see changelogs.
 
 # Upcoming Features
 
-In the upcoming 1.2 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it. 
+In the upcoming 1.2 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it.
 
 But wait, there's more! We're thrilled to introduce an additional exciting feature: build commands. Executing these commands is a breeze; for instance, you can utilize npm run build - autoTransfer. While specific commands are currently in the planning stage, be prepared for more commands in future updates. As of now, we have:
 
-AutoTransfer Command: This command, autotransfer, automates the transfer of build files to the public folder. It intelligently handles imports, making your development process even more seamless.
+- **AutoTransfer Command:** This command, autotransfer, automates the transfer of build files to the public folder. It intelligently handles imports, making your development process even more seamless.
 
-File Exclusion Command: Similar to what was mentioned earlier, this command allows you to exclude specific files, all through the simplicity of the command line.
-
+- **File Exclusion Command:** Similar to what was mentioned earlier, this command allows you to exclude specific files, all through the simplicity of the command line.
 
 Stay tuned for the release!
 
 # Help Needed
 
-We are actively seeking assistance from individuals who can contribute to adding support for SprintUI. If you have the skills and interest in improving the developer experience with SprintUI, please get in touch with us. Your collaboration will be highly valued.
-
+We are actively seeking assistance from individuals who can contribute to adding support for SprintUI. If you
