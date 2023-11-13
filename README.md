@@ -193,9 +193,15 @@ In future versions, the development team aims to enhance the developer experienc
 Feel free to experiment and get creative with the design of these pages, and stay tuned for future updates that may introduce more customization features.
 
 
+
+
 # See a Working Example
 
 Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https://sprintui.nggapps.xyz).
+
+
+# Changelogs
+go to changelogs.md to see changelogs.
 
 # Help Needed
 
