@@ -743,9 +743,9 @@ async function main() {
         }
       });
   
-      window.addEventListener("load", () => {
+      
         this.render();
-      });
+      
     },
   };
   
