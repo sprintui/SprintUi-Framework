@@ -203,6 +203,10 @@ Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https:
 # Changelogs
 go to changelogs.md to see changelogs.
 
+# Upcoming Features
+
+In the upcoming 1.2 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it. Stay tuned for the release!
+
 # Help Needed
 
 We are actively seeking assistance from individuals who can contribute to adding support for SprintUI. If you have the skills and interest in improving the developer experience with SprintUI, please get in touch with us. Your collaboration will be highly valued.
