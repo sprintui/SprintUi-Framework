@@ -53,7 +53,7 @@
 ### Notes
 Future Commands: While specific commands are currently in the planning stage, be prepared for more commands in future updates. Stay tuned for additional features and improvements.
 
-Message From Devs:
+### Message From Devs:
 We extend our sincere apologies for the delay in introducing the highly anticipated exclusion feature in the upcoming 1.2 update. Our commitment to delivering a high-quality and reliable framework is unwavering, and we understand the inconvenience caused by this delay.
 
 The exclusion feature, designed to empower you to exclude specific files from the build using the pages.sui configuration, aims to provide greater control over your project. This functionality allows you to bid farewell to unwanted test pages in your production build by easily configuring the settings to ignore them.
