@@ -44,6 +44,8 @@
 
 ### Changed
 - Optimization: Improved HTML optimization for enhanced performance.
+### Fixed
+- Bug in exclusion: If you exclude a file named "test2," for example, it erroneously excludes "test" as well.
 ### Deprecated
 - None
 ### Removed
