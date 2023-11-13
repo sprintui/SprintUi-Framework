@@ -165,7 +165,7 @@ Go to changelogs.md to see changelogs.
 
 In the upcoming 1.2 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it.
 
-But wait, there's more! We're thrilled to introduce an additional exciting feature: build commands. Executing these commands is a breeze; for instance, you can utilize npm run build - autoTransfer. While specific commands are currently in the planning stage, be prepared for more commands in future updates. As of now, we have:
+But wait, there's more! We're thrilled to introduce an additional exciting feature: build arguments. Executing these arguments is a breeze; for instance, you can utilize npm run build -autoTransfer. While specific commands are currently in the planning stage, be prepared for more commands in future updates. As of now, we have:
 
 - **AutoTransfer Command:** This command, autotransfer, automates the transfer of build files to the public folder. It intelligently handles imports, making your development process even more seamless.
 
