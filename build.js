@@ -1,5 +1,23 @@
 const fs = require("node:fs");
-const path = require("node:path");
+const program = require("commander");
+var minify = require("html-minifier").minify;
+
+program
+  .option(
+    "-at, --autoTransfer <boolean>",
+    "Automatically transfer the build to the public folder and change the index.html import for app.js to app.build.min.js if needed",
+    false
+  )
+  .option("-t, --transfer", "Transfer the build to the public folder", false)
+  .option(
+    "-c, --changeImport",
+    "Change the index.html import for app.js to app.build.min.js",
+    false
+  )
+  .option("-ex, --exclude <value>", "Exclude files from the build", "")
+
+  .parse(process.argv);
+const options = program.opts();
 
 var UglifyJS = require("uglify-js");
 async function fetchRoutes() {
@@ -302,8 +320,6 @@ function transpilesUIp(page, pageName) {
             const type = line.match(/type=['"]([^'"]+)['"]/);
             const id = line.match(/id=['"]([^'"]+)['"]/);
 
-            const autoReady = line.includes("autoReady={false}");
-
             // Initialize scriptContent as an empty string
 
             let scriptContent = "";
@@ -329,7 +345,7 @@ function transpilesUIp(page, pageName) {
                 preload: preload ? true : false,
                 type: type ? type[1] : "text/javascript",
                 id: id ? id[1] : null,
-                autoReady: autoReady ? false : true,
+
                 textContent: scriptContent,
               };
               pageAssetsTOBeAdded.scripts.push(newScript);
@@ -384,9 +400,16 @@ function transpilesUIp(page, pageName) {
 async function fetchPagesToTranspile(routes) {
   const pagesToTranspile = {};
 
-  // Define a function to fetch a single page and store it in the object
   async function fetchPage(route) {
     try {
+      //check in exclude
+      if (options.exclude) {
+        if (options.exclude.split(",").includes(route)) {
+          console.log("Excluding " + route);
+          return;
+        }
+      }
+
       const pageContent = fs.readFileSync(
         `./public/pages/${route}.suip`,
         "utf8"
@@ -423,7 +446,14 @@ function transpileAndStorePage(pageKey, pageContent) {
 
   //remove first <div and the end </div>
   const html = transpiledHtml;
-  pages[pageKey] = html;
+  const minified = minify(html, {
+    collapseWhitespace: true,
+    removeComments: true,
+    minifyCSS: true,
+    minifyJS: true,
+  });
+
+  pages[pageKey] = minified;
 }
 async function main() {
   let routes = await fetchRoutes();
@@ -518,13 +548,8 @@ async function main() {
               }
             } else if (script.textContent) {
               const scriptElement = document.createElement("script");
-            if (script.autoReady) {
-              scriptElement.textContent = 'document.addEventListener("sprintReady", () => {' + script.textContent + '});';
-            } else {
               scriptElement.textContent = script.textContent;
-            }
-
-  
+  		
               scriptElement.async = script.async;
               scriptElement.defer = script.defer;
               scriptElement.preload = script.preload;
@@ -732,12 +757,56 @@ async function main() {
 `;
   let minified = UglifyJS.minify(finalScript);
 
-  fs.writeFileSync("app.build.min.js", minified.code);
+  if (options.autoTransfer) {
+    //check if public folder exists
+    if (!fs.existsSync("./public")) {
+      fs.mkdirSync("./public");
+    }
+    fs.writeFileSync("./public/app.build.min.js", minified.code);
+    //check if index.html exists
+    if (fs.existsSync("./public/index.html")) {
+      //check if app.js is imported
+      let indexHtml = fs.readFileSync("./public/index.html", "utf8");
+      if (indexHtml.includes("app.js")) {
+        //replace app.js with app.build.min.js
+        indexHtml = indexHtml.replace("app.js", "app.build.min.js");
+        fs.writeFileSync("./public/index.html", indexHtml);
+      }
+    }
+  } else if (options.transfer) {
+    //check if public folder exists
+    if (!fs.existsSync("./public")) {
+      fs.mkdirSync("./public");
+    }
+    fs.writeFileSync("./public/app.build.min.js", minified.code);
+    //check if app.build.min.js exists
+    if (fs.existsSync("./app.build.min.js")) {
+      fs.copyFileSync("./app.build.min.js", "./public/app.build.min.js");
+    }
+  } else {
+    fs.writeFileSync("app.build.min.js", minified.code);
+  }
+
+  if (options.changeImport) {
+    //check if index.html exists
+    if (fs.existsSync("./public/index.html")) {
+      //check if app.js is imported
+      let indexHtml = fs.readFileSync("./public/index.html", "utf8");
+      if (indexHtml.includes("app.js")) {
+        //replace app.js with app.build.min.js
+        indexHtml = indexHtml.replace("app.js", "app.build.min.js");
+        fs.writeFileSync("./public/index.html", indexHtml);
+      }
+    }
+  }
 
   // Add these lines at the end of your 'main' function
   console.log("\x1b[32m%s\x1b[0m", "Build Complete");
   console.log("\x1b[36m%s\x1b[0m", "Build Info:");
-  console.log("\x1b[36m%s\x1b[0m", "Routes Built: " + routes.routes.length);
+  console.log(
+    "\x1b[36m%s\x1b[0m",
+    "Routes Built: " + Object.keys(pages).length
+  );
   console.log(
     "\x1b[36m%s\x1b[0m",
     "Built File Size: " + (minified.code.length / 1024).toFixed(2) + " KB"
@@ -778,7 +847,7 @@ async function main() {
       "%"
   );
 
-  console.log("\x1b[36m%s\x1b[0m", "Version: 1.1");
+  console.log("\x1b[36m%s\x1b[0m", "Version: 1.2");
 }
 
 main();
