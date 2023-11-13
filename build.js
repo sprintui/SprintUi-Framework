@@ -301,10 +301,8 @@ function transpilesUIp(page, pageName) {
             const defer = line.includes("defer={true}");
             const type = line.match(/type=['"]([^'"]+)['"]/);
             const id = line.match(/id=['"]([^'"]+)['"]/);
-         
+
             const autoReady = line.includes("autoReady={false}");
-
-
 
             // Initialize scriptContent as an empty string
 
@@ -331,7 +329,7 @@ function transpilesUIp(page, pageName) {
                 preload: preload ? true : false,
                 type: type ? type[1] : "text/javascript",
                 id: id ? id[1] : null,
-		autoReady: autoReady ? false : true,
+                autoReady: autoReady ? false : true,
                 textContent: scriptContent,
               };
               pageAssetsTOBeAdded.scripts.push(newScript);
@@ -521,7 +519,7 @@ async function main() {
             } else if (script.textContent) {
               const scriptElement = document.createElement("script");
             if (script.autoReady) {
-              scriptElement.textContent = `document.addEventListener("sprintReady", () => {${script.textContent}});`;
+              scriptElement.textContent = 'document.addEventListener("sprintReady", () => {' + script.textContent + '});';
             } else {
               scriptElement.textContent = script.textContent;
             }
@@ -744,18 +742,41 @@ async function main() {
     "\x1b[36m%s\x1b[0m",
     "Built File Size: " + (minified.code.length / 1024).toFixed(2) + " KB"
   );
- console.log("\x1b[36m%s\x1b[0m", "Original File Size (app.js + routes): " + ((fs.readFileSync("./public/app.js", "utf8").length + fs.readdirSync("./public/pages/").reduce((totalSize, routeFile) => totalSize + fs.statSync(`./public/pages/${routeFile}`).size, 0)) / 1024).toFixed(2) + " KB");
+  console.log(
+    "\x1b[36m%s\x1b[0m",
+    "Original File Size (app.js + routes): " +
+      (
+        (fs.readFileSync("./public/app.js", "utf8").length +
+          fs
+            .readdirSync("./public/pages/")
+            .reduce(
+              (totalSize, routeFile) =>
+                totalSize + fs.statSync(`./public/pages/${routeFile}`).size,
+              0
+            )) /
+        1024
+      ).toFixed(2) +
+      " KB"
+  );
 
- const originalSize = (fs.readFileSync("./public/app.js", "utf8").length + fs.readdirSync("./public/pages/").reduce((totalSize, routeFile) => totalSize + fs.statSync(`./public/pages/${routeFile}`).size, 0));
+  const originalSize =
+    fs.readFileSync("./public/app.js", "utf8").length +
+    fs
+      .readdirSync("./public/pages/")
+      .reduce(
+        (totalSize, routeFile) =>
+          totalSize + fs.statSync(`./public/pages/${routeFile}`).size,
+        0
+      );
 
-console.log(
-  "\x1b[36m%s\x1b[0m",
-  "Reduction in Size: " +
-    (
-      ((originalSize - minified.code.length) / originalSize) * 100
-    ).toFixed(2) +
-    "%"
-);
+  console.log(
+    "\x1b[36m%s\x1b[0m",
+    "Reduction in Size: " +
+      (((originalSize - minified.code.length) / originalSize) * 100).toFixed(
+        2
+      ) +
+      "%"
+  );
 
   console.log("\x1b[36m%s\x1b[0m", "Version: 1.1");
 }
