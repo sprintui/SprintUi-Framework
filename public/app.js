@@ -326,6 +326,7 @@ const app = {
     const url = getCurrentUrl();
     const urlObject = new URL(url);
     let path = urlObject.pathname.split("/")[1] || "home";
+    console.log(path);
     const page = this.pages[path];
     if (
       document.getElementById("root").innerHTML !== this.loadingMessage ||
@@ -722,8 +723,6 @@ const app = {
     let fetchedPages = await fetchRoutes();
 
     let routes = fetchedPages.routes;
-
-    localStorage.setItem("spr", routes);
     let pagesToTranspile = await fetchPagesToTranspile(routes);
 
     window.addEventListener("popstate", (event) => {
@@ -740,16 +739,14 @@ const app = {
       }
     });
 
-    window.addEventListener("load", () => {
-      // Initialize the application by transpiling and storing pages on load
-      for (const pageKey in pagesToTranspile) {
-        if (Object.hasOwn(pagesToTranspile, pageKey)) {
-          this.transpileAndStorePage(pageKey, pagesToTranspile[pageKey]);
-        }
+    // Initialize the application by transpiling and storing pages on load
+    for (const pageKey in pagesToTranspile) {
+      if (Object.hasOwn(pagesToTranspile, pageKey)) {
+        this.transpileAndStorePage(pageKey, pagesToTranspile[pageKey]);
       }
+    }
 
-      this.render();
-    });
+    this.render();
   },
 };
 
