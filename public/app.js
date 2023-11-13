@@ -685,14 +685,30 @@ const app = {
 
             break;
 
-          default:
+             default:
             if (inSUIP) {
               if (line.includes("<Link")) {
                 const to = line.match(/to=['"]([^'"]+)['"]/)[1];
 
-                const className = line.match(/className=['"]([^'"]+)['"]/)[1];
+                let className = line.match(/className=['"]([^'"]+)['"]/)
 
-                const id = line.match(/id=['"]([^'"]+)['"]/)[1];
+		if(className)
+		{
+		 	className = className=[1];
+		}
+
+		else{
+className = "";
+		}
+
+              const id = line.match(/id=['"]([^'"]+)['"]/);
+
+                if (id) {
+                  id = id = [1];
+                }
+		else{
+id = "";
+		}	
 
                 const children = line
                   .match(/>[^<]+</)[0]
