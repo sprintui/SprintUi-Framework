@@ -175,7 +175,11 @@ const app = {
             }
           } else if (script.textContent) {
             const scriptElement = document.createElement("script");
-            scriptElement.textContent = script.textContent;
+            if (script.autoReady) {
+              scriptElement.textContent = `document.addEventListener("sprintReady", () => {${script.textContent}});`;
+            } else {
+              scriptElement.textContent = script.textContent;
+            }
 
             scriptElement.async = script.async;
             scriptElement.defer = script.defer;
@@ -632,6 +636,8 @@ const app = {
               const type = line.match(/type=['"]([^'"]+)['"]/);
               const id = line.match(/id=['"]([^'"]+)['"]/);
 
+              const autoReady = line.includes("autoReady={false}");
+
               // Initialize scriptContent as an empty string
 
               let scriptContent = "";
@@ -659,6 +665,7 @@ const app = {
                   id: id ? id[1] : null,
 
                   textContent: scriptContent,
+                  autoReady: autoReady ? false : true,
                 };
                 pageAssets.scripts.push(newScript);
 
