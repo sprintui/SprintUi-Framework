@@ -29,22 +29,73 @@ Welcome to the SprintUI framework! We're excited to have you on board. Below is 
 
 ## Production Deployment
 
-1. **Keep server.js running:**
-   During the production build, ensure that `server.js` is still running in the background.
-
-2. Build your project for production:
+1. Build your project for production:
    ```bash
    node build.js
    ```
 
-3. After the build, you'll find a new file named `app.build.min.js`.
+2. After the build, you'll find a new file named `app.build.min.js`.
 
-4. Move `app.build.min.js` to the `public` folder.
+3. Move `app.build.min.js` to the `public` folder.
 
-5. Open `index.html` in the `public` folder and update the script source to the new build file:
+4. Open `index.html` in the `public` folder and update the script source to the new build file:
    ```html
    <script src="app.build.min.js"></script>
    ```
+5. Finally deploying on a server:
+## Deploying on Apache Server
+
+If you're deploying on an Apache server, follow these additional steps to ensure the framework works correctly. Create an `.htaccess` file in your project root directory with the following content:
+
+```apache
+RewriteEngine On
+
+# Exclude /assets from the rules
+RewriteRule ^assets/ - [L]
+
+# Rewrite all other routes to index.html
+RewriteCond %{REQUEST_URI} !^/index\.html$
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ /index.html [L]
+```
+
+**Note:** In production, your assets might not load correctly because they are being called from a route called `/assets`, which is not physical. To fix this, create a physical folder and bring all asset files there.
+
+## Deploying with Express Server
+
+If you're using Express for deployment, copy the following code:
+
+```javascript
+const express = require("express");
+const app = express();
+
+app.get("*", (req, res, next) => {
+   // Remove this if you want to have a physical route instead of /assets/assets
+   if (req.url.includes("assets")) {
+    if (
+      !fs.existsSync(
+        path.join(__dirname, "public", req.url.replace("/assets", ""))
+      )
+    ) {
+      return res.status(404).send("Not found");
+    } else {
+      return res.sendFile(
+        path.join(__dirname, "public", req.url.replace("/assets", ""))
+      );
+    }
+  } else {
+    return res.sendFile(path.join(__dirname, "public", "index.html"));
+  }
+});
+
+app.listen(3000, () => {
+  console.log("Server is running on port 3000");
+});
+```
+
+**Note:** Modify the code according to your project structure, and ensure that the necessary packages (`express`, `fs`, and `path`) are installed using `npm install express fs path`. Adjust the port number (`3000` in this example) based on your requirements.
+
 
 # Learning SprintUI (suip)
 
