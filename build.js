@@ -64,7 +64,7 @@ function transpilesUIp(page, pageName) {
       hooks: [],
     };
 
-    for (const line of lines) {
+    for (let line of lines) {
       let match;
 
       switch (true) {
@@ -281,7 +281,85 @@ function transpilesUIp(page, pageName) {
             }
           }
           break;
+          case line.includes("import states"):
+            if (!sUIpScript) {
+              
 
+              let newScript = {
+                id: "sUIp",
+                src: null,
+                head: false,
+                async: false,
+                defer: false,
+                preload: false,
+
+                textContent: `function addState(name,value) {
+                  app.states.push({name:name,value:value});
+                }
+                function fetchStates() {
+                  return app.states;
+                }
+
+                function setState(name,value) {
+                  app.states.forEach((state) => {
+                    if (state.name === name) {
+                      state.value = value;
+                    }
+                  });
+                }
+
+                function getState(name) {
+                  return app.states.find((state) => state.name === name);
+                }
+
+                function removeState(name) {
+                  app.states = app.states.filter((state) => state.name !== name);
+                }
+
+                `,
+
+
+
+              };
+
+              pageAssetsTOBeAdded.scripts.push(newScript);
+
+
+            } else {
+          
+              let script = pageAssets.scripts.find(
+                (script) => script.id === "sUIp"
+              );
+              if (!script.textContent.includes("function addState()")) {
+                script.textContent +=  `function addState(name,value) {
+                  app.states.push({name:name,value:value});
+                }
+                function fetchStates() {
+                  return app.states;
+                }
+
+                function setState(name,value) {
+                  app.states.forEach((state) => {
+                    if (state.name === name) {
+                      state.value = value;
+                    }
+                  });
+                }
+
+                function getState(name) {
+                  return app.states.find((state) => state.name === name);
+                }
+
+                function removeState(name) {
+                  app.states = app.states.filter((state) => state.name !== name);
+                }
+              
+
+
+                `;
+              } 
+            } 
+            break;
         case (match = line.match(/<UseScript[^>]*>/)) !== null:
           const src = extractScriptSrc(line);
 
@@ -515,7 +593,7 @@ async function main() {
     assetsLoaded: false,
     notFoundMessage: null,
     loadingMessage: null,
-  
+    states:[],
   
   
     async addAssets(pageKey) {
