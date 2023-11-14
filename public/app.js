@@ -107,7 +107,7 @@ const app = {
   assetsLoaded: false,
   notFoundMessage: null,
   loadingMessage: null,
-
+  states: [],
   extractCssFileName(line) {
     const importMatch = line.match(/href=['"]([^'"]+)['"]/);
     return importMatch ? importMatch[1] : null;
@@ -417,7 +417,88 @@ const app = {
               }
             }
             break;
+          
 
+          case line.includes("import states"):
+            if (!sUIpScript) {
+              
+
+              let newScript = {
+                id: "sUIp",
+                src: null,
+                head: false,
+                async: false,
+                defer: false,
+                preload: false,
+
+                textContent: `function addState(name,value) {
+                  app.states.push({name:name,value:value});
+                }
+                function fetchStates() {
+                  return app.states;
+                }
+
+                function setState(name,value) {
+                  app.states.forEach((state) => {
+                    if (state.name === name) {
+                      state.value = value;
+                    }
+                  });
+                }
+
+                function getState(name) {
+                  return app.states.find((state) => state.name === name);
+                }
+
+                function removeState(name) {
+                  app.states = app.states.filter((state) => state.name !== name);
+                }
+
+                `,
+
+
+
+              };
+
+              pageAssets.scripts.push(newScript);
+
+
+            } else {
+          
+              let script = pageAssets.scripts.find(
+                (script) => script.id === "sUIp"
+              );
+              if (!script.textContent.includes("function addState()")) {
+                script.textContent +=  `function addState(name,value) {
+                  app.states.push({name:name,value:value});
+                }
+                function fetchStates() {
+                  return app.states;
+                }
+
+                function setState(name,value) {
+                  app.states.forEach((state) => {
+                    if (state.name === name) {
+                      state.value = value;
+                    }
+                  });
+                }
+
+                function getState(name) {
+                  return app.states.find((state) => state.name === name);
+                }
+
+                function removeState(name) {
+                  app.states = app.states.filter((state) => state.name !== name);
+                }
+              
+
+
+                `;
+              } 
+            } 
+            break;
+  
           case line.includes("setBodyClass("):
             if (!sUIpScript) {
               //get things in between the parenthesis
