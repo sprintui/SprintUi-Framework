@@ -169,19 +169,8 @@ As of the current version, the available hooks along with their descriptions and
      
   ```
 
-4. **Query Handling:**
-   ```jsx
-   let query = useQuery();
-   <UseScript>
-     document.addEventListener("sprintReady", function () {
-       const queryElement = document.getElementById("query");
-       if (queryElement) {
-         queryElement.innerHTML = JSON.stringify(query) || "";
-       }
-     });
-   </UseScript>
-   ```
-5. **Handling suip Ready Event:**
+
+4. **Handling suip Ready Event:**
    ```jsx
    <UseScript head={false} autoReady={true}>
     //your code runs after all assets are ready
@@ -226,7 +215,7 @@ Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https:
 
 # Changelogs
 
-Go to changelogs.md to see changelogs.
+Go to [changelog.md](https://github.com/babymonie/sprintui/changelog.md) to see changelogs.
 
 # Upcoming Features
 
