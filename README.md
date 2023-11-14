@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.2
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.3
 
 **Welcome to the SprintUI Framework!**
 
@@ -39,13 +39,13 @@ If this is your first time, you can skip this step, as the file is in update 1.3
    node server.js
    ```
 
-2. Open your browser and navigate to `http://[host]:[port]` to start building your SprintUI project.
+2. Open your browser and navigate to http://localhost:3000 to start building your SprintUI project.
 
 3. For SprintUI syntax, refer to the files in the `pages` folder. It's a mix of HTML and JavaScript. Get familiar with it before moving to production.
 
 ## Production Deployment
 
-Certainly! Here's an updated section for your documentation:
+
 
 1. **Build your project for production:**
    ```bash
