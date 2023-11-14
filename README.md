@@ -215,7 +215,7 @@ Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https:
 
 # Changelogs
 
-Go to [changelog.md](https://github.com/babymonie/sprintui/changelog.md) to see changelogs.
+Go to [changelog.md](https://github.com/babymonie/sprintui/blob/main/changelog.md) to see changelogs.
 
 # Upcoming Features
 
