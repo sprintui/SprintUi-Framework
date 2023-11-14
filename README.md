@@ -158,6 +158,7 @@ As of the current version, the available hooks along with their descriptions and
 
   Example:
   ```jsx
+  
   import states from "sprintui";
 <UseScript>
    addState("name,value") // adds a state
@@ -180,14 +181,6 @@ As of the current version, the available hooks along with their descriptions and
      });
    </UseScript>
    ```
-
-   ```jsx
-   return (
-     <!-- Your JSX here -->
-   );
-   ```
-
-
 5. **Handling suip Ready Event:**
    ```jsx
    <UseScript head={false} autoReady={true}>
