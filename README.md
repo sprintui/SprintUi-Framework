@@ -110,6 +110,7 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 3. and the same for scripts
 
 5. **Hooks**
+
 Hooks in SprintUI can be a complex topic due to its dual nature. There are two types: one that interacts with the real DOM in index.html, and another designed for ease of use.
 
 For instance, the first type includes functions like setTitle, which allows you to change the title of index.html. On the other hand, the second type includes functions like useQuery.
