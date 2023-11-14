@@ -67,3 +67,25 @@ While our team actively works to expedite the release of this feature, we recogn
 Your understanding and patience during this period are greatly appreciated. We value your contribution to the SprintUI community and are committed to delivering an enhanced development experience in the upcoming update.
 
 Thank you for your continued support.
+
+## Version 1.3 - 11/14/2023
+## Added
+- State Management: A new concept called "state" has been incorporated. This feature empowers you to store data across pages, enabling seamless access to database results from one page to another. Fear not, as the state functionality simplifies the process of data retrieval and utilization across different sections of your application.
+- New update.js file. Execute this file to effortlessly install the latest build.js and app.js. The update process works by seamlessly downloading the latest files from the GitHub repository, ensuring you have the most up-to-date versions with minimal effort.
+### Changed
+- None
+
+### Fixed
+- None
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+- None
