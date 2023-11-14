@@ -107,23 +107,67 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
      /* Your local styles here */
    </UseStyles>
    ```
+3. and the same for scripts
 
-3. **Setting HTML and Root Class:**
-   ```jsx
-   setHtmlClass("bg-gradient-to-r from-[#a6a6a6] to-[#ffffff]");
-   setRootClass("h-screen");
-   ```
+5. **Hooks**
+Hooks in SprintUI can be a complex topic due to its dual nature. There are two types: one that interacts with the real DOM in index.html, and another designed for ease of use.
 
-4. **Custom CSS:**
-   ```jsx
-   <UseStyles>
-     /* Your custom CSS here */
-   </UseStyles>
-   ```
+For instance, the first type includes functions like setTitle, which allows you to change the title of index.html. On the other hand, the second type includes functions like useQuery.
 
-## Query Handling with suip
+It's important to note that for the second type, there are additional categories, such as imports, useQuery, and more. These elements, including imports, useQuery, and others, should be placed outside the return area and not within any styles or scripts.
 
-1. **Query Handling:**
+Imports function similarly to regular imports, bringing in a set of functions. For example, when you import states, it includes four functions. Understanding and appropriately placing these hooks is crucial for effective use in SprintUI.
+
+As of the current version, the available hooks along with their descriptions and examples are:
+
+- **`setBodyClass`**: Sets the CSS class for the body element of the document.
+
+  Example:
+  ```jsx
+  setBodyClass("bg-dark");
+  ```
+
+- **`setRootClass`**: Sets the CSS class for the root element of the SprintUI application.
+
+  Example:
+  ```jsx
+  setRootClass("container");
+  ```
+
+- **`setTitle`**: Changes the title of the `index.html` document.
+
+  Example:
+  ```jsx
+  setTitle("My SprintUI App");
+  ```
+
+- **`useQuery`**: Retrieves and handles query parameters from the URL.
+
+  Example:
+  ```jsx
+  let query = useQuery();
+
+<UseScript>
+   //you may access it from here now
+   alert(query)
+</UseScript>
+  ```
+
+- **`import states`**: Imports a set of functions related to managing state in SprintUI.
+
+  Example:
+  ```jsx
+  import states from "sprintui";
+<UseScript>
+   addState("name,value") // adds a state
+   getState("name")// gets the state by name
+   fetchStates()//returns all the states
+   removeState("name")// remove a state by name
+</UseScript>
+  
+  ```
+
+4. **Query Handling:**
    ```jsx
    let query = useQuery();
    <UseScript>
@@ -142,9 +186,8 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
    );
    ```
 
-## suip Ready Event
 
-1. **Handling suip Ready Event:**
+5. **Handling suip Ready Event:**
    ```jsx
    <UseScript head={false} autoReady={true}>
     //your code runs after all assets are ready
