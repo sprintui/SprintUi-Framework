@@ -89,3 +89,12 @@ Thank you for your continued support.
 
 ### Notes
 - None
+### Message From Devs:
+Message From Devs:
+We regret to inform you that the introduction of the highly anticipated exclusion feature in the upcoming 1.3 update has been delayed again. Our development team is currently prioritizing other critical features in the upcoming massive update. Rest assured, we understand the significance of this feature and will prioritize its inclusion in a future release.
+
+The exclusion feature, designed to enhance your control over the project by allowing the exclusion of specific files through the pages.sui configuration, remains a key focus. This functionality will provide a solution for excluding unwanted test pages from your production build.
+
+During this delay, we appreciate your understanding and patience. We assure you that, when implemented, this feature will significantly contribute to the SprintUI framework's versatility. We value your ongoing support and look forward to delivering an enriched development experience in the upcoming updates.
+
+Thank you for your continued trust in SprintUI.
