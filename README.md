@@ -148,10 +148,10 @@ As of the current version, the available hooks along with their descriptions and
   ```jsx
   let query = useQuery();
 
-<UseScript>
-   //you may access it from here now
-   alert(query)
-</UseScript>
+   <UseScript>
+      //you may access it from here now
+      alert(query)
+   </UseScript>
   ```
 
 - **`import states`**: Imports a set of functions related to managing state in SprintUI.
@@ -160,13 +160,13 @@ As of the current version, the available hooks along with their descriptions and
   ```jsx
   
   import states from "sprintui";
-<UseScript>
-   addState("name,value") // adds a state
-   getState("name")// gets the state by name
-   fetchStates()//returns all the states
-   removeState("name")// remove a state by name
-</UseScript>
-  
+   <UseScript>
+      addState("name,value") // adds a state
+      getState("name")// gets the state by name
+      fetchStates()//returns all the states
+      removeState("name")// remove a state by name
+   </UseScript>
+     
   ```
 
 4. **Query Handling:**
