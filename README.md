@@ -18,6 +18,19 @@ We're thrilled to have you on board. Let's get started with building and deployi
    - `public`: All your public files, including a `pages` folder.
    - `build.js`: Script for production build. After running this, `server.js` is not needed, and routes will point to `index.html`.
    - `pages`: Folder within `public` where your SprintUI project files reside.
+3. **Remove unnecessary files that we provide: icon.png, version.txt, changelog.md, readme**
+
+## Update Procedure
+
+A new file named `update.js` has been introduced. If you don't have this file already, please follow these steps:
+
+1. Visit the [sprintui](https://github.com/babymonie/sprintui/) and navigate to `update.js`.
+2. Copy the raw code of `update.js`.
+3. Create a new file named `update.js` in your project.
+4. Paste the copied code into the newly created `update.js` file.
+
+If this is your first time, you can skip this step, as the file is in update 1.3 and forward!
+
 
 ## Development Mode
 
