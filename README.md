@@ -219,7 +219,7 @@ Go to [changelog.md](https://github.com/babymonie/sprintui/blob/main/changelog.m
 
 # Upcoming Features
 
-In the upcoming 1.3 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it.
+In the upcoming 1.4 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it.
 
 Stay tuned for the release!
 
