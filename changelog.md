@@ -1,6 +1,6 @@
 # Changelogs
 
-## Version 1.1 11/13/2023
+## Version 1.1 11/13/2023 - RELEASED 
 
 ### Added
 
@@ -68,7 +68,7 @@ Your understanding and patience during this period are greatly appreciated. We v
 
 Thank you for your continued support.
 
-## Version 1.3 - 11/14/2023
+## Version 1.3 - 11/14/2023 - RELEASED 
 ## Added
 - State Management: A new concept called "state" has been incorporated. This feature empowers you to store data across pages, enabling seamless access to database results from one page to another. Fear not, as the state functionality simplifies the process of data retrieval and utilization across different sections of your application.
 - New update.js file. Execute this file to effortlessly install the latest build.js and app.js. The update process works by seamlessly downloading the latest files from the GitHub repository, ensuring you have the most up-to-date versions with minimal effort.
@@ -98,3 +98,29 @@ The exclusion feature, designed to enhance your control over the project by allo
 During this delay, we appreciate your understanding and patience. We assure you that, when implemented, this feature will significantly contribute to the SprintUI framework's versatility. We value your ongoing support and look forward to delivering an enriched development experience in the upcoming updates.
 
 Thank you for your continued trust in SprintUI.
+
+## Version 1.4 - 11/14/2023 - Coming
+
+### Added
+- Introducing a new feature allowing exclusion of asset removal if it has `swiftIgnore`. The exclusion functionality is now a permanent feature.
+
+### Changed
+- Implemented optimization: if the next page includes assets from the current page, they will not be removed.
+
+### Fixed
+- None
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+- None
+
+### Message From Devs:
+It's finally here! Exclusion is now a permanent feature, eliminating the need for temporary exclusions. While you still have the option to add exclusions, there's now a seamless and enduring solution in place. Happy coding!
