@@ -99,7 +99,7 @@ During this delay, we appreciate your understanding and patience. We assure you 
 
 Thank you for your continued trust in SprintUI.
 
-## Version 1.4 - 11/14/2023 - Coming
+## Version 1.4 - 11/16/2023 - Coming
 
 ### Added
 - Introducing a new feature allowing exclusion of asset removal if it has `swiftIgnore`.
