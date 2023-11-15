@@ -33,7 +33,7 @@
 - Scripts will now wait for the "sprintReady" event before executing by default. Use `autoReady={false}` in the script to disable this behavior.
 - The console feature provides valuable information about the built files, assisting in the verification of the build process.
 
-## Version 1.2 - 11/13/2023
+## Version 1.2 - 11/13/2023  - RELEASED 
 
 
 ### Added
