@@ -398,6 +398,8 @@ function transpilesUIp(page, pageName) {
             const type = line.match(/type=['"]([^'"]+)['"]/);
             const id = line.match(/id=['"]([^'"]+)['"]/);
 
+	    const autoReady = line.includes("autoReady={false}");
+
             // Initialize scriptContent as an empty string
 
             let scriptContent = "";
@@ -425,6 +427,7 @@ function transpilesUIp(page, pageName) {
                 id: id ? id[1] : null,
 
                 textContent: scriptContent,
+      		autoReady: autoReady ? false : true,
               };
               pageAssetsTOBeAdded.scripts.push(newScript);
 
@@ -646,7 +649,11 @@ async function main() {
               }
             } else if (script.textContent) {
               const scriptElement = document.createElement("script");
+                if (script.autoReady) {
+              scriptElement.textContent = 'document.addEventListener("sprintReady", () => {' + script.textContent + '});';
+            } else {
               scriptElement.textContent = script.textContent;
+            }
   		
               scriptElement.async = script.async;
               scriptElement.defer = script.defer;
