@@ -109,7 +109,7 @@ Thank you for your continued trust in SprintUI.
 - Implemented optimization: if the next page includes assets from the current page, they will not be removed.
 
 ### Fixed
-- None
+- Some Styles/Scripts not being removed.
 
 ### Deprecated
 - None
