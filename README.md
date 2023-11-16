@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.3
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.4
 
 **Welcome to the SprintUI Framework!**
 
@@ -107,8 +107,23 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
      /* Your local styles here */
    </UseStyles>
    ```
-3. and the same for scripts
 
+3. **Setting Local Scripts:**
+   ```jsx
+   <UseScript>
+     /* Your local scripts here */
+   </UseScript>
+   ```
+
+4. **Setting Asset Exclusion:**
+   ```jsx
+   <UseScript sprintIgnore={true}>
+     /* Ignore asset removal if it has sprintIgnore */
+     /* This provides greater control over asset management in your SprintUI project */
+   </UseScript>
+   ```
+
+   This allows you to manage asset removal selectively, ensuring that assets with `sprintIgnore` are ignored during the removal process, providing enhanced control over your SprintUI project's asset management.
 5. **Hooks**
 
 Hooks in SprintUI can be a complex topic due to its dual nature. There are two types: one that interacts with the real DOM in index.html, and another designed for ease of use.
