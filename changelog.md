@@ -102,7 +102,7 @@ Thank you for your continued trust in SprintUI.
 ## Version 1.4 - 11/18/2023 - RELEASED
 
 ### Added
-- Introducing a new feature allowing exclusion of asset removal if it has `swiftIgnore`.
+- Introducing a new feature that ignores asset removal if it has swiftIgnore. This provides greater control over asset management in your SprintUI project.
 - The exclusion functionality is now a permanent feature.
 
 ### Changed
