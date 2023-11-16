@@ -9,7 +9,7 @@ We're thrilled to have you on board. Let's get started with building and deployi
 
 1. **Clone the Repository**
    ```bash
-   git clone https://github.com/babymonie/sprintui/
+   git clone https://github.com/sprintui/SprintUi-Framework 
    cd sprintui
    ```
 
@@ -24,7 +24,7 @@ We're thrilled to have you on board. Let's get started with building and deployi
 
 A new file named `update.js` has been introduced. If you don't have this file already, please follow these steps:
 
-1. Visit the [sprintui](https://github.com/babymonie/sprintui/) and navigate to `update.js`.
+1. Visit the [sprintui](https://github.com/sprintui/SprintUi-Framework) and navigate to `update.js`.
 2. Copy the raw code of `update.js`.
 3. Create a new file named `update.js` in your project.
 4. Paste the copied code into the newly created `update.js` file.
@@ -242,7 +242,7 @@ Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https:
 
 # Changelogs
 
-Go to [changelog.md](https://github.com/babymonie/sprintui/blob/main/changelog.md) to see changelogs.
+Go to [changelog.md](https://github.com/sprintui/SprintUi-Framework/blob/main/changelog.md) to see changelogs.
 
 Stay tuned for the release!
 
