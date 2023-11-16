@@ -23,8 +23,16 @@ function updatePagesFile() {
 
   //read pages.sui file and get EXCLUDES= 
   let pagesSui = fs.readFileSync(path.join(__dirname, "pages.sui"), "utf8");
-  let excludes = "EXCLUDES=" + pagesSui.split("EXCLUDES=")[1].split("\n")[0];
+  let excludes = "EXCLUDES=" + pagesSui.split("EXCLUDES=")
+
+  if(excludes != "EXCLUDES="){
+    excludes = excludes[1].split("\n")[0];
+  }
+
+  
+
   let pagesFile = excludes + "\n" + "ROUTES=" + pages;
+
   
   fs.writeFileSync(path.join(__dirname, "pages.sui"), pagesFile);
 
