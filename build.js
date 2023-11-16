@@ -249,9 +249,22 @@ function transpilesUIp(page, pageName) {
         case (match = line.match(/<UseStyles[^>]*>/)) !== null:
           const href = extractCssFileName(line);
 
+          const id = line.match(/id=['"]([^'"]+)['"]/);
+          const integrity = line.match(/integrity=['"]([^'"]+)['"]/);
+          const crossorigin = line.match(/crossorigin=['"]([^'"]+)['"]/);
+          const type = line.match(/type=['"]([^'"]+)['"]/);
+          const referrerpolicy = line.match(/referrerpolicy=['"]([^'"]+)['"]/);
+          const sprintIgnore = line.includes("sprintIgnore={true}");
+
           if (href) {
             let newStyle = {
               href: href,
+              id: id ? id[1] : null,
+              integrity: integrity ? integrity[1] : null,
+              crossorigin: crossorigin ? crossorigin[1] : null,
+              type: type ? type[1] : "text/css",
+              referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
+              sprintIgnore: sprintIgnore ? true : false,
             };
             pageAssetsTOBeAdded.styles.push(newStyle);
           } else {
@@ -273,6 +286,12 @@ function transpilesUIp(page, pageName) {
               let newStyle = {
                 href: null,
                 textContent: styleContent,
+                id: id ? id[1] : null,
+                integrity: integrity ? integrity[1] : null,
+                crossorigin: crossorigin ? crossorigin[1] : null,
+                type: type ? type[1] : "text/css",
+                referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
+                sprintIgnore: sprintIgnore ? true : false,
               };
 
               pageAssetsTOBeAdded.styles.push(newStyle);
@@ -281,19 +300,17 @@ function transpilesUIp(page, pageName) {
             }
           }
           break;
-          case line.includes("import states"):
-            if (!sUIpScript) {
-              
+        case line.includes("import states"):
+          if (!sUIpScript) {
+            let newScript = {
+              id: "sUIp",
+              src: null,
+              head: false,
+              async: false,
+              defer: false,
+              preload: false,
 
-              let newScript = {
-                id: "sUIp",
-                src: null,
-                head: false,
-                async: false,
-                defer: false,
-                preload: false,
-
-                textContent: `function addState(name,value) {
+              textContent: `function addState(name,value) {
                   app.states.push({name:name,value:value});
                 }
                 function fetchStates() {
@@ -317,21 +334,15 @@ function transpilesUIp(page, pageName) {
                 }
 
                 `,
+            };
 
-
-
-              };
-
-              pageAssetsTOBeAdded.scripts.push(newScript);
-
-
-            } else {
-          
-              let script = pageAssets.scripts.find(
-                (script) => script.id === "sUIp"
-              );
-              if (!script.textContent.includes("function addState()")) {
-                script.textContent +=  `function addState(name,value) {
+            pageAssetsTOBeAdded.scripts.push(newScript);
+          } else {
+            let script = pageAssets.scripts.find(
+              (script) => script.id === "sUIp"
+            );
+            if (!script.textContent.includes("function addState()")) {
+              script.textContent += `function addState(name,value) {
                   app.states.push({name:name,value:value});
                 }
                 function fetchStates() {
@@ -357,9 +368,9 @@ function transpilesUIp(page, pageName) {
 
 
                 `;
-              } 
-            } 
-            break;
+            }
+          }
+          break;
         case (match = line.match(/<UseScript[^>]*>/)) !== null:
           const src = extractScriptSrc(line);
 
@@ -375,7 +386,7 @@ function transpilesUIp(page, pageName) {
             const referrerpolicy = line.match(
               /referrerpolicy=['"]([^'"]+)['"]/
             );
-
+            const sprintIgnore = line.includes("sprintIgnore={true}");
             const newScript = {
               src: src ? src : null,
               head: head ? true : false,
@@ -387,6 +398,7 @@ function transpilesUIp(page, pageName) {
               crossorigin: crossorigin ? crossorigin[1] : null,
               type: type ? type[1] : "text/javascript",
               referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
+              sprintIgnore: sprintIgnore ? true : false,
             };
 
             pageAssetsTOBeAdded.scripts.push(newScript);
@@ -398,7 +410,9 @@ function transpilesUIp(page, pageName) {
             const type = line.match(/type=['"]([^'"]+)['"]/);
             const id = line.match(/id=['"]([^'"]+)['"]/);
 
-	    const autoReady = line.includes("autoReady={false}");
+            const autoReady = line.includes("autoReady={false}");
+
+            const sprintIgnore = line.includes("sprintIgnore={true}");
 
             // Initialize scriptContent as an empty string
 
@@ -427,7 +441,8 @@ function transpilesUIp(page, pageName) {
                 id: id ? id[1] : null,
 
                 textContent: scriptContent,
-      		autoReady: autoReady ? false : true,
+                autoReady: autoReady ? false : true,
+                sprintIgnore: sprintIgnore ? true : false,
               };
               pageAssetsTOBeAdded.scripts.push(newScript);
 
@@ -498,13 +513,25 @@ function transpilesUIp(page, pageName) {
   }
 }
 
+function getEXCLUDES() {
+  const pagesSUI = fs.readFileSync("./pages.sui", "utf8");
+
+  let excludes = pagesSUI.split("EXCLUDES=")[1]
+    ? pagesSUI.split("EXCLUDES=")[1].split("\n")[0].trim()
+    : "";
+
+  return excludes;
+}
+
 async function fetchPagesToTranspile(routes) {
   const pagesToTranspile = {};
 
   async function fetchPage(route) {
     try {
-      //check in exclude
-      if (options.exclude) {
+      if (getEXCLUDES().split(",").includes(route)) {
+        console.log("Excluding " + route);
+        return;
+      } else if (options.exclude) {
         if (options.exclude.split(",").includes(route)) {
           console.log("Excluding " + route);
           return;
@@ -597,34 +624,65 @@ async function main() {
     notFoundMessage: null,
     loadingMessage: null,
     states:[],
-  
-  
+    stylesAdded: new Set(),
+    scriptsAdded: new Set(),
+    
     async addAssets(pageKey) {
+      // Add a check if assets are already loaded for this page
+      if (this.assetsLoaded) {
+        return;
+      }
+    
+  
       //promise
-      new Promise((resolve, reject) => {
-        const pageAssets = this.pageAssets.find(
-          (asset) => asset.page === pageKey
-        );
+  
+        const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
         if (pageAssets) {
           pageAssets.styles.forEach((style) => {
-            if (style.href) {
+            if (!this.stylesAdded.has(style.href) && style.href) {
               const linkElement = document.createElement("link");
               linkElement.rel = "stylesheet";
               linkElement.href = style.href;
   
-              document.head.appendChild(linkElement);
-            } else if (style.textContent) {
-              const styleElement = document.createElement("style");
+              if (style.integrity) {
+                linkElement.integrity = style.integrity;
+              }
+              if (style.id) {
+                linkElement.id = style.id;
+              }
+              linkElement.crossOrigin = style.crossorigin;
   
+              linkElement.type = style.type || "text/css";
+  
+              linkElement.referrePolicy = style.referrerpolicy;
+  
+  
+  
+              document.head.appendChild(linkElement);
+              this.stylesAdded.add(style.href);
+            } else if (!this.stylesAdded.has(style.textContent) && style.textContent) {
+              const styleElement = document.createElement("style");
               styleElement.textContent = style.textContent;
+              styleElement.type = style.type || "text/css";
+              if (style.id) {
+                styleElement.id = style.id;
+              }
+              if (style.id) {
+                linkElement.id = style.id;
+              }
+  
+  
+  
+  
+  
               document.head.appendChild(styleElement);
+              this.stylesAdded.add(style.textContent);
             }
           });
   
           pageAssets.scripts.forEach((script) => {
-            if (script.src) {
+            if (!this.scriptsAdded.has(script.src) && script.src) {
               const scriptElement = document.createElement("script");
-  
               scriptElement.src = script.src;
               scriptElement.async = script.async;
               scriptElement.defer = script.defer;
@@ -639,7 +697,7 @@ async function main() {
   
               scriptElement.type = script.type;
   
-              scriptElement.referrerPolicy = script.referrerpolicy;
+              scriptElement.referrePolicy = script.referrerpolicy;
   
               handleScriptLoadError(scriptElement, script.src);
               if (script.head) {
@@ -647,14 +705,16 @@ async function main() {
               } else {
                 document.body.appendChild(scriptElement);
               }
-            } else if (script.textContent) {
+              this.scriptsAdded.add(script.src);
+  
+            }  else if (!this.scriptsAdded.has(script.textContent) && script.textContent) {
               const scriptElement = document.createElement("script");
-                if (script.autoReady) {
-              scriptElement.textContent = 'document.addEventListener("sprintReady", () => {' + script.textContent + '});';
-            } else {
-              scriptElement.textContent = script.textContent;
-            }
-  		
+              if (script.autoReady) {
+                scriptElement.textContent = 'document.addEventListener("sprintReady", () => {' + script.textContent + '});';
+              } else {
+                scriptElement.textContent = script.textContent;
+              }
+  
               scriptElement.async = script.async;
               scriptElement.defer = script.defer;
               scriptElement.preload = script.preload;
@@ -671,14 +731,96 @@ async function main() {
               } else {
                 document.body.appendChild(scriptElement);
               }
+  
+              this.scriptsAdded.add(script.textContent);
+         
             }
           });
         }
         this.assetsLoaded = true;
-        resolve();
-      });
+     
+    
     },
   
+  
+  
+    async removeAssets(pageKey) {
+      const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
+      let scripts = document.querySelectorAll("script");
+      let styles = document.querySelectorAll("style");
+    
+      if (pageAssets) {
+        for (let i = 0; i < pageAssets.styles.length; i++) {
+          const style = pageAssets.styles[i];
+    
+          if (style.href) {
+            const linkElement = document.querySelector(
+             'link[href="' + style.href + '"]'
+            );
+    
+            // Check if other pages are using the same style
+            const otherPagesUsingStyle = this.pageAssets.filter(
+              (asset) => asset.page !== pageKey && asset.styles.some((s) => s.href === style.href)
+            );
+    
+            if (linkElement && otherPagesUsingStyle.length === 0 && !style.sprintIgnore) {
+              linkElement.remove();
+            }
+          } else if (style.textContent) {
+            for (let j = 0; j < styles.length; j++) {
+              const s = styles[j];
+    
+              // Check if other pages are using the same style
+              const otherPagesUsingStyle = this.pageAssets.filter(
+                (asset) => asset.page !== pageKey && asset.styles.some((s) => s.textContent === style.textContent)
+              );
+    
+              if (s.textContent.includes(style.textContent) && otherPagesUsingStyle.length === 0 && !style.sprintIgnore) {
+                s.remove();
+              }
+            }
+          }
+        }
+    
+        for (let i = 0; i < pageAssets.scripts.length; i++) {
+          const script = pageAssets.scripts[i];
+    
+          if (script.src) {
+            const scriptElement = document.querySelector(
+              'script[src="' + script.src + '"]'
+            );
+    
+            // Check if other pages are using the same script
+            const otherPagesUsingScript = this.pageAssets.filter(
+              (asset) => asset.page !== pageKey && asset.scripts.some((s) => s.src === script.src)
+            );
+    
+            if (scriptElement && otherPagesUsingScript.length === 0 && !script.sprintIgnore) {
+              scriptElement.remove();
+            }
+          } else if (script.textContent) {
+            for (let j = 0; j < scripts.length; j++) {
+              const s = scripts[j];
+    
+              // Check if other pages are using the same script
+              const otherPagesUsingScript = this.pageAssets.filter(
+                (asset) => asset.page !== pageKey && asset.scripts.some((s) => s.textContent === script.textContent)
+              );
+    
+              if (
+                (s.textContent.includes(script.textContent) || !script.id === "suia") &&
+                otherPagesUsingScript.length === 0 && !script.sprintIgnore
+              ) {
+                s.remove();
+              }
+            }
+          }
+        }
+    
+        this.assetsLoaded = false;
+      }
+    },  
+
     async addHooks(pageKey) {
       const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
       if (pageAssets) {
@@ -705,53 +847,6 @@ async function main() {
         });
   
         this.hooksLoaded = true;
-      }
-    },
-  
-    async removeAssets(pageKey) {
-      const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-      let scripts = document.querySelectorAll("script");
-      let styles = document.querySelectorAll("style");
-      if (pageAssets) {
-        for (let i = 0; i < pageAssets.styles.length; i++) {
-          const style = pageAssets.styles[i];
-          if (style.href) {
-            const linkElement = document.querySelector(
-              'link[href="' + style.href + '"]'
-            );
-            if (linkElement) {
-              linkElement.remove();
-            }
-          } else if (style.textContent) {
-            for (let j = 0; j < styles.length; j++) {
-              const s = styles[j];
-              if (s.textContent === style.textContent) {
-                s.remove();
-              }
-            }
-          }
-        }
-  
-        for (let i = 0; i < pageAssets.scripts.length; i++) {
-          const script = pageAssets.scripts[i];
-          if (script.src) {
-            const scriptElement = document.querySelector(
-              'script[src="' + script.src + '"]'
-            );
-            if (scriptElement) {
-              scriptElement.remove();
-            }
-          } else if (script.textContent) {
-            for (let j = 0; j < scripts.length; j++) {
-              const s = scripts[j];
-              if (s.textContent === script.textContent && script.id !== "suia") {
-                s.remove();
-              }
-            }
-          }
-        }
-  
-        this.assetsLoaded = false;
       }
     },
   
