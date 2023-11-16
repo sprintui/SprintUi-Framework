@@ -46,7 +46,6 @@ If this is your first time, you can skip this step, as the file is in update 1.3
 ## Production Deployment
 
 
-
 1. **Build your project for production:**
    ```bash
    node build.js
@@ -74,7 +73,20 @@ Additionally, for an optimized workflow, it is recommended to use the following 
   node build.js -t
   ```
 
-By following these recommendations, you can streamline the build and transfer process, ensuring an efficient and organized development workflow for your SprintUI project.
+For advanced customization, if you have a file called `pages.sui` (which is assumed to always be present), enhance exclusion settings by adding the following line:
+
+```plaintext
+EXCLUDES=TEST,TEST2,etc...
+```
+
+To temporarily exclude files during a build, you can utilize the `-ex` or `--exclude` argument:
+
+```bash
+node build.js -ex=TEST,TEST2
+```
+
+This argument functions similarly to the `EXCLUDES` setting in `pages.sui` but is applied temporarily during the build process.
+
 
 5. Finally deploying on a server:
 
@@ -231,10 +243,6 @@ Check out a working example of SprintUI at [https://sprintui.nggapps.xyz](https:
 # Changelogs
 
 Go to [changelog.md](https://github.com/babymonie/sprintui/blob/main/changelog.md) to see changelogs.
-
-# Upcoming Features
-
-In the upcoming 1.4 update, a new feature will be introduced in the `pages.sui` configuration. This feature allows you to exclude specific files from the build, providing more control over your project. Say goodbye to that test page you don't want in your production build—simply configure the settings to ignore it.
 
 Stay tuned for the release!
 
