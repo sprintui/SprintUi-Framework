@@ -121,7 +121,7 @@ Thank you for your continued trust in SprintUI.
 - None
 
 ### Notes
-- None
+- This update requires you to get the latest server file. update.js is now permanent and won't be changed unless needed. Any updates to update.js will only occur after user notification. As of now, this is expected to be the only update affecting server.js until the release of the custom components and hooks update.
 
 ### Message From Devs:
 It's finally here! Exclusion is now a permanent feature, eliminating the need for temporary exclusions. While you still have the option to add exclusions, there's now a seamless and enduring solution in place. Happy coding!
