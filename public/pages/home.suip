@@ -71,7 +71,7 @@ body{
 
 
 
-      // Swift is ready to use, do your stuff here
+      // Sprint is ready to use, do your stuff here
 
 
 
@@ -90,10 +90,10 @@ return (
 <div class="container">
   <div class="row">
     <div class="col-12">
-      <h1 class="tc">Swift UI</h1>
+      <h1 class="tc">Sprint UI</h1>
       
 
-      <p>Thank you for choosing Swift UI. This is a simple example of how to use Swift UI.</p>
+      <p>Thank you for choosing Sprint UI. This is a simple example of how to use Sprint UI.</p>
 
       <p>When you are ready to start, delete this file and start coding.</p>
 
@@ -104,7 +104,7 @@ return (
 
 
 
-      <a href="https://github.com/babymonie/swiftui" class="btn btn-primary">Documentation</a>
+      <a href="https://github.com/babymonie/sprintui" class="btn btn-primary">Documentation</a>
 
       
 
