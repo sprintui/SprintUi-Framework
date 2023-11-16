@@ -24,7 +24,9 @@ async function fetchRoutes() {
 
     if (response.ok) {
       let pageContent = await response.text();
+   
       //extract routes
+
       let routes = pageContent.split("ROUTES=")[1];
       routes = routes.split(",");
       routes = routes.map((route) => route.trim());
@@ -108,6 +110,8 @@ const app = {
   notFoundMessage: null,
   loadingMessage: null,
   states: [],
+  stylesAdded: new Set(),
+  scriptsAdded: new Set(),
   extractCssFileName(line) {
     const importMatch = line.match(/href=['"]([^'"]+)['"]/);
     return importMatch ? importMatch[1] : null;
@@ -124,33 +128,62 @@ const app = {
     const html = transpiledHtml;
     this.pages[pageKey] = html;
   },
-
   async addAssets(pageKey) {
+    // Add a check if assets are already loaded for this page
+    if (this.assetsLoaded) {
+      return;
+    }
+  
+
     //promise
-    new Promise((resolve, reject) => {
-      const pageAssets = this.pageAssets.find(
-        (asset) => asset.page === pageKey
-      );
+
+      const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
       if (pageAssets) {
         pageAssets.styles.forEach((style) => {
-          if (style.href) {
+          if (!this.stylesAdded.has(style.href) && style.href) {
             const linkElement = document.createElement("link");
             linkElement.rel = "stylesheet";
             linkElement.href = style.href;
 
-            document.head.appendChild(linkElement);
-          } else if (style.textContent) {
-            const styleElement = document.createElement("style");
+            if (style.integrity) {
+              linkElement.integrity = style.integrity;
+            }
+            if (style.id) {
+              linkElement.id = style.id;
+            }
+            linkElement.crossOrigin = style.crossorigin;
 
+            linkElement.type = style.type || "text/css";
+
+            linkElement.referrePolicy = style.referrerpolicy;
+
+
+
+            document.head.appendChild(linkElement);
+            this.stylesAdded.add(style.href);
+          } else if (!this.stylesAdded.has(style.textContent) && style.textContent) {
+            const styleElement = document.createElement("style");
             styleElement.textContent = style.textContent;
+            styleElement.type = style.type || "text/css";
+            if (style.id) {
+              styleElement.id = style.id;
+            }
+            if (style.id) {
+              linkElement.id = style.id;
+            }
+
+
+
+
+
             document.head.appendChild(styleElement);
+            this.stylesAdded.add(style.textContent);
           }
         });
 
         pageAssets.scripts.forEach((script) => {
-          if (script.src) {
+          if (!this.scriptsAdded.has(script.src) && script.src) {
             const scriptElement = document.createElement("script");
-
             scriptElement.src = script.src;
             scriptElement.async = script.async;
             scriptElement.defer = script.defer;
@@ -173,7 +206,9 @@ const app = {
             } else {
               document.body.appendChild(scriptElement);
             }
-          } else if (script.textContent) {
+            this.scriptsAdded.add(script.src);
+
+          }  else if (!this.scriptsAdded.has(script.textContent) && script.textContent) {
             const scriptElement = document.createElement("script");
             if (script.autoReady) {
               scriptElement.textContent = `document.addEventListener("sprintReady", () => {${script.textContent}});`;
@@ -197,13 +232,95 @@ const app = {
             } else {
               document.body.appendChild(scriptElement);
             }
+
+            this.scriptsAdded.add(script.textContent);
+       
           }
         });
       }
       this.assetsLoaded = true;
-      resolve();
-    });
+   
+  
   },
+
+
+
+  async removeAssets(pageKey) {
+    const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
+    let scripts = document.querySelectorAll("script");
+    let styles = document.querySelectorAll("style");
+  
+    if (pageAssets) {
+      for (let i = 0; i < pageAssets.styles.length; i++) {
+        const style = pageAssets.styles[i];
+  
+        if (style.href) {
+          const linkElement = document.querySelector(
+            `link[href="${style.href}"]`
+          );
+  
+          // Check if other pages are using the same style
+          const otherPagesUsingStyle = this.pageAssets.filter(
+            (asset) => asset.page !== pageKey && asset.styles.some((s) => s.href === style.href)
+          );
+  
+          if (linkElement && otherPagesUsingStyle.length === 0 && !style.sprintIgnore) {
+            linkElement.remove();
+          }
+        } else if (style.textContent) {
+          for (let j = 0; j < styles.length; j++) {
+            const s = styles[j];
+  
+            // Check if other pages are using the same style
+            const otherPagesUsingStyle = this.pageAssets.filter(
+              (asset) => asset.page !== pageKey && asset.styles.some((s) => s.textContent === style.textContent)
+            );
+  
+            if (s.textContent.includes(style.textContent) && otherPagesUsingStyle.length === 0 && !style.sprintIgnore) {
+              s.remove();
+            }
+          }
+        }
+      }
+  
+      for (let i = 0; i < pageAssets.scripts.length; i++) {
+        const script = pageAssets.scripts[i];
+  
+        if (script.src) {
+          const scriptElement = document.querySelector(
+            `script[src="${script.src}"]`
+          );
+  
+          // Check if other pages are using the same script
+          const otherPagesUsingScript = this.pageAssets.filter(
+            (asset) => asset.page !== pageKey && asset.scripts.some((s) => s.src === script.src)
+          );
+  
+          if (scriptElement && otherPagesUsingScript.length === 0 && !script.sprintIgnore) {
+            scriptElement.remove();
+          }
+        } else if (script.textContent) {
+          for (let j = 0; j < scripts.length; j++) {
+            const s = scripts[j];
+  
+            // Check if other pages are using the same script
+            const otherPagesUsingScript = this.pageAssets.filter(
+              (asset) => asset.page !== pageKey && asset.scripts.some((s) => s.textContent === script.textContent)
+            );
+  
+            if (
+              (s.textContent.includes(script.textContent) || !script.id === "suia") &&
+              otherPagesUsingScript.length === 0 && !script.sprintIgnore
+            ) {
+              s.remove();
+            }
+          }
+        }
+      }
+  
+      this.assetsLoaded = false;
+    }
+  },  
 
   async addHooks(pageKey) {
     const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
@@ -231,53 +348,6 @@ const app = {
       });
 
       this.hooksLoaded = true;
-    }
-  },
-
-  async removeAssets(pageKey) {
-    const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-    let scripts = document.querySelectorAll("script");
-    let styles = document.querySelectorAll("style");
-    if (pageAssets) {
-      for (let i = 0; i < pageAssets.styles.length; i++) {
-        const style = pageAssets.styles[i];
-        if (style.href) {
-          const linkElement = document.querySelector(
-            `link[href="${style.href}"]`
-          );
-          if (linkElement) {
-            linkElement.remove();
-          }
-        } else if (style.textContent) {
-          for (let j = 0; j < styles.length; j++) {
-            const s = styles[j];
-            if (s.textContent === style.textContent) {
-              s.remove();
-            }
-          }
-        }
-      }
-
-      for (let i = 0; i < pageAssets.scripts.length; i++) {
-        const script = pageAssets.scripts[i];
-        if (script.src) {
-          const scriptElement = document.querySelector(
-            `script[src="${script.src}"]`
-          );
-          if (scriptElement) {
-            scriptElement.remove();
-          }
-        } else if (script.textContent) {
-          for (let j = 0; j < scripts.length; j++) {
-            const s = scripts[j];
-            if (s.textContent === script.textContent || !script.id === "suia") {
-              s.remove();
-            }
-          }
-        }
-      }
-
-      this.assetsLoaded = false;
     }
   },
 
@@ -646,10 +716,30 @@ const app = {
 
           case (match = line.match(/<UseStyles[^>]*>/)) !== null:
             const href = this.extractCssFileName(line);
+    
+            const id = line.match(/id=['"]([^'"]+)['"]/);
+            const integrity = line.match(/integrity=['"]([^'"]+)['"]/);
+            const crossorigin = line.match(/crossorigin=['"]([^'"]+)['"]/);
+            const type = line.match(/type=['"]([^'"]+)['"]/);
+            const referrerpolicy = line.match(
+              /referrerpolicy=['"]([^'"]+)['"]/
+            );
+
+            const sprintIgnore = line.includes("sprintIgnore={true}");
 
             if (href) {
               let newStyle = {
                 href: href,
+                id: id ? id[1] : null,
+                integrity: integrity ? integrity[1] : null,
+                crossorigin: crossorigin ? crossorigin[1] : null,
+                type: type ? type[1] : "text/css",
+                referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
+                sprintIgnore: sprintIgnore ? true : false,
+
+              
+              
+
               };
               pageAssets.styles.push(newStyle);
             } else {
@@ -671,6 +761,14 @@ const app = {
                 let newStyle = {
                   href: null,
                   textContent: styleContent,
+                  id: id ? id[1] : null,
+                  integrity: integrity ? integrity[1] : null,
+                  crossorigin: crossorigin ? crossorigin[1] : null,
+                  type: type ? type[1] : "text/css",
+                  referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
+                  sprintIgnore: sprintIgnore ? true : false,
+
+
                 };
 
                 pageAssets.styles.push(newStyle);
@@ -694,7 +792,11 @@ const app = {
               const type = line.match(/type=['"]([^'"]+)['"]/);
               const referrerpolicy = line.match(
                 /referrerpolicy=['"]([^'"]+)['"]/
-              );
+              )
+              ;
+
+              const sprintIgnore = line.includes("sprintIgnore={true}");
+
 
               const newScript = {
                 src: src ? src : null,
@@ -707,6 +809,7 @@ const app = {
                 crossorigin: crossorigin ? crossorigin[1] : null,
                 type: type ? type[1] : "text/javascript",
                 referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
+                sprintIgnore: sprintIgnore ? true : false,
               };
 
               pageAssets.scripts.push(newScript);
@@ -719,6 +822,7 @@ const app = {
               const id = line.match(/id=['"]([^'"]+)['"]/);
 
               const autoReady = line.includes("autoReady={false}");
+              const sprintIgnore = line.includes("sprintIgnore={true}");
 
               // Initialize scriptContent as an empty string
 
@@ -748,6 +852,7 @@ const app = {
 
                   textContent: scriptContent,
                   autoReady: autoReady ? false : true,
+                  sprintIgnore: sprintIgnore ? true : false,
                 };
                 pageAssets.scripts.push(newScript);
 
