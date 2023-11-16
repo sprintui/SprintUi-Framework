@@ -8,6 +8,28 @@ const cors = require("cors");
 
 app.use(cors());
 
+function updatePagesFile() {
+  const pagesPath = path.join(__dirname, "public", "pages");
+
+  let pages = fs.readdirSync(pagesPath);
+  pages = JSON.stringify(pages);
+  pages = pages.replace("[", "");
+  pages = pages.replace("]", "");
+
+  pages = pages.replace(/"/g, "");
+  pages = pages.replace(/,/g, "\n");
+  pages = pages.replace(/.suip/g, "");
+  pages = pages.split(/\r?\n/);
+
+  //read pages.sui file and get EXCLUDES= 
+  let pagesSui = fs.readFileSync(path.join(__dirname, "pages.sui"), "utf8");
+  let excludes = "EXCLUDES=" + pagesSui.split("EXCLUDES=")[1].split("\n")[0];
+  let pagesFile = excludes + "\n" + "ROUTES=" + pages;
+  
+  fs.writeFileSync(path.join(__dirname, "pages.sui"), pagesFile);
+
+}
+
 function readPagesFolder() {
   const pagesPath = path.join(__dirname, "public", "pages");
 
@@ -15,15 +37,14 @@ function readPagesFolder() {
   pages = JSON.stringify(pages);
   pages = pages.replace("[", "");
   pages = pages.replace("]", "");
+
   pages = pages.replace(/"/g, "");
   pages = pages.replace(/,/g, "\n");
   pages = pages.replace(/.suip/g, "");
   pages = pages.split(/\r?\n/);
-
-  pages = "ROUTES=" + pages;
-
   return pages;
 }
+
 
 app.get("*", (req, res, next) => {
   let origin = req.headers["referer"];
@@ -34,7 +55,7 @@ app.get("*", (req, res, next) => {
     if (req.url === "/pages") {
       let pages = readPagesFolder();
 
-      res.send(pages);
+      res.send("ROUTES=" + pages);
     } else {
       // Construct the path to the .suip file based on the URL
       const pagePath = path.join(__dirname, "public", req.url + ".suip");
@@ -66,10 +87,8 @@ app.get("*", (req, res, next) => {
 });
 
 app.listen(port, () => {
-  let pages = readPagesFolder();
 
-  fs.writeFileSync(path.join(__dirname, "pages.sui"), pages);
-
+  updatePagesFile();
   console.log("\x1b[31m%s\x1b[0m", "Swift UIp is running on port " + port);
 
   console.log("\x1b[33m%s\x1b[0m", "To go into production run: npm run build");
