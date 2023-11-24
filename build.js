@@ -893,7 +893,7 @@ async function main() {
   
     async render() {
       const url = getCurrentUrl();
-      //path will be anything after /home or /about/1
+      const urlObject = new URL(url);
       let path = urlObject.pathname;
   
       if (path == "/") {
