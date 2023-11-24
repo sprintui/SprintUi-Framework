@@ -153,6 +153,7 @@ It's finally here! Exclusion is now a permanent feature, eliminating the need fo
 ### Notes
 - **Action Required:**
   - Ensure that you move your `app.js` file and assets that were spread in the public folder to the newly created `/assets` folder to align with the updated project structure.
+  - Download the latest versions of update.js and server.js to stay up-to-date with the latest changes.
 
 ### Message From Devs:
-We're excited to bring you this update, enhancing project structure and simplifying route configurations. Enjoy the improved development experience with SprintUI 1.5!
+In the upcoming update, URL parameters will now work in a more intuitive way(/user/1). You can define URL parameters using square brackets, like [id].suip, and access them using the useUrlParam function, for example, useUrlParam("name of param:id"). Stay tuned for this exciting feature in the next release!
