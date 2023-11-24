@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.4
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.5
 
 **Welcome to the SprintUI Framework!**
 
@@ -42,6 +42,87 @@ If this is your first time, you can skip this step, as the file is in update 1.3
 2. Open your browser and navigate to http://localhost:3000 to start building your SprintUI project.
 
 3. For SprintUI syntax, refer to the files in the `pages` folder. It's a mix of HTML and JavaScript. Get familiar with it before moving to production.
+ 4.Asset Organization and Routing in SprintUI Framework
+
+## Asset Structure
+
+In SprintUI Framework, organizing your assets is crucial for a clean and efficient development experience. Here's a guide to help you understand the correct practices for asset organization:
+
+### Correct Asset Structure
+
+The recommended practice is to place all your assets inside an `assets` folder. This ensures a cleaner and more organized codebase. For example:
+
+```
+/assets
+  /js
+    app.js
+  /css
+    styles.css
+  /images
+    logo.png
+```
+
+This structure is resilient to future updates and prevents issues with asset paths in subsequent versions.
+
+### Incorrect Asset Structure
+
+Avoid placing assets directly in the root directory, as this may lead to problems in routing, especially in future updates. For instance:
+
+```
+/app.js
+/styles.css
+/logo.png
+```
+
+This structure may work initially but can result in broken paths in future updates, causing issues with your application's functionality.
+
+## Routing Best Practices
+
+SprintUI follows a straightforward routing system based on the file structure within the `pages` folder. Here are some best practices for effective routing:
+
+### Nested Folders
+
+Consider creating nested folders for a structured approach to your application's pages. For example:
+
+```
+/pages
+  /dashboard
+    home.suip
+    profile.suip
+  /blog
+    post.suip
+    category.suip
+```
+
+This approach enhances the organization of your SprintUI project, making it easier to manage and navigate.
+
+### File Naming
+
+For single pages, you can follow the convention of `pageName.suip`. However, for nested folders, it's not recommended to name your pages with a folder prefix, like `folderName/pageName.suip`. For instance:
+
+```
+/pages
+  home.suip
+    dashboard/home.suip
+    dashboard/profile.suip
+    blog/post.suip
+    blog/category.suip
+```
+
+This naming convention hardens clarity and starts potential conflicts in page names.
+
+### URL Structure
+
+SprintUI supports a straightforward URL structure based on the file hierarchy. For example:
+
+- `/` maps to `home.suip`
+- `/blog/post` maps to `blog/post.suip`
+
+### Advanced Routing
+
+For more complex routing, consider creating custom folders to structure your pages. For instance, `/dashboard/home` could map to `dashboard/home.suip`. This approach provides flexibility while maintaining a clear structure.
+
+In summary, organizing your assets in the `assets` folder and following best practices for routing contribute to a more maintainable and scalable SprintUI project.
 
 ## Production Deployment
 
@@ -56,7 +137,7 @@ If this is your first time, you can skip this step, as the file is in update 1.3
 3. Update the script source within the HTML file to point to the newly generated build file:
 
    ```html
-   <script src="app.build.min.js"></script>
+   <script src="/assets/app.build.min.js"></script>
    ```
 
 Additionally, for an optimized workflow, it is recommended to use the following commands:
@@ -87,18 +168,6 @@ node build.js -ex=TEST,TEST2
 
 This argument functions similarly to the `EXCLUDES` setting in `pages.sui` but is applied temporarily during the build process.
 
-
-5. Finally deploying on a server:
-
-### Deploying on Apache Server
-
-If you're deploying on an Apache server, follow these additional steps to ensure the framework works correctly. Create an `.htaccess` file in your project root directory with the provided content.
-
-**Note:** In production, your assets might not load correctly because they are being called from a route called `/assets`, which is not physical. To fix this, create a physical folder and bring all asset files there.
-
-### Deploying with Express Server
-
-If you're using Express for deployment, copy the provided code. Modify the code according to your project structure and ensure that the necessary packages (`express`, `fs`, and `path`) are installed using `npm install express fs path`. Adjust the port number (`3000` in this example) based on your requirements.
 
 # Learning SprintUI (suip)
 
