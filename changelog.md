@@ -109,8 +109,7 @@ Thank you for your continued trust in SprintUI.
 - Implemented optimization: if the next page includes assets from the current page, they will not be removed.
 
 ### Fixed
-- Some Styles/Scripts not being removed.
-
+- Some Styles/Scripts not being removed
 ### Deprecated
 - None
 
@@ -125,3 +124,35 @@ Thank you for your continued trust in SprintUI.
 
 ### Message From Devs:
 It's finally here! Exclusion is now a permanent feature, eliminating the need for temporary exclusions. While you still have the option to add exclusions, there's now a seamless and enduring solution in place. Happy coding!
+
+## Version 1.5 - 11/24/2023 - RELEASED
+
+### Added
+- **Enhanced Project Structure:**
+  - The `/assets` directory is now a dedicated folder, providing better organization for your project's static files.
+
+- **Simplified Route Configurations:**
+  - Easier route configurations, making routes like `/dashboard/blah` possible and straightforward.
+
+### Changed
+- **Improved Asset Handling:**
+  - app.js are now automatically brought into the `/assets` folder for better project structure.
+
+### Fixed
+- None
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+- **Action Required:**
+  - Ensure that you move your `app.js` file and assets that were spread in the public folder to the newly created `/assets` folder to align with the updated project structure.
+
+### Message From Devs:
+We're excited to bring you this update, enhancing project structure and simplifying route configurations. Enjoy the improved development experience with SprintUI 1.5!
