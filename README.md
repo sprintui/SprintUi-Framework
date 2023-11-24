@@ -286,9 +286,9 @@ As of the current version, the available hooks along with their descriptions and
 
 </UseScript>
 
-return (
+<suipMarkup>
   <!-- Your JSX here -->
-);
+</suipMarkup>
 ```
 
 Congratulations! Your SprintUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
