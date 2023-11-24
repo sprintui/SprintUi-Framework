@@ -57,7 +57,7 @@ function getVersion(url) {
 }
 
 async function downloadAndSave() {
-  const appJSPath = path.join(__dirname, './public/app.js');
+  const appJSPath = path.join(__dirname, './public/assets/app.js');
   const buildJSPath = path.join(__dirname, 'build.js');
 
   try {

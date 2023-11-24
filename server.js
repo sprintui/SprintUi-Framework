@@ -1,28 +1,56 @@
 const express = require("express");
-const path = require("path");
 const app = express();
 const port = process.env.PORT || 3000;
 require("dotenv").config();
 const fs = require("node:fs");
-const cors = require("cors");
+const path = require("path");
 
+const cors = require("cors");
+let assetArray = [  ".js", ".css", ".png", ".jpg", ".jpeg", ".gif", ".svg", ".ico", ".json", ".map",
+".woff", ".woff2", ".ttf", ".eot", ".otf", ".mp4", ".webm", ".ogg", ".mp3", ".wav",
+".flac", ".aac", ".oga", ".m4a", ".weba", ".pdf", ".doc", ".docx", ".xls", ".xlsx",
+".ppt", ".pptx", ".zip", ".rar", ".tar", ".gz", ".7z", ".bz2", ".dmg", ".exe", ".iso",
+".img", ".apk", ".torrent" ];
 app.use(cors());
 
 function updatePagesFile() {
-  const pagesPath = path.join(__dirname, "public", "pages");
+  let pagesPath = path.join(__dirname, "public", "pages");
+  let pages = [];
 
-  let pages = fs.readdirSync(pagesPath);
-  pages = JSON.stringify(pages);
-  pages = pages.replace("[", "");
-  pages = pages.replace("]", "");
+    // list files in directory and loop through
+    fs.readdirSync(pagesPath).forEach((file) => {
+    
+        const fPath = path.resolve(pagesPath, file);
+        const fileStats = { file, path: fPath };
+        if (fs.statSync(fPath).isDirectory()) {
+          let subPages = fs.readdirSync(fPath);
+          subPages = JSON.stringify(subPages);
+          subPages = subPages.replace("[", "");
+          subPages = subPages.replace("]", "");
+          subPages = subPages.replace(/"/g, "");
+          subPages = subPages.replace(/,/g, "\n");
+    
+          subPages = subPages.split(/\r?\n/);
+          subPages.forEach((subPage) => {
+            if(subPage.includes(".suip")) pages.push(file + "/" + subPage.replace(".suip", ""));
+          });
 
-  pages = pages.replace(/"/g, "");
-  pages = pages.replace(/,/g, "\n");
-  pages = pages.replace(/.suip/g, "");
-  pages = pages.split(/\r?\n/);
 
-  //read pages.sui file and get EXCLUDES= 
+      } else {
+          fileStats.type = 'file';
+          if(fileStats.file.includes(".suip")){
+            pages.push(file.replace(".suip", ""));
+          }
+      }
+
+        
+      
+    });
+
+
+
   let pagesSui = fs.readFileSync(path.join(__dirname, "pages.sui"), "utf8");
+
   let excludes = "EXCLUDES=" + pagesSui.split("EXCLUDES=")
 
   if(excludes != "EXCLUDES="){
@@ -41,16 +69,40 @@ function updatePagesFile() {
 function readPagesFolder() {
   const pagesPath = path.join(__dirname, "public", "pages");
 
-  let pages = fs.readdirSync(pagesPath);
-  pages = JSON.stringify(pages);
-  pages = pages.replace("[", "");
-  pages = pages.replace("]", "");
+  let pages = [];
 
-  pages = pages.replace(/"/g, "");
-  pages = pages.replace(/,/g, "\n");
-  pages = pages.replace(/.suip/g, "");
-  pages = pages.split(/\r?\n/);
+ // list files in directory and loop through
+ fs.readdirSync(pagesPath).forEach((file) => {
+    
+  const fPath = path.resolve(pagesPath, file);
+  const fileStats = { file, path: fPath };
+  if (fs.statSync(fPath).isDirectory()) {
+    let subPages = fs.readdirSync(fPath);
+    subPages = JSON.stringify(subPages);
+    subPages = subPages.replace("[", "");
+    subPages = subPages.replace("]", "");
+    subPages = subPages.replace(/"/g, "");
+    subPages = subPages.replace(/,/g, "\n");
+
+    subPages = subPages.split(/\r?\n/);
+    subPages.forEach((subPage) => {
+      if(subPage.includes(".suip")) pages.push(file + "/" + subPage.replace(".suip", ""));
+    });
+
+
+} else {
+    fileStats.type = 'file';
+    if(fileStats.file.includes(".suip")){
+      pages.push(file.replace(".suip", ""));
+    }
+}
+
+  
+
+});
+
   return pages;
+
 }
 
 
@@ -77,20 +129,27 @@ app.get("*", (req, res, next) => {
       // Send the response
       res.send(pageContent);
     }
-  } else if (req.url.includes("assets")) {
-    if (
-      !fs.existsSync(
-        path.join(__dirname, "public", req.url.replace("/assets", ""))
-      )
-    ) {
-      return res.status(404).send("Not found");
-    } else {
-      return res.sendFile(
-        path.join(__dirname, "public", req.url.replace("/assets", ""))
-      );
-    }
+  
   } else {
-    return res.sendFile(path.join(__dirname, "public", "index.html"));
+    //check for asset file:js,css,image file types 
+   if (assetArray.some(extension => req.url.includes(extension))) {
+      // search in the public/assets folder 
+      const assetPath = path.join(__dirname, "public", req.url);
+
+
+      // Check if the file exists
+      if (!fs.existsSync(assetPath)) {
+        return res.status(404).send("Not found");
+      }
+      // Read the asset file content
+      const assetContent = fs.readFileSync(assetPath, "utf8");
+
+      // Send the response
+      res.send(assetContent);
+    } else {
+      return res.sendFile(path.join(__dirname, "public", "index.html"));
+    }
+
   }
 });
 

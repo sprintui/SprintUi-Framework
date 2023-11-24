@@ -451,11 +451,10 @@ function transpilesUIp(page, pageName) {
           }
           break;
 
-        case line.includes("return ("):
+        case line.includes("<suipMarkup>"):
           inSUIP = true;
 
-          break;
-
+          case line.includes("</suipMarkup>"):
           inSUIP = false;
 
           break;
@@ -894,8 +893,19 @@ async function main() {
   
     async render() {
       const url = getCurrentUrl();
-      const urlObject = new URL(url);
-      let path = urlObject.pathname.split("/")[1] || "home";
+      //path will be anything after /home or /about/1
+      let path = urlObject.pathname;
+  
+      if (path == "/") {
+        path = "home";
+  
+      }
+      else
+      {
+        path = path.substring(1);
+  
+      }
+  
       const page = this.pages[path];
       if (
         document.getElementById("root").innerHTML !== this.loadingMessage ||
@@ -962,7 +972,7 @@ async function main() {
     if (!fs.existsSync("./public")) {
       fs.mkdirSync("./public");
     }
-    fs.writeFileSync("./public/app.build.min.js", minified.code);
+    fs.writeFileSync("./public/assets/app.build.min.js", minified.code);
     //check if index.html exists
     if (fs.existsSync("./public/index.html")) {
       //check if app.js is imported
@@ -978,10 +988,10 @@ async function main() {
     if (!fs.existsSync("./public")) {
       fs.mkdirSync("./public");
     }
-    fs.writeFileSync("./public/app.build.min.js", minified.code);
+    fs.writeFileSync("./public/assets/app.build.min.js", minified.code);
     //check if app.build.min.js exists
     if (fs.existsSync("./app.build.min.js")) {
-      fs.copyFileSync("./app.build.min.js", "./public/app.build.min.js");
+      fs.copyFileSync("./app.build.min.js", "./public/assets/app.build.min.js");
     }
   } else {
     fs.writeFileSync("app.build.min.js", minified.code);
@@ -1015,7 +1025,7 @@ async function main() {
     "\x1b[36m%s\x1b[0m",
     "Original File Size (app.js + routes): " +
       (
-        (fs.readFileSync("./public/app.js", "utf8").length +
+        (fs.readFileSync("./public/assets/app.js", "utf8").length +
           fs
             .readdirSync("./public/pages/")
             .reduce(
@@ -1029,7 +1039,7 @@ async function main() {
   );
 
   const originalSize =
-    fs.readFileSync("./public/app.js", "utf8").length +
+    fs.readFileSync("./public/assets/app.js", "utf8").length +
     fs
       .readdirSync("./public/pages/")
       .reduce(
