@@ -406,12 +406,7 @@ app.get("*", (req, res, next) => {
       res.set("Content-Type", contentType);
 
 
-
-      // Read the asset file content
-      const assetContent = fs.readFileSync(assetPath, "utf8");
-
-      // Send the response
-      res.send(assetContent);
+      res.sendFile(assetPath);
     } else {
       return res.sendFile(path.join(__dirname, "public", "index.html"));
     }
