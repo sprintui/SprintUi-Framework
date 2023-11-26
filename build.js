@@ -949,7 +949,7 @@ async function main() {
           if (event.target.location.href.includes("?")) {
             return;
           }
-          this.navigateTo(event.target.location.href);
+          location.href = event.target.location.href;
         }
       });
   
