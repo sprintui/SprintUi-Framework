@@ -954,7 +954,7 @@ const app = {
           return;
         }
 
-        this.navigateTo(event.target.location.href);
+         location.href = event.target.location.href;
       }
     });
 
