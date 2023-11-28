@@ -10,7 +10,7 @@ We're thrilled to have you on board. Let's get started with building and deployi
 1. **Clone the Repository**
    ```bash
    git clone https://github.com/sprintui/SprintUi-Framework 
-   cd sprintui
+   cd sprintui/SprintUi-Framework 
    ```
 
 2. **Understanding the Project Structure**
