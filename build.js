@@ -96,7 +96,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace("=", "");
             variableName = variableName.trim();
 
-            let script = pageAssetsTOBeAdded.scripts.find(
+            let script = pageAssets.scripts.find(
               (script) => script.id === "sUIp"
             );
             if (!script.textContent.includes("function useQuery()")) {
@@ -120,7 +120,7 @@ function transpilesUIp(page, pageName) {
               name: "setBodyClass",
               textContent: variableName || "",
             };
-            pageAssetsTOBeAdded.hooks.push(newHook);
+            pageAssets.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -133,7 +133,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            let hook = pageAssets.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
             hook.textContent += variableName || "";
@@ -155,9 +155,7 @@ function transpilesUIp(page, pageName) {
               name: "setTitle",
               textContent: variableName || "",
             };
-            
-          
-            pageAssetsTOBeAdded.hooks.push(newHook);
+            pageAssets.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -170,7 +168,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            let hook = pageAssets.hooks.find(
               (hook) => hook.name === "setTitle"
             );
             hook.textContent += variableName || "";
@@ -1059,7 +1057,8 @@ async function main() {
       "%"
   );
 
-  console.log("\x1b[36m%s\x1b[0m", "Version: 1.2");
+  const verison = "1.5";
+  console.log("\x1b[36m%s\x1b[0m", "Version' " + verison);
 }
 
 main();
