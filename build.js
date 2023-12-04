@@ -1057,8 +1057,8 @@ async function main() {
       "%"
   );
 
-  const version = "1.5";
-  console.log("\x1b[36m%s\x1b[0m", "Version' " + version);
+  const sV =1.5;
+  console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
 main();
