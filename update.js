@@ -2,9 +2,10 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 
-const appJSURL = 'https://raw.githubusercontent.com/babymonie/sprintui/main/public/app.js';
-const buildJSURL = 'https://raw.githubusercontent.com/babymonie/sprintui/main/build.js';
-const versionFileURL = 'https://raw.githubusercontent.com/babymonie/sprintui/main/version.txt';
+const appJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/public/assets/app.js';
+const buildJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/build.js';
+const serverJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/server.js';
+const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
 
 function downloadFile(url, localPath) {
   return new Promise((resolve, reject) => {
@@ -71,7 +72,28 @@ async function downloadAndSave() {
 
     console.log('Downloading build.js...');
     await downloadFile(buildJSURL, buildJSPath);
+
+
+    const buildJSContent = fs.readFileSync(buildJSPath, 'utf8');
+    const updatedBuildJSContent = buildJSContent.replace(/const sV = (.*);/, `const sV = ${latestVersion};`);
+    fs.writeFileSync(buildJSPath, updatedBuildJSContent);
+
+
+    
     console.log('build.js download complete.');
+
+    console.log('Downloading server.js...');
+
+    await downloadFile(serverJSURL, path.join(__dirname, 'server.js'));
+
+    const serverJSContent = fs.readFileSync(path.join(__dirname, 'server.js'), 'utf8');
+    const updatedServerJSContent = serverJSContent.replace(/const sV = (.*);/, `const sV = ${latestVersion};`);
+    fs.writeFileSync(path.join(__dirname, 'server.js'), updatedServerJSContent);
+
+    console.log('server.js download complete.');
+
+    
+    
 
     console.log('Done!');
   } catch (error) {
