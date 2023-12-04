@@ -187,6 +187,7 @@ In the upcoming update, URL parameters will now work in a more intuitive way(/us
 
 ### Notes
 - In the upcoming release, SprintUI aims to be production-ready. Expect changes to the 404 and loading pages, along with the introduction of a new hook or feature dedicated to CSS styling within the framework. The new CSS feature will provide a simplified syntax, making it easy to apply styles with names like `box-row`. This feature draws inspiration from the glass effect style.
+- **Update Alert:** `update.js` has been updated. If this is your first time or you are updating from a previous version, ensure you have the latest version of `update.js`. Also, `server.js` will now notify you if your current version is outdated and prompt you to run `update.js` for the latest changes.
 
 ### Message From Devs:
 
