@@ -157,3 +157,38 @@ It's finally here! Exclusion is now a permanent feature, eliminating the need fo
 
 ### Message From Devs:
 In the upcoming update, URL parameters will now work in a more intuitive way(/user/1). You can define URL parameters using square brackets, like [id].suip, and access them using the useUrlParam function, for example, useUrlParam("name of param:id"). Stay tuned for this exciting feature in the next release!
+
+
+
+## Version 1.6 - 12/4/2023 - Coming Soon
+
+### Added
+- Enhanced debugging experience by addressing local variable access in the console when using auto-ready scripts. Functions defined in scripts are now automatically brought out and placed in a separate script, resolving the issue of non-accessible variables.
+- Additionally, a new feature allows you to use the `global` keyword before a variable, bringing it into another script. This provides more flexibility in managing variable scope within your SprintUI project.
+
+- Introducing a new option `bringF={false}` to disable the automatic extraction of functions into a separate script.
+
+- Improved state handling: You can now use `${statename}` in the content to dynamically replace it with the value of the specified state.
+
+### Changed
+- Modified the behavior of auto-ready scripts to improve debugging capabilities.
+
+### Fixed
+- None
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+- In the upcoming release, SprintUI aims to be production-ready. Expect changes to the 404 and loading pages, along with the introduction of a new hook or feature dedicated to CSS styling within the framework. The new CSS feature will provide a simplified syntax, making it easy to apply styles with names like `box-row`. This feature draws inspiration from the glass effect style.
+
+### Message From Devs:
+
+We appreciate your continued support! With the recent changes and additions, we are gearing up to make SprintUI production-ready in the next update. Stay tuned for further enhancements and the introduction of a user-friendly CSS feature in the upcoming release.
+
