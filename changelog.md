@@ -168,7 +168,7 @@ In the upcoming update, URL parameters will now work in a more intuitive way(/us
 
 - Introducing a new option `bringF={false}` to disable the automatic extraction of functions into a separate script.
 
-- Improved state handling: You can now use `${statename}` in the content to dynamically replace it with the value of the specified state.
+- Improved state handling: You can now use `${statename}` in the content to dynamically replace it with the value of the specified state, further explanation is in the docs.
 
 ### Changed
 - Modified the behavior of auto-ready scripts to improve debugging capabilities.
