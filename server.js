@@ -1,10 +1,34 @@
 const express = require("express");
+const https = require("https");
 const app = express();
 const port = process.env.PORT || 3000;
 require("dotenv").config();
 const fs = require("node:fs");
 const path = require("path");
+const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
+const sV =1.5;
+function getVersion(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`Failed to get version. Status code: ${response.statusCode}`));
+        return;
+      }
 
+      let data = '';
+
+      response.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      response.on('end', () => {
+        resolve(data.trim()); // Trim to remove leading/trailing whitespaces
+      });
+    }).on('error', (err) => {
+      reject(err);
+    });
+  });
+}
 const cors = require("cors");
 let assetObject = [
   {
@@ -413,9 +437,20 @@ app.get("*", (req, res, next) => {
   }
 });
 
-app.listen(port, () => {
+app.listen(port,async () => {
   updatePagesFile();
   console.log("\x1b[31m%s\x1b[0m", "Swift UIp is running on port " + port);
+
+  //check version file
+
+    if (await getVersion(versionFileURL) != sV) {
+      console.log("\x1b[31m%s\x1b[0m", "Swift UIp is not up to date. Please update to the latest version");
+    
+    }
+    else
+    {
+      console.log("\x1b[32m%s\x1b[0m", "Swift UIp is up to date");
+    }
 
   console.log("\x1b[33m%s\x1b[0m", "To go into production run: npm run build");
 });
