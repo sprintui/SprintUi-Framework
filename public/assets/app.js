@@ -427,7 +427,23 @@ const app = {
         this.isLoading = false;
         const rootElement = document.getElementById("root");
 
-        rootElement.innerHTML = page;
+        let html = page;
+        let states = this.states;
+
+        html = html.replace(/\${(.*?)}/g, function (match, stateName) {
+          let stateNameMatch = stateName.match("or") ? stateName.split("or") : [stateName];
+          let state = states.find((state) => state.name === stateNameMatch[0].trim());
+          let defaultValue = stateNameMatch[1].replace(/['"]+/g, "");
+          defaultValue = defaultValue.trim();
+          return state ? state.value : defaultValue || "";
+        });
+        
+        // If states array is empty, replace any remaining ${} with empty string
+        if (states.length === 0) {
+          html = html.replace(/\${(.*?)}/g, "");
+        }
+        
+        rootElement.innerHTML = html;
         clearInterval(interval);
         const sprintReady = setInterval(async () => {
           if (this.assetsLoaded && this.hooksLoaded) {
@@ -831,10 +847,12 @@ const app = {
               const async = line.includes("async={true}");
               const defer = line.includes("defer={true}");
               const type = line.match(/type=['"]([^'"]+)['"]/);
-              const id = line.match(/id=['"]([^'"]+)['"]/);
+    
 
               const autoReady = line.includes("autoReady={false}");
               const sprintIgnore = line.includes("sprintIgnore={true}");
+              const bringF = line.includes("bringF={false}");
+
 
               // Initialize scriptContent as an empty string
 
@@ -843,15 +861,59 @@ const app = {
               // Start from the line following the opening <UseScript> tag
               let i = lines.indexOf(line) + 1;
 
+              const fAndG = {
+        
+                  id: "fAndG",
+                  src: null,
+                  head: false,
+                  async: false,
+                  defer: false,
+                  preload: false,
+                  type: type ? type[1] : "text/javascript",
+       
+
+                  textContent: scriptContent,
+                  autoReady: false,
+                  sprintIgnore: false,
+              }
               // Loop through lines until the closing </UseScript> tag is found
               while (i < lines.length && !lines[i].includes("</UseScript>")) {
-                scriptContent += lines[i] + "\n";
-                i++;
+        
+                  //check for global
+                  if (lines[i].includes("global")) {
+    
+                    //remove global
+                    lines[i] = lines[i].replace("global", "");
+                  
+                    fAndG.textContent += lines[i];
+                    i++;
+                    continue;
+                    
+                  }
+
+                  if (lines[i].includes("function")) {
+                    if (!bringF) {
+                      //search for end of function
+                      let functionContent = "";
+                      let j = i;
+                      while (j < lines.length && !lines[j].includes("}")) {
+                        functionContent += lines[j];
+                        j++;
+                      }
+                      functionContent += lines[j];
+                      fAndG.textContent += functionContent;
+                    
+                    }
+                  }
+
+                  
+                  scriptContent += lines[i];
+                  i++;
+
               }
 
               if (scriptContent) {
-                // Check if scriptContent is not empty
-
+     
                 const newScript = {
                   id: "is" + Math.random(),
                   src: null,
@@ -860,14 +922,14 @@ const app = {
                   defer: defer ? true : false,
                   preload: preload ? true : false,
                   type: type ? type[1] : "text/javascript",
-                  id: id ? id[1] : null,
+      
 
                   textContent: scriptContent,
                   autoReady: autoReady ? false : true,
                   sprintIgnore: sprintIgnore ? true : false,
                 };
                 pageAssets.scripts.push(newScript);
-
+                pageAssets.scripts.push(fAndG);
                 lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
               }
             }
