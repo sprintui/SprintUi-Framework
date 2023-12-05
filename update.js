@@ -1,5 +1,5 @@
 const https = require('https');
-const fs = require('fs');
+const fs = require('node:fs');
 const path = require('path');
 
 const appJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/public/assets/app.js';
