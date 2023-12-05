@@ -432,7 +432,12 @@ const app = {
 
         html = html.replace(/\${(.*?)}/g, function (match, stateName) {
           let stateNameMatch = stateName.match("or") ? stateName.split("or") : [stateName];
+          
           let state = states.find((state) => state.name === stateNameMatch[0].trim());
+          if(!stateNameMatch[1]) {
+            return state ? state.value : "";
+          }
+
           let defaultValue = stateNameMatch[1].replace(/['"]+/g, "");
           defaultValue = defaultValue.trim();
           return state ? state.value : defaultValue || "";
