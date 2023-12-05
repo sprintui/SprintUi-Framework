@@ -193,3 +193,31 @@ In the upcoming update, URL parameters will now work in a more intuitive way(/us
 
 We appreciate your continued support! With the recent changes and additions, we are gearing up to make SprintUI production-ready in the next update. Stay tuned for further enhancements and the introduction of a user-friendly CSS feature in the upcoming release.
 
+## Version 1.7 - Coming Soon
+
+### Added
+- **Seperate Loading and 404 Pages:** Starting from this update, the loading and 404 pages will be separate entities. Developers are required to create their custom loading and 404 pages. If not provided, SprintUI will default to a minimal HTML code without any CSS.
+
+- **Loading Screen Overlay:** Introducing a new feature – loading screen overlay. This overlay will enhance the user experience by displaying a loading effect while keeping the content static. This feature brings a modern touch to SprintUI, and developers can leverage it to create more visually appealing loading experiences.
+
+### Changed
+- None
+
+### Fixed
+- None
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+- This update is part of a series of incremental improvements leading to version 2. The upcoming version 2 is expected to introduce a groundbreaking feature that will significantly enhance the capabilities of SprintUI.
+
+Stay tuned for more updates and enhancements in SprintUI! Your feedback and support are greatly appreciated.
+
+
