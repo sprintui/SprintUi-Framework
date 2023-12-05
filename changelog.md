@@ -192,8 +192,29 @@ In the upcoming update, URL parameters will now work in a more intuitive way(/us
 ### Message From Devs:
 
 We appreciate your continued support! With the recent changes and additions, we are gearing up to make SprintUI production-ready in the next update. Stay tuned for further enhancements and the introduction of a user-friendly CSS feature in the upcoming release.
+## Version 1.7 - Released
+### Added
+- Introducing a new folder called `build` for enhanced organization in the deployment.
 
-## Version 1.7 - Coming Soon
+### Changed
+- Improved the build process by modifying the build command.
+
+### Fixed
+- None
+
+### Deprecated
+- None
+
+### Removed
+- The `-at` and `-t` flags from the build process.
+
+### Security
+- None
+
+### Notes
+This update enhances the build process by introducing changes to the build command. The `-at` and `-t` flags have been removed, However, the exclusion functionality remains intact. With this update, the build process will create a new folder called `build`, housing the `index.html` file and the built assets with copied assets for an enhanced and organized deployment.
+
+## Version 1.8 - Coming Soon
 
 ### Added
 - **Seperate Loading and 404 Pages:** Starting from this update, the loading and 404 pages will be separate entities. Developers are required to create their custom loading and 404 pages. If not provided, SprintUI will default to a minimal HTML code without any CSS.
