@@ -163,7 +163,7 @@ In the upcoming update, URL parameters will now work in a more intuitive way(/us
 ## Version 1.6 - 12/4/2023 - Coming Soon
 
 ### Added
-- Enhanced debugging experience by addressing local variable access in the console when using auto-ready scripts. Functions defined in scripts are now automatically brought out and placed in a separate script, resolving the issue of non-accessible variables.
+- Enhanced debugging experience by addressing local variable access in the console when using auto-ready scripts. Functions defined in scripts are now automatically brought out and placed in a separate script.
 - Additionally, a new feature allows you to use the `global` keyword before a variable, bringing it into another script. This provides more flexibility in managing variable scope within your SprintUI project.
 
 - Introducing a new option `bringF={false}` to disable the automatic extraction of functions into a separate script.
