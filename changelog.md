@@ -192,7 +192,8 @@ In the upcoming update, URL parameters will now work in a more intuitive way(/us
 ### Message From Devs:
 
 We appreciate your continued support! With the recent changes and additions, we are gearing up to make SprintUI production-ready in the next update. Stay tuned for further enhancements and the introduction of a user-friendly CSS feature in the upcoming release.
-## Version 1.7 - Released
+
+## Version 1.7 - 12/5/2023 - Released
 ### Added
 - Introducing a new folder called `build` for enhanced organization in the deployment.
 
