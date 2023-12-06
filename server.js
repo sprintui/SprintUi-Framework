@@ -6,7 +6,7 @@ require("dotenv").config();
 const fs = require("node:fs");
 const path = require("path");
 const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
-const sV =1.6;
+  const sV =1.7;
 function getVersion(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
