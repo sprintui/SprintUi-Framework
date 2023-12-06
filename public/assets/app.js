@@ -427,27 +427,46 @@ const app = {
         this.isLoading = false;
         const rootElement = document.getElementById("root");
 
+        const { states } = this;
+        const { localStorage, sessionStorage } = window;
+        
         let html = page;
-        let states = this.states;
-
+        
         html = html.replace(/\${(.*?)}/g, function (match, stateName) {
-          let stateNameMatch = stateName.match("or") ? stateName.split("or") : [stateName];
-          
-          let state = states.find((state) => state.name === stateNameMatch[0].trim());
-          if(!stateNameMatch[1]) {
-            return state ? state.value : "";
+          const stateNameMatch = stateName.match("or") ? stateName.split("or") : [stateName];
+          const name = stateNameMatch[0].trim();
+          const type = name.split(".")[0];
+          const objectName = name.split(".")[1];
+        
+          const getValue = (storage, key) => {
+            const value = storage.getItem(key);
+            return value ? value : "";
+          };
+        
+          const defaultValue = stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
+        
+          switch (type) {
+            case "s":
+              const state = states.find((state) => state.name === objectName);
+              return state ? state.value : defaultValue;
+        
+            case "l":
+              return getValue(localStorage, objectName) || defaultValue;
+        
+            case "c":
+              const cookieValue = document.cookie.split(`${objectName}=`)[1];
+              return cookieValue ? cookieValue.split(";")[0] : defaultValue;
+        
+            case "ss":
+              return getValue(sessionStorage, objectName) || defaultValue;
+        
+            default:
+              return "";
           }
-
-          let defaultValue = stateNameMatch[1].replace(/['"]+/g, "");
-          defaultValue = defaultValue.trim();
-          return state ? state.value : defaultValue || "";
         });
         
-        // If states array is empty, replace any remaining ${} with empty string
-        if (states.length === 0) {
-          html = html.replace(/\${(.*?)}/g, "");
-        }
         
+     
         rootElement.innerHTML = html;
         clearInterval(interval);
         const sprintReady = setInterval(async () => {
@@ -1021,7 +1040,12 @@ const app = {
           return;
         }
 
-         location.href = event.target.location.href;
+        this.isLoading = true;
+        let currentPath = getCurrentUrl().split("/")[3] || "home";
+        this.removeAssets(currentPath);
+        this.removeHooks(currentPath);
+        this.render();
+        
       }
     });
 
