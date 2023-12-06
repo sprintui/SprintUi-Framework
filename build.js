@@ -86,7 +86,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace("=", "");
             variableName = variableName.trim();
 
-            let script = pageAssets.scripts.find(
+            let script = pageAssetsTOBeAdded.scripts.find(
               (script) => script.id === "sUIp"
             );
             if (!script.textContent.includes("function useQuery()")) {
@@ -110,7 +110,7 @@ function transpilesUIp(page, pageName) {
               name: "setBodyClass",
               textContent: variableName || "",
             };
-            pageAssets.hooks.push(newHook);
+            pageAssetsTOBeAdded.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -123,7 +123,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssets.hooks.find(
+            let hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
             hook.textContent += variableName || "";
@@ -145,7 +145,7 @@ function transpilesUIp(page, pageName) {
               name: "setTitle",
               textContent: variableName || "",
             };
-            pageAssets.hooks.push(newHook);
+            pageAssetsTOBeAdded.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -158,7 +158,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssets.hooks.find(
+            let hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setTitle"
             );
             hook.textContent += variableName || "";
@@ -1026,11 +1026,7 @@ async function main() {
             return;
           }
           
-          this.isLoading = true;
-          let currentPath = getCurrentUrl().split("/")[3] || "home";
-          this.removeAssets(currentPath);
-          this.removeHooks(currentPath);
-          this.render();
+          this.navigateTo(event.target.location.href);
         }
       });
   
