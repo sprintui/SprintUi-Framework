@@ -262,10 +262,15 @@ As of the current version, the available hooks along with their descriptions and
       fetchStates()//returns all the states
       removeState("name")// remove a state by name
    </UseScript>
-   <div id="counter">${counter or 0}</div>
+   <div id="counter">${s.counter or 0}</div>
    <!-- This div displays the value of the 'counter' state, defaulting to 0 if the state is not defined or null. -->
-   <!-- Note: State values are fixed during SprintUI page renders, meaning they only update when a new page is loaded. -->
-
+   <!-- Note: Display Hook values are fixed during SprintUI page renders, meaning they only update when a new page is loaded. -->
+   <!-- To choose a storage type for 'counter':
+         - Use 's' for state (e.g., s.counter)
+         - Use 'l' for local storage (e.g., l.someVariable)
+         - Use 'c' for cookies (e.g., c.cookieValue)
+         - Use 'ss' for session storage (e.g., ss.sessionValue)
+   -->
      
   ```
 
