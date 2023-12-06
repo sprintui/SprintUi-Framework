@@ -168,6 +168,32 @@ node build.js -ex=TEST,TEST2
 
 This argument functions similarly to the `EXCLUDES` setting in `pages.sui` but is applied temporarily during the build process.
 
+Certainly! To deploy a web application using Apache in production, you can follow these simplified steps:
+
+### Deploying a Web Application with Apache in Production
+
+
+
+1. **Copy this `.htaccess`:**
+   - In your application's root directory, create an `.htaccess` file with necessary configurations. For example, if using mod_rewrite for clean URLs:
+
+   ```apache
+   RewriteEngine On
+   
+   # Exclude /assets from the rules
+   RewriteRule ^assets/ - [L]
+   
+   # Rewrite all other routes to index.html
+   RewriteCond %{REQUEST_URI} !^/index\.html$
+   RewriteCond %{REQUEST_FILENAME} !-f
+   RewriteCond %{REQUEST_FILENAME} !-d
+   RewriteRule ^(.*)$ /index.html [L]
+
+   ```
+2. **Test:**
+   - Open your browser and navigate to your domain. Verify that your application is working as expected.
+
+This is a basic setup for deploying SprintUi using Apache in production.
 
 # Learning SprintUI (suip)
 
