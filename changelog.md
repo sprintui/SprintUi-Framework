@@ -215,7 +215,7 @@ We appreciate your continued support! With the recent changes and additions, we 
 ### Notes
 This update enhances the build process by introducing changes to the build command. The `-at` and `-t` flags have been removed, However, the exclusion functionality remains intact. With this update, the build process will create a new folder called `build`, housing the `index.html` file and the built assets with copied assets for an enhanced and organized deployment.
 
-## Version 1.8 - Coming Soon
+## Version 1.8 - 12/10/2023 - RELEASED 
 
 ### Added
 - **Separate 404 Page and Custom Loading(Without Custom Css):** Starting from this update, the 404 page will be customizable and loading( No Custom Css). Developers are required to create their custom 404 page and loading page. If not provided, SprintUI will default to a minimal HTML code.
