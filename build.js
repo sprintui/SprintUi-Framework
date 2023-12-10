@@ -1,5 +1,6 @@
 const fs = require("node:fs");
 const program = require("commander");
+const path = require("path");
 var minify = require("html-minifier").minify;
 
 program
@@ -11,21 +12,36 @@ const options = program.opts();
 
 var UglifyJS = require("uglify-js");
 async function fetchRoutes() {
-  //read pages.sui
-  const pagesSUI = fs.readFileSync("./pages.sui", "utf8");
+  const pagesPath = path.join(__dirname, "public", "pages");
 
-  let mode = pagesSUI.split("MODE=")[1]
-    ? pagesSUI.split("MODE=")[1].split("\n")[0].trim()
-    : "pro";
+  let pages = [];
 
-  //extract routes
-  let routes = pagesSUI.split("ROUTES=")[1];
-  routes = routes.split(",");
-  routes = routes.map((route) => route.trim());
-  return {
-    mode: mode,
-    routes: routes,
-  };
+  // list files in directory and loop through
+  fs.readdirSync(pagesPath).forEach((file) => {
+    const fPath = path.resolve(pagesPath, file);
+    const fileStats = { file, path: fPath };
+    if (fs.statSync(fPath).isDirectory()) {
+      let subPages = fs.readdirSync(fPath);
+      subPages = JSON.stringify(subPages);
+      subPages = subPages.replace("[", "");
+      subPages = subPages.replace("]", "");
+      subPages = subPages.replace(/"/g, "");
+      subPages = subPages.replace(/,/g, "\n");
+
+      subPages = subPages.split(/\r?\n/);
+      subPages.forEach((subPage) => {
+        if (subPage.includes(".suip"))
+          pages.push(file + "/" + subPage.replace(".suip", ""));
+      });
+    } else {
+      fileStats.type = "file";
+      if (fileStats.file.includes(".suip")) {
+        pages.push(file.replace(".suip", ""));
+      }
+    }
+  });
+
+  return pages;
 }
 
 function extractCssFileName(line) {
@@ -40,6 +56,9 @@ function extractScriptSrc(line) {
 let pageAssets = [];
 
 function transpilesUIp(page, pageName) {
+  if (pageName == "loading") {
+    return page;
+  }
   const lines = page.split(/\r?\n/);
   try {
     let html = "";
@@ -56,6 +75,7 @@ function transpilesUIp(page, pageName) {
 
     for (let line of lines) {
       let match;
+
 
       switch (true) {
         case line.includes("useQuery()"):
@@ -86,7 +106,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace("=", "");
             variableName = variableName.trim();
 
-            let script = pageAssetsTOBeAdded.scripts.find(
+            let script = pageAssets.scripts.find(
               (script) => script.id === "sUIp"
             );
             if (!script.textContent.includes("function useQuery()")) {
@@ -110,7 +130,7 @@ function transpilesUIp(page, pageName) {
               name: "setBodyClass",
               textContent: variableName || "",
             };
-            pageAssetsTOBeAdded.hooks.push(newHook);
+            pageAssets.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -123,7 +143,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            let hook = pageAssets.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
             hook.textContent += variableName || "";
@@ -145,7 +165,7 @@ function transpilesUIp(page, pageName) {
               name: "setTitle",
               textContent: variableName || "",
             };
-            pageAssetsTOBeAdded.hooks.push(newHook);
+            pageAssets.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -158,7 +178,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            let hook = pageAssets.hooks.find(
               (hook) => hook.name === "setTitle"
             );
             hook.textContent += variableName || "";
@@ -486,55 +506,62 @@ function transpilesUIp(page, pageName) {
           }
           break;
 
-        case line.includes("<suipMarkup>"):
+        case line == "<suipMarkup>":
+    
           inSUIP = true;
-
-          case line.includes("</suipMarkup>"):
+          console.log("in");
+          break;
+          
+          case line == "</suipMarkup>":
           inSUIP = false;
-
+          console.log("out");
+        
           break;
 
-        default:
-          if (inSUIP) {
-            if (line.includes("<Link")) {
-              const to = line.match(/to=['"]([^'"]+)['"]/)[1];
+          default:
 
-              let className = line.match(/className=['"]([^'"]+)['"]/);
+   
+            if (inSUIP) {
+        
+              if (line.includes("<Link")) {
+                const to = line.match(/to=['"]([^'"]+)['"]/)[1];
 
-              if (className) {
-                className = className[1];
+                let className = line.match(/className=['"]([^'"]+)['"]/);
+
+                if (className) {
+                  className = className[1];
+                } else {
+                  className = "";
+                }
+
+                let id = line.match(/id=['"]([^'"]+)['"]/);
+
+                if (id) {
+                  id = id[1];
+                } else {
+                  id = "";
+                }
+
+                //just replace link with a tag so if its incased on any other tag it will be removed
+                line = line.replace("<Link", "<a");
+                line = line.replace("</Link>", "</a>");
+
+                line = line.replace(
+                  `to="${to}"`,
+                  `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
+                );
+                line = line.replace(
+                  `className="${className}"`,
+                  `class="${className}"`
+                );
+
+                html += line;
               } else {
-                className = "";
+                html += line;
               }
-
-              let id = line.match(/id=['"]([^'"]+)['"]/);
-
-              if (id) {
-                id = id[1];
-              } else {
-                id = "";
-              }
-
-              //just replace link with a tag so if its incased on any other tag it will be removed
-              line = line.replace("<Link", "<a");
-              line = line.replace("</Link>", "</a>");
-
-              line = line.replace(
-                `to="${to}"`,
-                `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
-              );
-              line = line.replace(
-                `className="${className}"`,
-                `class="${className}"`
-              );
-
-              html += line;
             } else {
               html += line;
             }
-          } else {
-            html += line;
-          }
       }
     }
 
@@ -548,7 +575,7 @@ function transpilesUIp(page, pageName) {
 }
 
 function getEXCLUDES() {
-  const pagesSUI = fs.readFileSync("./pages.sui", "utf8");
+  const pagesSUI = fs.readFileSync("./config.sui", "utf8");
 
   let excludes = pagesSUI.split("EXCLUDES=")[1]
     ? pagesSUI.split("EXCLUDES=")[1].split("\n")[0].trim()
@@ -620,7 +647,7 @@ function transpileAndStorePage(pageKey, pageContent) {
 async function main() {
   let routes = await fetchRoutes();
 
-  let pagesToTranspile = await fetchPagesToTranspile(routes.routes);
+  let pagesToTranspile = await fetchPagesToTranspile(routes);
 
   for (const [pageKey, pageContent] of Object.entries(pagesToTranspile)) {
     transpileAndStorePage(pageKey, pageContent);
@@ -942,22 +969,87 @@ async function main() {
       }
   
       const page = this.pages[path];
-      if (
-        document.getElementById("root").innerHTML !== this.loadingMessage ||
-        "Loading..."
-      ) {
-        document.getElementById("root").innerHTML = this.loadingMessage;
-      }
-      if (!page)
-        return (document.getElementById("root").innerHTML =
-          this.notFoundMessage || "Not found");
+      const rootElement = document.getElementById("root");
+  
+      rootElement.innerHTML = this.loadingMessage || "Loading...";
+      if (!page) {
+        if (!this.notFoundMessage) {
+          rootElement.innerHTML = "404 Not Found";
+  
+  
+
+        } else {
+  
+          page = ${JSON.stringify(pages["404"])};
+      
+          await this.addHooks("404");
+          await this.addAssets("404");
+          this.isLoading = false;
+  
+       
+  
+          const { states } = this;
+  
+          let html = page;
+          html = html.replace(/\${(.*?)}/g, function (match, stateName) {
+            const stateNameMatch = stateName.match("or")
+              ? stateName.split("or")
+              : [stateName];
+            const name = stateNameMatch[0].trim();
+            const type = name.split(".")[0];
+            const objectName = name.split(".")[1];
+  
+            const getValue = (storage, key) => {
+              const value = storage.getItem(key);
+              return value ? value : "";
+            };
+  
+            const defaultValue =
+              stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
+  
+            switch (type) {
+              case "s":
+                const state = states.find((state) => state.name === objectName);
+                return state ? state.value : defaultValue;
+  
+              case "l":
+                return getValue(localStorage, objectName) || defaultValue;
+  
+              case "c":
+                const cookieValue = document.cookie.split(objectName + "=")[1];
+                return cookieValue ? cookieValue.split(";")[0] : defaultValue;
+  
+              case "ss":
+                return getValue(sessionStorage, objectName) || defaultValue;
+  
+              default:
+                return "";
+            }
+          });
+  
+          rootElement.innerHTML = html;
+  
+          const sprintReady = setInterval(async () => {
+            if (this.assetsLoaded && this.hooksLoaded) {
+              const sprintReadyEvent = new Event("sprintReady");
+              document.dispatchEvent(sprintReadyEvent);
+              clearInterval(sprintReady);
+            }
+          }
+  
+          , 500);
+  
+  
+          
+        }
+      } else {
   
       const interval = setInterval(async () => {
         if (this.isLoading) {
           await this.addHooks(path);
           await this.addAssets(path);
           this.isLoading = false;
-          const rootElement = document.getElementById("root");
+
           
         const { states } = this;
         const { localStorage, sessionStorage } = window;
@@ -1011,12 +1103,25 @@ async function main() {
           }, 500);
         }
       }, 500);
+    }
     },
   
     async init(notFoundMessage, loadingMessage) {
       this.notFoundMessage = notFoundMessage;
       this.loadingMessage = loadingMessage;
-  
+  `
+  if (pages["404"]) {
+    finalScript += `
+    this.notFoundMessage = ${JSON.stringify(pages["404"])};
+    `;
+  }
+  if (pages["loading"]) {
+    finalScript += `
+    this.loadingMessage = ${JSON.stringify(pages["loading"])};
+    `;
+  }
+  finalScript += `
+
       window.addEventListener("popstate", (event) => {
         if (getCurrentUrl() === event.target.location.href) {
           if (event.target.location.href.includes("#")) {
@@ -1026,21 +1131,21 @@ async function main() {
             return;
           }
           
-          this.navigateTo(event.target.location.href);
+          this.isLoading = true;
+          let currentPath = getCurrentUrl().split("/")[3] || "home";
+          this.removeAssets(currentPath);
+          this.removeHooks(currentPath);
+          this.render();
         }
       });
-  
       
+
         this.render();
   
     },
   };
   
-  app.init(
-    "<div style='display:flex;justify-content:center;align-items:center;height:100vh;width:100vw;'><h1>Not Found</h1></div>",
-    "<div style='display:flex;justify-content:center;align-items:center;height:100vh;width:100vw;'> <h1>Loading...</h1></div>"
-  
-  );
+  app.init();
 `;
   let minified = UglifyJS.minify(finalScript);
   //create a folder called build if it doesnt exist
@@ -1129,7 +1234,7 @@ async function main() {
 
 
 
-  const sV =1.7;
+  const sV =1.8;
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
