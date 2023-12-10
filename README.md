@@ -328,15 +328,62 @@ Congratulations! Your SprintUI project is now ready for the world to see. Simply
 
 # Customizing Loading and Not Found Pages
 
-In the present version of suip, there is no built-in support for customizing the loading and not found pages. However, you can still achieve this by navigating to your built file, scrolling to the `app.init` section, and modifying the HTML there. Please be aware that I am actively working on a solution that will be available very soon.
+Starting from the latest update, SprintUI allows developers to customize the 404 page and loading screen without the need for custom CSS. Follow the instructions below to tailor these pages to your application's design:
 
-## Note on Custom CSS
+## Customizing the 404 Page
 
-As of the current version, there is no provision for custom CSS specifically for loading and not found pages. Therefore, you will need to handle the styling and layout manually within the respective functions.
+To customize the 404 page, developers are required to create their suip file. If not provided, SprintUI will default to a minimal HTML code. Follow these steps:
 
-In future versions, the development team aims to enhance the developer experience by providing additional customization options, including the ability to apply custom CSS to loading and not found pages.
+1. Create 404.suip in the pages folder 
 
-Feel free to experiment and get creative with the design of these pages, and stay tuned for future updates that may introduce more customization features.
+Example 404.slip:
+
+```jsx
+<UseScript src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" head={true} />
+<UseStyles href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+
+
+
+
+<suipMarkup>
+
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+    <h1>404 - Not Found</h1>
+    <p>Oops! The page you are looking for might be under construction.</p>
+
+    </div>
+  </div>
+
+</div>
+
+
+
+</suipMarkup>
+```
+
+## Customizing the Loading Page
+
+To customize the loading page, developers should follow these guidelines:
+
+1. Create a custom HTML file for the loading page loading.suip in the pages folder.
+
+2. Use only HTML syntax within this file.
+
+3. Optionally, use the `style` attribute for styling.
+
+Example loading.suip:
+
+```html
+
+<div style="display:flex;justify-content:center;align-items:center;flex-direction:column;height:100vh">
+    <img src="/assets/spinner.gif" alt="Spinner" loading="lazy" />
+</div>
+
+```
+
 
 # See a Working Example
 
