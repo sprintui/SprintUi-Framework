@@ -133,194 +133,209 @@ const app = {
     if (this.assetsLoaded) {
       return;
     }
-  
 
     //promise
 
-      const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-      if (pageAssets) {
-        pageAssets.styles.forEach((style) => {
-          if (!this.stylesAdded.has(style.href) && style.href) {
-            const linkElement = document.createElement("link");
-            linkElement.rel = "stylesheet";
-            linkElement.href = style.href;
+    const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
+    if (pageAssets) {
+      pageAssets.styles.forEach((style) => {
+        if (!this.stylesAdded.has(style.href) && style.href) {
+          const linkElement = document.createElement("link");
+          linkElement.rel = "stylesheet";
+          linkElement.href = style.href;
 
-            if (style.integrity) {
-              linkElement.integrity = style.integrity;
-            }
-            if (style.id) {
-              linkElement.id = style.id;
-            }
-            linkElement.crossOrigin = style.crossorigin;
-
-            linkElement.type = style.type || "text/css";
-
-            linkElement.referrePolicy = style.referrerpolicy;
-
-
-
-            document.head.appendChild(linkElement);
-            this.stylesAdded.add(style.href);
-          } else if (!this.stylesAdded.has(style.textContent) && style.textContent) {
-            const styleElement = document.createElement("style");
-            styleElement.textContent = style.textContent;
-            styleElement.type = style.type || "text/css";
-            if (style.id) {
-              styleElement.id = style.id;
-            }
-            if (style.id) {
-              linkElement.id = style.id;
-            }
-
-
-
-
-
-            document.head.appendChild(styleElement);
-            this.stylesAdded.add(style.textContent);
+          if (style.integrity) {
+            linkElement.integrity = style.integrity;
           }
-        });
-
-        pageAssets.scripts.forEach((script) => {
-          if (!this.scriptsAdded.has(script.src) && script.src) {
-            const scriptElement = document.createElement("script");
-            scriptElement.src = script.src;
-            scriptElement.async = script.async;
-            scriptElement.defer = script.defer;
-            scriptElement.preload = script.preload;
-            if (script.integrity) {
-              scriptElement.integrity = script.integrity;
-            }
-            if (script.id) {
-              scriptElement.id = script.id;
-            }
-            scriptElement.crossOrigin = script.crossorigin;
-
-            scriptElement.type = script.type;
-
-            scriptElement.referrePolicy = script.referrerpolicy;
-
-            handleScriptLoadError(scriptElement, script.src);
-            if (script.head) {
-              document.head.appendChild(scriptElement);
-            } else {
-              document.body.appendChild(scriptElement);
-            }
-            this.scriptsAdded.add(script.src);
-
-          }  else if (!this.scriptsAdded.has(script.textContent) && script.textContent) {
-            const scriptElement = document.createElement("script");
-            if (script.autoReady) {
-              scriptElement.textContent = `document.addEventListener("sprintReady", () => {${script.textContent}});`;
-            } else {
-              scriptElement.textContent = script.textContent;
-            }
-
-            scriptElement.async = script.async;
-            scriptElement.defer = script.defer;
-            scriptElement.preload = script.preload;
-
-            scriptElement.type = script.type || "text/javascript";
-
-            if (script.id) {
-              scriptElement.id = script.id;
-            }
-            handleScriptLoadError(scriptElement, script.src);
-
-            if (script.head) {
-              document.head.appendChild(scriptElement);
-            } else {
-              document.body.appendChild(scriptElement);
-            }
-
-            this.scriptsAdded.add(script.textContent);
-       
+          if (style.id) {
+            linkElement.id = style.id;
           }
-        });
-      }
-      this.assetsLoaded = true;
-   
-  
+          linkElement.crossOrigin = style.crossorigin;
+
+          linkElement.type = style.type || "text/css";
+
+          linkElement.referrePolicy = style.referrerpolicy;
+
+          document.head.appendChild(linkElement);
+          this.stylesAdded.add(style.href);
+        } else if (
+          !this.stylesAdded.has(style.textContent) &&
+          style.textContent
+        ) {
+          const styleElement = document.createElement("style");
+          styleElement.textContent = style.textContent;
+          styleElement.type = style.type || "text/css";
+          if (style.id) {
+            styleElement.id = style.id;
+          }
+          if (style.id) {
+            linkElement.id = style.id;
+          }
+
+          document.head.appendChild(styleElement);
+          this.stylesAdded.add(style.textContent);
+        }
+      });
+
+      pageAssets.scripts.forEach((script) => {
+        if (!this.scriptsAdded.has(script.src) && script.src) {
+          const scriptElement = document.createElement("script");
+          scriptElement.src = script.src;
+          scriptElement.async = script.async;
+          scriptElement.defer = script.defer;
+          scriptElement.preload = script.preload;
+          if (script.integrity) {
+            scriptElement.integrity = script.integrity;
+          }
+          if (script.id) {
+            scriptElement.id = script.id;
+          }
+          scriptElement.crossOrigin = script.crossorigin;
+
+          scriptElement.type = script.type;
+
+          scriptElement.referrePolicy = script.referrerpolicy;
+
+          handleScriptLoadError(scriptElement, script.src);
+          if (script.head) {
+            document.head.appendChild(scriptElement);
+          } else {
+            document.body.appendChild(scriptElement);
+          }
+          this.scriptsAdded.add(script.src);
+        } else if (
+          !this.scriptsAdded.has(script.textContent) &&
+          script.textContent
+        ) {
+          const scriptElement = document.createElement("script");
+          if (script.autoReady) {
+            scriptElement.textContent = `document.addEventListener("sprintReady", () => {${script.textContent}});`;
+          } else {
+            scriptElement.textContent = script.textContent;
+          }
+
+          scriptElement.async = script.async;
+          scriptElement.defer = script.defer;
+          scriptElement.preload = script.preload;
+
+          scriptElement.type = script.type || "text/javascript";
+
+          if (script.id) {
+            scriptElement.id = script.id;
+          }
+          handleScriptLoadError(scriptElement, script.src);
+
+          if (script.head) {
+            document.head.appendChild(scriptElement);
+          } else {
+            document.body.appendChild(scriptElement);
+          }
+
+          this.scriptsAdded.add(script.textContent);
+        }
+      });
+    }
+    this.assetsLoaded = true;
   },
-
-
 
   async removeAssets(pageKey) {
     const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
     let scripts = document.querySelectorAll("script");
     let styles = document.querySelectorAll("style");
-  
+
     if (pageAssets) {
       for (let i = 0; i < pageAssets.styles.length; i++) {
         const style = pageAssets.styles[i];
-  
+
         if (style.href) {
           const linkElement = document.querySelector(
             `link[href="${style.href}"]`
           );
-  
+
           // Check if other pages are using the same style
           const otherPagesUsingStyle = this.pageAssets.filter(
-            (asset) => asset.page !== pageKey && asset.styles.some((s) => s.href === style.href)
+            (asset) =>
+              asset.page !== pageKey &&
+              asset.styles.some((s) => s.href === style.href)
           );
-  
-          if (linkElement && otherPagesUsingStyle.length === 0 && !style.sprintIgnore) {
+
+          if (
+            linkElement &&
+            otherPagesUsingStyle.length === 0 &&
+            !style.sprintIgnore
+          ) {
             linkElement.remove();
           }
         } else if (style.textContent) {
           for (let j = 0; j < styles.length; j++) {
             const s = styles[j];
-  
+
             // Check if other pages are using the same style
             const otherPagesUsingStyle = this.pageAssets.filter(
-              (asset) => asset.page !== pageKey && asset.styles.some((s) => s.textContent === style.textContent)
+              (asset) =>
+                asset.page !== pageKey &&
+                asset.styles.some((s) => s.textContent === style.textContent)
             );
-  
-            if (s.textContent.includes(style.textContent) && otherPagesUsingStyle.length === 0 && !style.sprintIgnore) {
-              s.remove();
-            }
-          }
-        }
-      }
-  
-      for (let i = 0; i < pageAssets.scripts.length; i++) {
-        const script = pageAssets.scripts[i];
-  
-        if (script.src) {
-          const scriptElement = document.querySelector(
-            `script[src="${script.src}"]`
-          );
-  
-          // Check if other pages are using the same script
-          const otherPagesUsingScript = this.pageAssets.filter(
-            (asset) => asset.page !== pageKey && asset.scripts.some((s) => s.src === script.src)
-          );
-  
-          if (scriptElement && otherPagesUsingScript.length === 0 && !script.sprintIgnore) {
-            scriptElement.remove();
-          }
-        } else if (script.textContent) {
-          for (let j = 0; j < scripts.length; j++) {
-            const s = scripts[j];
-  
-            // Check if other pages are using the same script
-            const otherPagesUsingScript = this.pageAssets.filter(
-              (asset) => asset.page !== pageKey && asset.scripts.some((s) => s.textContent === script.textContent)
-            );
-  
+
             if (
-              (s.textContent.includes(script.textContent) || !script.id === "suia") &&
-              otherPagesUsingScript.length === 0 && !script.sprintIgnore
+              s.textContent.includes(style.textContent) &&
+              otherPagesUsingStyle.length === 0 &&
+              !style.sprintIgnore
             ) {
               s.remove();
             }
           }
         }
       }
-  
+
+      for (let i = 0; i < pageAssets.scripts.length; i++) {
+        const script = pageAssets.scripts[i];
+
+        if (script.src) {
+          const scriptElement = document.querySelector(
+            `script[src="${script.src}"]`
+          );
+
+          // Check if other pages are using the same script
+          const otherPagesUsingScript = this.pageAssets.filter(
+            (asset) =>
+              asset.page !== pageKey &&
+              asset.scripts.some((s) => s.src === script.src)
+          );
+
+          if (
+            scriptElement &&
+            otherPagesUsingScript.length === 0 &&
+            !script.sprintIgnore
+          ) {
+            scriptElement.remove();
+          }
+        } else if (script.textContent) {
+          for (let j = 0; j < scripts.length; j++) {
+            const s = scripts[j];
+
+            // Check if other pages are using the same script
+            const otherPagesUsingScript = this.pageAssets.filter(
+              (asset) =>
+                asset.page !== pageKey &&
+                asset.scripts.some((s) => s.textContent === script.textContent)
+            );
+
+            if (
+              (s.textContent.includes(script.textContent) ||
+                !script.id === "suia") &&
+              otherPagesUsingScript.length === 0 &&
+              !script.sprintIgnore
+            ) {
+              s.remove();
+            }
+          }
+        }
+      }
+
       this.assetsLoaded = false;
     }
-  },  
+  },
 
   async addHooks(pageKey) {
     const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
@@ -400,84 +415,143 @@ const app = {
 
     if (path == "/") {
       path = "home";
-
-    }
-    else
-    {
+    } else {
       path = path.substring(1);
-
     }
+    const rootElement = document.getElementById("root");
+    let page = this.pages[path];  
+    rootElement.innerHTML = this.loadingMessage || "Loading...";
+    if (!page) {
+      if (!this.notFoundMessage) {
+        rootElement.innerHTML = `    <h1 style="text-align:center">404 Not Found</h1>
+        <p style="text-align:center">The page you are looking for does not exist.</p>
 
 
-    const page = this.pages[path];
-    if (
-      document.getElementById("root").innerHTML !== this.loadingMessage ||
-      "Loading..."
-    ) {
-      document.getElementById("root").innerHTML = this.loadingMessage;
-    }
-    if (!page)
-      return (document.getElementById("root").innerHTML =
-        this.notFoundMessage || "Not found");
+        
+ `;
+      } else {
 
-    const interval = setInterval(async () => {
-      if (this.isLoading) {
-        await this.addHooks(path);
-        await this.addAssets(path);
+        page = this.pages["404"];
+    
+        await this.addHooks("404");
+        await this.addAssets("404");
         this.isLoading = false;
-        const rootElement = document.getElementById("root");
+
+     
 
         const { states } = this;
-        const { localStorage, sessionStorage } = window;
-        
+
         let html = page;
-        
         html = html.replace(/\${(.*?)}/g, function (match, stateName) {
-          const stateNameMatch = stateName.match("or") ? stateName.split("or") : [stateName];
+          const stateNameMatch = stateName.match("or")
+            ? stateName.split("or")
+            : [stateName];
           const name = stateNameMatch[0].trim();
           const type = name.split(".")[0];
           const objectName = name.split(".")[1];
-        
+
           const getValue = (storage, key) => {
             const value = storage.getItem(key);
             return value ? value : "";
           };
-        
-          const defaultValue = stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
-        
+
+          const defaultValue =
+            stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
+
           switch (type) {
             case "s":
               const state = states.find((state) => state.name === objectName);
               return state ? state.value : defaultValue;
-        
+
             case "l":
               return getValue(localStorage, objectName) || defaultValue;
-        
+
             case "c":
               const cookieValue = document.cookie.split(`${objectName}=`)[1];
               return cookieValue ? cookieValue.split(";")[0] : defaultValue;
-        
+
             case "ss":
               return getValue(sessionStorage, objectName) || defaultValue;
-        
+
             default:
               return "";
           }
         });
-        
-        
-     
+
         rootElement.innerHTML = html;
-        clearInterval(interval);
+
         const sprintReady = setInterval(async () => {
           if (this.assetsLoaded && this.hooksLoaded) {
             const sprintReadyEvent = new Event("sprintReady");
             document.dispatchEvent(sprintReadyEvent);
             clearInterval(sprintReady);
           }
-        }, 500);
+        }
+
+        , 500);
+
+
+        
       }
-    }, 500);
+    } else {
+      const interval = setInterval(async () => {
+        if (this.isLoading) {
+          await this.addHooks(path);
+          await this.addAssets(path);
+          this.isLoading = false;
+          const { states } = this;
+          const { localStorage, sessionStorage } = window;
+
+          let html = page;
+
+          html = html.replace(/\${(.*?)}/g, function (match, stateName) {
+            const stateNameMatch = stateName.match("or")
+              ? stateName.split("or")
+              : [stateName];
+            const name = stateNameMatch[0].trim();
+            const type = name.split(".")[0];
+            const objectName = name.split(".")[1];
+
+            const getValue = (storage, key) => {
+              const value = storage.getItem(key);
+              return value ? value : "";
+            };
+
+            const defaultValue =
+              stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
+
+            switch (type) {
+              case "s":
+                const state = states.find((state) => state.name === objectName);
+                return state ? state.value : defaultValue;
+
+              case "l":
+                return getValue(localStorage, objectName) || defaultValue;
+
+              case "c":
+                const cookieValue = document.cookie.split(`${objectName}=`)[1];
+                return cookieValue ? cookieValue.split(";")[0] : defaultValue;
+
+              case "ss":
+                return getValue(sessionStorage, objectName) || defaultValue;
+
+              default:
+                return "";
+            }
+          });
+
+          rootElement.innerHTML = html;
+          clearInterval(interval);
+          const sprintReady = setInterval(async () => {
+            if (this.assetsLoaded && this.hooksLoaded) {
+              const sprintReadyEvent = new Event("sprintReady");
+              document.dispatchEvent(sprintReadyEvent);
+              clearInterval(sprintReady);
+            }
+          }, 500);
+        }
+      }, 500);
+    }
   },
 
   transpilesUIp(page, pageName) {
@@ -539,12 +613,9 @@ const app = {
               }
             }
             break;
-          
 
           case line.includes("import states"):
             if (!sUIpScript) {
-              
-
               let newScript = {
                 id: "sUIp",
                 src: null,
@@ -577,21 +648,15 @@ const app = {
                 }
 
                 `,
-
-
-
               };
 
               pageAssets.scripts.push(newScript);
-
-
             } else {
-          
               let script = pageAssets.scripts.find(
                 (script) => script.id === "sUIp"
               );
               if (!script.textContent.includes("function addState()")) {
-                script.textContent +=  `function addState(name,value) {
+                script.textContent += `function addState(name,value) {
                   app.states.push({name:name,value:value});
                 }
                 function fetchStates() {
@@ -617,10 +682,10 @@ const app = {
 
 
                 `;
-              } 
-            } 
+              }
+            }
             break;
-  
+
           case line.includes("setBodyClass("):
             if (!sUIpScript) {
               //get things in between the parenthesis
@@ -768,7 +833,7 @@ const app = {
 
           case (match = line.match(/<UseStyles[^>]*>/)) !== null:
             const href = this.extractCssFileName(line);
-    
+
             const id = line.match(/id=['"]([^'"]+)['"]/);
             const integrity = line.match(/integrity=['"]([^'"]+)['"]/);
             const crossorigin = line.match(/crossorigin=['"]([^'"]+)['"]/);
@@ -788,10 +853,6 @@ const app = {
                 type: type ? type[1] : "text/css",
                 referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
                 sprintIgnore: sprintIgnore ? true : false,
-                
-              
-              
-
               };
               pageAssets.styles.push(newStyle);
             } else {
@@ -819,8 +880,6 @@ const app = {
                   type: type ? type[1] : "text/css",
                   referrerpolicy: referrerpolicy ? referrerpolicy[1] : null,
                   sprintIgnore: sprintIgnore ? true : false,
-
-
                 };
 
                 pageAssets.styles.push(newStyle);
@@ -844,11 +903,8 @@ const app = {
               const type = line.match(/type=['"]([^'"]+)['"]/);
               const referrerpolicy = line.match(
                 /referrerpolicy=['"]([^'"]+)['"]/
-              )
-              ;
-
+              );
               const sprintIgnore = line.includes("sprintIgnore={true}");
-
 
               const newScript = {
                 src: src ? src : null,
@@ -871,12 +927,10 @@ const app = {
               const async = line.includes("async={true}");
               const defer = line.includes("defer={true}");
               const type = line.match(/type=['"]([^'"]+)['"]/);
-    
 
               const autoReady = line.includes("autoReady={false}");
               const sprintIgnore = line.includes("sprintIgnore={true}");
               const bringF = line.includes("bringF={false}");
-
 
               // Initialize scriptContent as an empty string
 
@@ -886,58 +940,49 @@ const app = {
               let i = lines.indexOf(line) + 1;
 
               const fAndG = {
-        
-                  id: "fAndG",
-                  src: null,
-                  head: false,
-                  async: false,
-                  defer: false,
-                  preload: false,
-                  type: type ? type[1] : "text/javascript",
-       
+                id: "fAndG",
+                src: null,
+                head: false,
+                async: false,
+                defer: false,
+                preload: false,
+                type: type ? type[1] : "text/javascript",
 
-                  textContent: scriptContent,
-                  autoReady: false,
-                  sprintIgnore: false,
-              }
+                textContent: scriptContent,
+                autoReady: false,
+                sprintIgnore: false,
+              };
               // Loop through lines until the closing </UseScript> tag is found
               while (i < lines.length && !lines[i].includes("</UseScript>")) {
-        
-                  //check for global
-                  if (lines[i].includes("global")) {
-    
-                    //remove global
-                    lines[i] = lines[i].replace("global", "");
-                  
-                    fAndG.textContent += lines[i];
-                    i++;
-                    continue;
-                    
-                  }
+                //check for global
+                if (lines[i].includes("global")) {
+                  //remove global
+                  lines[i] = lines[i].replace("global", "");
 
-                  if (lines[i].includes("function")) {
-                    if (!bringF) {
-                      //search for end of function
-                      let functionContent = "";
-                      let j = i;
-                      while (j < lines.length && !lines[j].includes("}")) {
-                        functionContent += lines[j];
-                        j++;
-                      }
-                      functionContent += lines[j];
-                      fAndG.textContent += functionContent;
-                    
-                    }
-                  }
-
-                  
-                  scriptContent += lines[i];
+                  fAndG.textContent += lines[i];
                   i++;
+                  continue;
+                }
 
+                if (lines[i].includes("function")) {
+                  if (!bringF) {
+                    //search for end of function
+                    let functionContent = "";
+                    let j = i;
+                    while (j < lines.length && !lines[j].includes("}")) {
+                      functionContent += lines[j];
+                      j++;
+                    }
+                    functionContent += lines[j];
+                    fAndG.textContent += functionContent;
+                  }
+                }
+
+                scriptContent += lines[i];
+                i++;
               }
 
               if (scriptContent) {
-     
                 const newScript = {
                   id: "is" + Math.random(),
                   src: null,
@@ -946,7 +991,6 @@ const app = {
                   defer: defer ? true : false,
                   preload: preload ? true : false,
                   type: type ? type[1] : "text/javascript",
-      
 
                   textContent: scriptContent,
                   autoReady: autoReady ? false : true,
@@ -1022,9 +1066,8 @@ const app = {
     }
   },
 
-  async init(notFoundMessage, loadingMessage) {
-    this.notFoundMessage = notFoundMessage;
-    this.loadingMessage = loadingMessage;
+  async init() {
+
     let fetchedPages = await fetchRoutes();
 
     let routes = fetchedPages.routes;
@@ -1045,11 +1088,18 @@ const app = {
         this.removeAssets(currentPath);
         this.removeHooks(currentPath);
         this.render();
-        
       }
     });
 
-    // Initialize the application by transpiling and storing pages on load
+    if (pagesToTranspile["404"]) {
+      this.notFoundMessage = pagesToTranspile["404"];
+    }
+    if (pagesToTranspile["loading"]) {
+
+      this.loadingMessage = pagesToTranspile["loading"];
+    }
+
+    
     for (const pageKey in pagesToTranspile) {
       if (Object.hasOwn(pagesToTranspile, pageKey)) {
         this.transpileAndStorePage(pageKey, pagesToTranspile[pageKey]);
@@ -1060,16 +1110,4 @@ const app = {
   },
 };
 
-app.init(
-  `
-<div style="display:flex;justify-content:center;align-items:center;height:100vh;width:100vw;">
-<h1>Not Found</h1>
-</div>
-`,
-  `
-<div style="display:flex;justify-content:center;align-items:center;height:100vh;width:100vw;">
-<h1>Loading...</h1>
-</div>
-
-`
-);
+app.init();
