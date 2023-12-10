@@ -6,7 +6,7 @@ require("dotenv").config();
 const fs = require("node:fs");
 const path = require("path");
 const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
-  const sV =1.7;
+const sV =1.8;
 function getVersion(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
@@ -307,48 +307,6 @@ let assetObject = [
 ];
 app.use(cors());
 
-function updatePagesFile() {
-  let pagesPath = path.join(__dirname, "public", "pages");
-  let pages = [];
-
-  // list files in directory and loop through
-  fs.readdirSync(pagesPath).forEach((file) => {
-    const fPath = path.resolve(pagesPath, file);
-    const fileStats = { file, path: fPath };
-    if (fs.statSync(fPath).isDirectory()) {
-      let subPages = fs.readdirSync(fPath);
-      subPages = JSON.stringify(subPages);
-      subPages = subPages.replace("[", "");
-      subPages = subPages.replace("]", "");
-      subPages = subPages.replace(/"/g, "");
-      subPages = subPages.replace(/,/g, "\n");
-
-      subPages = subPages.split(/\r?\n/);
-      subPages.forEach((subPage) => {
-        if (subPage.includes(".suip"))
-          pages.push(file + "/" + subPage.replace(".suip", ""));
-      });
-    } else {
-      fileStats.type = "file";
-      if (fileStats.file.includes(".suip")) {
-        pages.push(file.replace(".suip", ""));
-      }
-    }
-  });
-
-  let pagesSui = fs.readFileSync(path.join(__dirname, "pages.sui"), "utf8");
-
-  let excludes = "EXCLUDES=" + pagesSui.split("EXCLUDES=");
-
-  if (excludes != "EXCLUDES=") {
-    excludes = excludes[1].split("\n")[0];
-  }
-
-  let pagesFile = excludes + "\n" + "ROUTES=" + pages;
-
-  fs.writeFileSync(path.join(__dirname, "pages.sui"), pagesFile);
-}
-
 function readPagesFolder() {
   const pagesPath = path.join(__dirname, "public", "pages");
 
@@ -438,7 +396,7 @@ app.get("*", (req, res, next) => {
 });
 
 app.listen(port,async () => {
-  updatePagesFile();
+
   console.log("\x1b[31m%s\x1b[0m", "Swift UIp is running on port " + port);
 
   //check version file
