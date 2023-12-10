@@ -239,7 +239,7 @@ This update enhances the build process by introducing changes to the build comma
 
 ### Notes
 - This update is part of a series of incremental improvements leading to version 2. The upcoming version 2 is expected to introduce a groundbreaking feature that will significantly enhance the capabilities of SprintUI.
-- The loading page should be an HTML page and not a suip and should only use HTML and use the styles att for styles
+- The loading page should be an HTML page with the suip extension, and should only use HTML and  use suip, use the styles att for styles.
 Stay tuned for more updates and enhancements in SprintUI! Your feedback and support are greatly appreciated.
 
 
