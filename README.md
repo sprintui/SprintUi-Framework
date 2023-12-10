@@ -168,9 +168,7 @@ node build.js -ex=TEST,TEST2
 
 This argument functions similarly to the `EXCLUDES` setting in `pages.sui` but is applied temporarily during the build process.
 
-Certainly! To deploy a web application using Apache in production, you can follow these simplified steps:
-
-### Deploying a Web Application with Apache in Production
+### Deploying With Apache in Production
 
 
 
