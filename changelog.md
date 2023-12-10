@@ -220,7 +220,7 @@ This update enhances the build process by introducing changes to the build comma
 ### Added
 - **Separate 404 Page and Custom Loading(Without Custom Css):** Starting from this update, the 404 page will be customizable and loading( No Custom Css). Developers are required to create their custom 404 page and loading page. If not provided, SprintUI will default to a minimal HTML code.
 
-- **Loading Screen Overlay:** Introducing a new feature – loading screen overlay. This overlay will enhance the user experience by displaying a loading effect while keeping the content static. This feature brings a modern touch to SprintUI, and developers can leverage it to create more visually appealing loading experiences.
+
 
 ### Changed
 - None
