@@ -509,12 +509,11 @@ function transpilesUIp(page, pageName) {
         case line == "<suipMarkup>":
     
           inSUIP = true;
-          console.log("in");
           break;
           
           case line == "</suipMarkup>":
           inSUIP = false;
-          console.log("out");
+
         
           break;
 
