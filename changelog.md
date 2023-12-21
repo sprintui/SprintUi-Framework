@@ -160,7 +160,7 @@ In the upcoming update, URL parameters will now work in a more intuitive way(/us
 
 
 
-## Version 1.6 - 12/4/2023 - Coming Soon
+## Version 1.6 - 12/4/2023 - RELEASED
 
 ### Added
 - Enhanced debugging experience by addressing local variable access in the console when using auto-ready scripts. Functions defined in scripts are now automatically brought out and placed in a separate script.
