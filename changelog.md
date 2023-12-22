@@ -243,3 +243,27 @@ This update enhances the build process by introducing changes to the build comma
 Stay tuned for more updates and enhancements in SprintUI! Your feedback and support are greatly appreciated.
 
 
+## Version 1.9 - 12/22/2023 - RELEASED 
+
+### Added
+- config.sui will be created when the server starts if it doesn't already exist.
+
+### Changed
+- Modified `server.js` and `build.js` for enhanced functionality.
+- Documentation has been updated to cover the changes introduced in the past few updates.
+
+### Fixed
+- Resolved issues in `build.js` for a more stable build process.
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+
+Several changes have been made to `build.js` to improve functionality. Documentation has been updated to reflect the changes introduced in recent updates. Additionally, issues in `build.js` have been fixed for a more stable build process.
