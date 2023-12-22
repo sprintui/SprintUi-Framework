@@ -78,6 +78,16 @@ function transpilesUIp(page, pageName) {
 
 
       switch (true) {
+        case line.includes("<suipMarkup>"):
+     
+        inSUIP = true;
+
+      break;
+      
+      case line.includes("</suipMarkup>"):
+   
+         inSUIP = false;
+     
         case line.includes("useQuery()"):
           if (!sUIpScript) {
             let variableName = line.split("useQuery(")[0];
@@ -106,7 +116,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace("=", "");
             variableName = variableName.trim();
 
-            let script = pageAssets.scripts.find(
+            let script = pageAssetsTOBeAdded.scripts.find(
               (script) => script.id === "sUIp"
             );
             if (!script.textContent.includes("function useQuery()")) {
@@ -130,7 +140,7 @@ function transpilesUIp(page, pageName) {
               name: "setBodyClass",
               textContent: variableName || "",
             };
-            pageAssets.hooks.push(newHook);
+            pageAssetsTOBeAdded.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -143,7 +153,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssets.hooks.find(
+            let hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
             hook.textContent += variableName || "";
@@ -165,7 +175,7 @@ function transpilesUIp(page, pageName) {
               name: "setTitle",
               textContent: variableName || "",
             };
-            pageAssets.hooks.push(newHook);
+            pageAssetsTOBeAdded.hooks.push(newHook);
 
             sUIPHooks = true;
           } else {
@@ -178,7 +188,7 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssets.hooks.find(
+            let hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setTitle"
             );
             hook.textContent += variableName || "";
@@ -348,7 +358,7 @@ function transpilesUIp(page, pageName) {
 
             pageAssetsTOBeAdded.scripts.push(newScript);
           } else {
-            let script = pageAssets.scripts.find(
+            let script = pageAssetsTOBeAdded.scripts.find(
               (script) => script.id === "sUIp"
             );
             if (!script.textContent.includes("function addState()")) {
@@ -504,18 +514,10 @@ function transpilesUIp(page, pageName) {
               lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
             }
           }
-          break;
-
-        case line == "<suipMarkup>":
-    
-          inSUIP = true;
-          break;
           
-          case line == "</suipMarkup>":
-          inSUIP = false;
-
-        
           break;
+
+
 
           default:
 
@@ -561,6 +563,8 @@ function transpilesUIp(page, pageName) {
             } else {
               html += line;
             }
+
+            break;
       }
     }
 
@@ -1233,7 +1237,7 @@ async function main() {
 
 
 
-  const sV =1.8;
+  const sV =1.9;
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
