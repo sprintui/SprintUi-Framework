@@ -76,18 +76,16 @@ function transpilesUIp(page, pageName) {
     for (let line of lines) {
       let match;
 
-
       switch (true) {
         case line.includes("<suipMarkup>"):
-     
-        inSUIP = true;
+          inSUIP = true;
 
-      break;
-      
-      case line.includes("</suipMarkup>"):
-   
-         inSUIP = false;
-     
+          break;
+
+        case line.includes("</suipMarkup>"):
+          inSUIP = false;
+          break;
+  
         case line.includes("useQuery()"):
           if (!sUIpScript) {
             let variableName = line.split("useQuery(")[0];
@@ -428,12 +426,10 @@ function transpilesUIp(page, pageName) {
             const async = line.includes("async={true}");
             const defer = line.includes("defer={true}");
             const type = line.match(/type=['"]([^'"]+)['"]/);
-  
 
             const autoReady = line.includes("autoReady={false}");
             const sprintIgnore = line.includes("sprintIgnore={true}");
             const bringF = line.includes("bringF={false}");
-
 
             // Initialize scriptContent as an empty string
 
@@ -443,58 +439,54 @@ function transpilesUIp(page, pageName) {
             let i = lines.indexOf(line) + 1;
 
             const fAndG = {
-      
-                id: "fAndG",
-                src: null,
-                head: false,
-                async: false,
-                defer: false,
-                preload: false,
-                type: type ? type[1] : "text/javascript",
-     
+              id: "fAndG",
+              src: null,
+              head: false,
+              async: false,
+              defer: false,
+              preload: false,
+              type: type ? type[1] : "text/javascript",
 
-                textContent: scriptContent,
-                autoReady: false,
-                sprintIgnore: false,
-            }
+              textContent: scriptContent,
+              autoReady: false,
+              sprintIgnore: false,
+            };
             // Loop through lines until the closing </UseScript> tag is found
             while (i < lines.length && !lines[i].includes("</UseScript>")) {
-      
-                //check for global
-                if (lines[i].includes("global")) {
-  
-                  //remove global
-                  lines[i] = lines[i].replace("global", "");
-                
-                  fAndG.textContent += lines[i];
-                  i++;
-                  continue;
-                  
-                }
+              //check for global
+              if (lines[i].includes("global")) {
+                //remove global
+                lines[i] = lines[i].replace("global", "");
 
-                if (lines[i].includes("function")) {
-                  if (!bringF) {
-                    //search for end of function
-                    let functionContent = "";
-                    let j = i;
-                    while (j < lines.length && !lines[j].includes("}")) {
-                      functionContent += lines[j];
-                      j++;
-                    }
-                    functionContent += lines[j];
-                    fAndG.textContent += functionContent;
-                  
-                  }
-                }
-
-                
-                scriptContent += lines[i];
+                fAndG.textContent += lines[i];
                 i++;
+                continue;
+              }
 
+              if (lines[i].includes("//")) {
+                lines[i] = lines[i].split("//")[0]; 
+
+              }
+
+              if (lines[i].includes("function")) {
+                if (!bringF) {
+                  //search for end of function
+                  let functionContent = "";
+                  let j = i;
+                  while (j < lines.length && !lines[j].includes("}")) {
+                    functionContent += lines[j];
+                    j++;
+                  }
+                  functionContent += lines[j];
+                  fAndG.textContent += functionContent;
+                }
+              }
+
+              scriptContent += lines[i];
+              i++;
             }
 
             if (scriptContent) {
-   
               const newScript = {
                 id: "is" + Math.random(),
                 src: null,
@@ -503,7 +495,6 @@ function transpilesUIp(page, pageName) {
                 defer: defer ? true : false,
                 preload: preload ? true : false,
                 type: type ? type[1] : "text/javascript",
-    
 
                 textContent: scriptContent,
                 autoReady: autoReady ? false : true,
@@ -514,57 +505,53 @@ function transpilesUIp(page, pageName) {
               lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
             }
           }
-          
+
           break;
 
+        default:
+          if (inSUIP) {
+            if (line.includes("<Link")) {
+              const to = line.match(/to=['"]([^'"]+)['"]/)[1];
 
+              let className = line.match(/className=['"]([^'"]+)['"]/);
 
-          default:
-
-   
-            if (inSUIP) {
-        
-              if (line.includes("<Link")) {
-                const to = line.match(/to=['"]([^'"]+)['"]/)[1];
-
-                let className = line.match(/className=['"]([^'"]+)['"]/);
-
-                if (className) {
-                  className = className[1];
-                } else {
-                  className = "";
-                }
-
-                let id = line.match(/id=['"]([^'"]+)['"]/);
-
-                if (id) {
-                  id = id[1];
-                } else {
-                  id = "";
-                }
-
-                //just replace link with a tag so if its incased on any other tag it will be removed
-                line = line.replace("<Link", "<a");
-                line = line.replace("</Link>", "</a>");
-
-                line = line.replace(
-                  `to="${to}"`,
-                  `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
-                );
-                line = line.replace(
-                  `className="${className}"`,
-                  `class="${className}"`
-                );
-
-                html += line;
+              if (className) {
+                className = className[1];
               } else {
-                html += line;
+                className = "";
               }
-            } else {
+
+              let id = line.match(/id=['"]([^'"]+)['"]/);
+
+              if (id) {
+                id = id[1];
+              } else {
+                id = "";
+              }
+
+              //just replace link with a tag so if its incased on any other tag it will be removed
+              line = line.replace("<Link", "<a");
+              line = line.replace("</Link>", "</a>");
+
+              line = line.replace(
+                `to="${to}"`,
+                `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
+              );
+              line = line.replace(
+                `className="${className}"`,
+                `class="${className}"`
+              );
+
               html += line;
             }
+            else {
+              html += line;
+            }
+          } else {
+            html += line;
+          }
 
-            break;
+          break;
       }
     }
 
@@ -1112,7 +1099,7 @@ async function main() {
     async init(notFoundMessage, loadingMessage) {
       this.notFoundMessage = notFoundMessage;
       this.loadingMessage = loadingMessage;
-  `
+  `;
   if (pages["404"]) {
     finalScript += `
     this.notFoundMessage = ${JSON.stringify(pages["404"])};
@@ -1163,10 +1150,7 @@ async function main() {
   //copy everything in assets except app.js to build2
   fs.readdirSync("public/assets/").forEach((file) => {
     if (file !== "app.js") {
-      fs.copyFileSync(
-        `public/assets/${file}`,
-        `build/assets/${file}`
-      );
+      fs.copyFileSync(`public/assets/${file}`, `build/assets/${file}`);
     }
   });
 
@@ -1185,7 +1169,6 @@ async function main() {
   fs.writeFileSync("build/assets/app.build.min.js", minified.code);
 
   //write routes
-
 
   // Add these lines at the end of your 'main' function
   console.log("\x1b[32m%s\x1b[0m", "Build Complete");
@@ -1234,10 +1217,7 @@ async function main() {
       "%"
   );
 
-
-
-
-  const sV =1.9;
+  const sV = 1.8;
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
