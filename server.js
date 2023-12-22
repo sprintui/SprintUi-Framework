@@ -6,7 +6,7 @@ require("dotenv").config();
 const fs = require("node:fs");
 const path = require("path");
 const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
-const sV =1.8;
+const sV =1.9;
 function getVersion(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
@@ -306,6 +306,13 @@ let assetObject = [
 
 ];
 app.use(cors());
+
+//check if config file exists
+if (!fs.existsSync(path.join(__dirname, "public", "config.sui"))) {
+  //create config file
+  fs.writeFileSync(path.join(__dirname, "config.sui"), "EXCLUDES=");
+}
+
 
 function readPagesFolder() {
   const pagesPath = path.join(__dirname, "public", "pages");
