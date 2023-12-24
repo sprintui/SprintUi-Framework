@@ -122,7 +122,6 @@ SprintUI supports a straightforward URL structure based on the file hierarchy. F
 
 For more complex routing, consider creating custom folders to structure your pages. For instance, `/dashboard/home` could map to `dashboard/home.suip`. This approach provides flexibility while maintaining a clear structure.
 
-In summary, organizing your assets in the `assets` folder and following best practices for routing contribute to a more maintainable and scalable SprintUI project.
 
 ## Production Deployment
 
