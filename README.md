@@ -55,7 +55,7 @@ The recommended practice is to place all your assets inside an `assets` folder. 
 ```
 /assets
   /js
-    app.js
+    test.js
   /css
     styles.css
   /images
@@ -69,7 +69,7 @@ This structure is resilient to future updates and prevents issues with asset pat
 Avoid placing assets directly in the root directory, as this may lead to problems in routing, especially in future updates. For instance:
 
 ```
-/app.js
+/test.js
 /styles.css
 /logo.png
 ```
