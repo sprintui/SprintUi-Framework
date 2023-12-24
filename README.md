@@ -130,28 +130,7 @@ For more complex routing, consider creating custom folders to structure your pag
    ```bash
    node build.js
    ```
-
-2. Open the `index.html` file located in the `public` folder.
-
-3. Update the script source within the HTML file to point to the newly generated build file:
-
-   ```html
-   <script src="/assets/app.build.min.js"></script>
-   ```
-
-Additionally, for an optimized workflow, it is recommended to use the following commands:
-
-- Use `-at` (autoTransfer) argument for the initial build to automatically transfer the build to the `public` folder and update the script source in `index.html`.
-
-  ```bash
-  node build.js -at
-  ```
-
-- Use `-t` (transfer) argument for subsequent builds to only transfer the new builds to the `public` folder.
-
-  ```bash
-  node build.js -t
-  ```
+2 .**Check the newly created build folder**
 
 For advanced customization, if you have a file called `pages.sui` (which is assumed to always be present), enhance exclusion settings by adding the following line:
 
