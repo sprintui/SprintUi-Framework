@@ -274,7 +274,8 @@ Several changes have been made to `build.js` to improve functionality. Documenta
 
 cookies library imported as a JavaScript library, similar to states.
 URL parameters can now be accessed from functions and states.
-Changed
+New script to test if your built app works, just run npm run test and it will start a server :).
+### Changed
 
 Restructured file organization:
 public folder is no longer present; pages and assets are now their own folders.
