@@ -6,7 +6,7 @@ require("dotenv").config();
 const fs = require("node:fs");
 const path = require("path");
 const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
-const sV =1.9;
+const sV =2.0;
 function getVersion(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
@@ -308,14 +308,22 @@ let assetObject = [
 app.use(cors());
 
 //check if config file exists
-if (!fs.existsSync(path.join(__dirname, "public", "config.sui"))) {
+if (!fs.existsSync(path.join(__dirname,  "config.sui"))) {
   //create config file
   fs.writeFileSync(path.join(__dirname, "config.sui"), "EXCLUDES=");
 }
 
 
+//check if config file exists
+if (!fs.existsSync(path.join(__dirname,  "plugins"))) {
+  //create config file
+  fs.mkdirSync(path.join(__dirname, "plugins"));
+}
+
+
+
 function readPagesFolder() {
-  const pagesPath = path.join(__dirname, "public", "pages");
+  const pagesPath = path.join(__dirname,"pages");
 
   let pages = [];
 
@@ -347,6 +355,26 @@ function readPagesFolder() {
   return pages;
 }
 
+function readPlugins() {
+  const pluginsFolderPath = path.join(__dirname, "plugins");
+  let pages = [];
+  try {
+    //find all files in plugins folder
+    const files = fs.readdirSync(pluginsFolderPath);
+
+    //loop through each file
+    files.forEach((file) => {
+      pages.push(file);
+    });
+
+  } catch (error) {
+    console.error('Error reading plugins folder:', error);
+  }
+
+  return pages;
+}
+
+
 app.get("*", (req, res, next) => {
   let origin = req.headers["referer"];
   let host = process.env.HOST + ":" + process.env.PORT;
@@ -359,7 +387,7 @@ app.get("*", (req, res, next) => {
       res.send("ROUTES=" + pages);
     } else {
       // Construct the path to the .suip file based on the URL
-      const pagePath = path.join(__dirname, "public", req.url + ".suip");
+      const pagePath = path.join(__dirname, req.url + ".suip");
       // Check if the file exists
       if (!fs.existsSync(pagePath)) {
         return res.status(404).send("Not found");
@@ -370,11 +398,32 @@ app.get("*", (req, res, next) => {
       // Send the response
       res.send(pageContent);
     }
-  } else {
+  }
+  else if(req.url.includes("plugins"))
+  {
+    if (req.url === "/plugins") {
+      let pages = readPlugins();
+
+      res.send("PLUGINS=" + pages);
+    } else {
+  
+       const pagePath = path.join(__dirname, req.url);
+       // Check if the file exists
+       if (!fs.existsSync(pagePath)) {
+         return res.status(404).send("Not found");
+       }
+       // Read the .suip file content
+       const pageContent = fs.readFileSync(pagePath, "utf8");
+       res.set("Content-Type", "text/javascript");
+        // Send the response
+        res.send(pageContent);
+    }
+  } 
+  else {
     //check for asset file:js,css,image file types
     if (assetObject.some((extension) => req.url.includes(extension.extension))) {
       // search in the public/assets folder
-      const assetPath = path.join(__dirname, "public", req.url);
+      const assetPath = path.join(__dirname, req.url);
 
       // Check if the file exists
       if (!fs.existsSync(assetPath)) {
@@ -397,7 +446,7 @@ app.get("*", (req, res, next) => {
 
       res.sendFile(assetPath);
     } else {
-      return res.sendFile(path.join(__dirname, "public", "index.html"));
+      return res.sendFile(path.join(__dirname,  "index.html"));
     }
   }
 });
