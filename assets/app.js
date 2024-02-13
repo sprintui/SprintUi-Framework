@@ -658,7 +658,18 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
-            hook.textContent += variableName || "";
+          
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+
+            else {
+              pageAssets.hooks.push({
+                name: "setBodyClass",
+                textContent: variableName || "",
+              });
+            }
+
 
             break;
           case line.includes("setTitle("):
@@ -675,8 +686,16 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setTitle"
             );
-            hook.textContent += variableName || "";
-
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+              
+              else {
+                pageAssets.hooks.push({
+                  name: "setTitle",
+                  textContent: variableName || "",
+                });
+              }
             break;
           case line.includes("setRootClass"):
             //add to textContent
@@ -692,7 +711,18 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setRootClass"
             );
-            hook.textContent += variableName || "";
+           
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+
+            else {
+              pageAssets.hooks.push({
+                name: "setRootClass",
+                textContent: variableName || "",
+              });
+            }
+
 
             break;
           case line.includes("setHtmlClass"):
@@ -709,9 +739,16 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setHtmlClass"
             );
-            hook.textContent += variableName || "";
-
-            break;
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+            else {
+              pageAssets.hooks.push({
+                name: "setHtmlClass",
+                textContent: variableName || "",
+              });
+            }
+            
 
           case (match = line.match(/<UseStyles[^>]*>/)) !== null:
             const href = this.extractCssFileName(line);
