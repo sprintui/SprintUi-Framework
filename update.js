@@ -2,7 +2,7 @@ const https = require('https');
 const fs = require('node:fs');
 const path = require('path');
 
-const appJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/public/assets/app.js';
+const appJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/assets/app.js';
 const buildJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/build.js';
 const serverJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/server.js';
 const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
@@ -58,7 +58,7 @@ function getVersion(url) {
 }
 
 async function downloadAndSave() {
-  const appJSPath = path.join(__dirname, './public/assets/app.js');
+  const appJSPath = path.join(__dirname, './assets/app.js');
   const buildJSPath = path.join(__dirname, 'build.js');
 
   try {
