@@ -291,3 +291,4 @@ Modified import statements to import states and cookies from sprintui explicitly
 ### Notes
 
 This version introduces significant changes in file organization and import statements. URL parameters can now be accessed directly from functions and states. No fixes were required in this release.
+You will need to update update.js
