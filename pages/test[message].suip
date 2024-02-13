@@ -70,7 +70,7 @@
         </UseStyles>
          
         
-        import states
+        import states from sprintui
 
         
         <UseScript src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" head={true} />
