@@ -9,10 +9,9 @@ program
 
   .parse(process.argv);
 const options = program.opts();
-
-var UglifyJS = require("uglify-js");
+const Terser = require('terser');
 async function fetchRoutes() {
-  const pagesPath = path.join(__dirname, "public", "pages");
+  const pagesPath = path.join(__dirname, "pages");
 
   let pages = [];
 
@@ -64,14 +63,35 @@ function transpilesUIp(page, pageName) {
     let html = "";
     let inSUIP = false;
     let sUIPHooks = false;
-    let sUIpScript = false;
 
     let pageAssetsTOBeAdded = {
       page: pageName,
-      scripts: [],
+      scripts: [
+        {
+          id: "sUIp",
+          src: null,
+          head: false,
+          async: false,
+          defer: false,
+          preload: false,
+          type: "text/javascript",
+          textContent: `
+          function getUrlParams() {
+          
+            return app.urlParams;
+          }
+          function getUrlParam(name) {
+            return app.urlParams[name];
+          }
+          `,
+          autoReady: false,
+          sprintIgnore: false,
+        },
+      ],
       styles: [],
       hooks: [],
     };
+
 
     for (let line of lines) {
       let match;
@@ -87,63 +107,27 @@ function transpilesUIp(page, pageName) {
           break;
   
         case line.includes("useQuery()"):
-          if (!sUIpScript) {
-            let variableName = line.split("useQuery(")[0];
-
-            variableName = variableName.replace("=", "");
-            variableName = variableName.trim();
-
-            let newScript = {
-              id: "sUIp",
-              src: null,
-              head: false,
-              async: false,
-              defer: false,
-              preload: false,
-
-              textContent: `${variableName} = getQueryParams()`,
-            };
-
-            pageAssetsTOBeAdded.scripts.push(newScript);
-
-            sUIpScript = true;
-          } else {
+         
+          
             //add to textContent
-            let variableName = line.split("useQuery(")[0];
+            var variableName = line.split("useQuery(")[0];
 
             variableName = variableName.replace("=", "");
             variableName = variableName.trim();
 
-            let script = pageAssetsTOBeAdded.scripts.find(
+            var script = pageAssetsTOBeAdded.scripts.find(
               (script) => script.id === "sUIp"
             );
             if (!script.textContent.includes("function useQuery()")) {
               script.textContent += `${variableName} = getQueryParams()`;
             }
-          }
+          
           break;
 
         case line.includes("setBodyClass("):
-          if (!sUIpScript) {
-            //get things in between the parenthesis
-            let variableName = line.split("setBodyClass(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
-
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
-
-            let newHook = {
-              name: "setBodyClass",
-              textContent: variableName || "",
-            };
-            pageAssetsTOBeAdded.hooks.push(newHook);
-
-            sUIPHooks = true;
-          } else {
+      
             //add to textContent
-            let variableName = line.split("setBodyClass(")[1];
+            var variableName = line.split("setBodyClass(")[1];
             variableName = variableName.split(")")[0];
             variableName = variableName.trim();
 
@@ -151,34 +135,17 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
             hook.textContent += variableName || "";
-          }
+          
 
           break;
         case line.includes("setTitle("):
-          if (!sUIpScript) {
-            //get things in between the parenthesis
-            let variableName = line.split("setTitle(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
-
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
-
-            let newHook = {
-              name: "setTitle",
-              textContent: variableName || "",
-            };
-            pageAssetsTOBeAdded.hooks.push(newHook);
-
-            sUIPHooks = true;
-          } else {
+        
             //add to textContent
-            let variableName = line.split("setTitle(")[1];
+            var variableName = line.split("setTitle(")[1];
             variableName = variableName.split(")")[0];
             variableName = variableName.trim();
 
@@ -186,34 +153,17 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setTitle"
             );
             hook.textContent += variableName || "";
-          }
+          
 
           break;
         case line.includes("setRootClass"):
-          if (!sUIpScript) {
-            //get things in between the parenthesis
-            let variableName = line.split("setRootClass(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
-
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
-
-            let newHook = {
-              name: "setRootClass",
-              textContent: variableName || "",
-            };
-            pageAssetsTOBeAdded.hooks.push(newHook);
-
-            sUIPHooks = true;
-          } else {
+          
             //add to textContent
-            let variableName = line.split("setRootClass(")[1];
+            var variableName = line.split("setRootClass(")[1];
             variableName = variableName.split(")")[0];
             variableName = variableName.trim();
 
@@ -221,34 +171,17 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setRootClass"
             );
             hook.textContent += variableName || "";
-          }
+          
 
           break;
         case line.includes("setHtmlClass"):
-          if (!sUIpScript) {
-            //get things in between the parenthesis
-            let variableName = line.split("setHtmlClass(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
-
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
-
-            let newHook = {
-              name: "setHtmlClass",
-              textContent: variableName || "",
-            };
-            pageAssetsTOBeAdded.hooks.push(newHook);
-
-            sUIPHooks = true;
-          } else {
+        
             //add to textContent
-            let variableName = line.split("setHtmlClass(")[1];
+            var variableName = line.split("setHtmlClass(")[1];
             variableName = variableName.split(")")[0];
             variableName = variableName.trim();
 
@@ -256,11 +189,11 @@ function transpilesUIp(page, pageName) {
             variableName = variableName.replace(/['"]+/g, "");
             variableName = variableName.trim();
 
-            let hook = pageAssetsTOBeAdded.hooks.find(
+            var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setHtmlClass"
             );
             hook.textContent += variableName || "";
-          }
+          
 
           break;
 
@@ -318,45 +251,9 @@ function transpilesUIp(page, pageName) {
             }
           }
           break;
-        case line.includes("import states"):
-          if (!sUIpScript) {
-            let newScript = {
-              id: "sUIp",
-              src: null,
-              head: false,
-              async: false,
-              defer: false,
-              preload: false,
-
-              textContent: `function addState(name,value) {
-                  app.states.push({name:name,value:value});
-                }
-                function fetchStates() {
-                  return app.states;
-                }
-
-                function setState(name,value) {
-                  app.states.forEach((state) => {
-                    if (state.name === name) {
-                      state.value = value;
-                    }
-                  });
-                }
-
-                function getState(name) {
-                  return app.states.find((state) => state.name === name);
-                }
-
-                function removeState(name) {
-                  app.states = app.states.filter((state) => state.name !== name);
-                }
-
-                `,
-            };
-
-            pageAssetsTOBeAdded.scripts.push(newScript);
-          } else {
-            let script = pageAssetsTOBeAdded.scripts.find(
+        case line.includes("import states from sprintui"):
+         
+            var script = pageAssetsTOBeAdded.scripts.find(
               (script) => script.id === "sUIp"
             );
             if (!script.textContent.includes("function addState()")) {
@@ -387,8 +284,34 @@ function transpilesUIp(page, pageName) {
 
                 `;
             }
-          }
+          
           break;
+          case line.includes("import cookies from sprintui"):
+            var script = pageAssetsTOBeAdded.scripts.find(
+              (script) => script.id === "sUIp"
+            );
+            if (!script.textContent.includes("function setCookie()")) {
+              script.textContent += `
+              function setCookie(name,value,expires) {
+                document.cookie = name + "=" + value + ";expires=" + expires;
+              }
+              function getCookies() {
+                return document.cookie;
+              }
+              function getCookie(name) {
+                const cookieValue = document.cookie.split(name + "=")[1];
+                return cookieValue ? cookieValue.split(";")[0] : "";
+              }
+
+              function removeCookie(name) {
+                document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 UTC";
+              }
+
+
+              `;
+            }
+
+            break;
         case (match = line.match(/<UseScript[^>]*>/)) !== null:
           const src = extractScriptSrc(line);
 
@@ -590,7 +513,7 @@ async function fetchPagesToTranspile(routes) {
       }
 
       const pageContent = fs.readFileSync(
-        `./public/pages/${route}.suip`,
+        `./pages/${route}.suip`,
         "utf8"
       );
 
@@ -677,6 +600,7 @@ async function main() {
     states:[],
     stylesAdded: new Set(),
     scriptsAdded: new Set(),
+    urlParams:{},
     
     async addAssets(pageKey) {
       // Add a check if assets are already loaded for this page
@@ -684,8 +608,6 @@ async function main() {
         return;
       }
     
-  
-      //promise
   
         const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
         if (pageAssets) {
@@ -942,7 +864,6 @@ async function main() {
       this.render();
   
     },
-  
     async render() {
       const url = getCurrentUrl();
       const urlObject = new URL(url);
@@ -958,95 +879,67 @@ async function main() {
   
       }
   
-      const page = this.pages[path];
       const rootElement = document.getElementById("root");
-  
-      rootElement.innerHTML = this.loadingMessage || "Loading...";
-      if (!page) {
-        if (!this.notFoundMessage) {
-          rootElement.innerHTML = "404 Not Found";
-  
-  
+      const urlSegments = path.split("/");
+      const amountOfSlashes = urlSegments.length - 1;
 
+      let pagePath;
+      
+      if (amountOfSlashes >= 1) {
+        const pages = Object.keys(this.pages);
+        const pageKeys = pages.filter((page) => {
+          const pageSegments =page.split(/\\[([^\\]]+)\\]/g);
+          pageSegments.shift();
+
+          return pageSegments.length === amountOfSlashes;
+        });
+
+        pagePath = this.pages[pageKeys[0]];
+        path = pageKeys[0];
+
+
+        const params = {};
+        const pageSegments = path.split(/\\[([^\\]]+)\\]/g);
+        urlSegments.shift();
+        pageSegments.shift();
+        pageSegments.forEach((segment, index)  => {
+          const urlSegment = urlSegments[index];
+          const key = segment.split("=")[0];
+          params[key] = urlSegment;
+        });
+
+        this.urlParams = params;
+
+        
+      } else {
+        pagePath = this.pages[path];
+
+      }
+      rootElement.innerHTML = this.loadingMessage || "Loading...";
+      if (!pagePath) {
+        if (!this.notFoundMessage) {
+          rootElement.innerHTML = "404";
         } else {
   
-          page = ${JSON.stringify(pages["404"])};
-      
-          await this.addHooks("404");
-          await this.addAssets("404");
-          this.isLoading = false;
-  
-       
-  
-          const { states } = this;
-  
-          let html = page;
-          html = html.replace(/\${(.*?)}/g, function (match, stateName) {
-            const stateNameMatch = stateName.match("or")
-              ? stateName.split("or")
-              : [stateName];
-            const name = stateNameMatch[0].trim();
-            const type = name.split(".")[0];
-            const objectName = name.split(".")[1];
-  
-            const getValue = (storage, key) => {
-              const value = storage.getItem(key);
-              return value ? value : "";
-            };
-  
-            const defaultValue =
-              stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
-  
-            switch (type) {
-              case "s":
-                const state = states.find((state) => state.name === objectName);
-                return state ? state.value : defaultValue;
-  
-              case "l":
-                return getValue(localStorage, objectName) || defaultValue;
-  
-              case "c":
-                const cookieValue = document.cookie.split(objectName + "=")[1];
-                return cookieValue ? cookieValue.split(";")[0] : defaultValue;
-  
-              case "ss":
-                return getValue(sessionStorage, objectName) || defaultValue;
-  
-              default:
-                return "";
-            }
-          });
-  
-          rootElement.innerHTML = html;
-  
-          const sprintReady = setInterval(async () => {
-            if (this.assetsLoaded && this.hooksLoaded) {
-              const sprintReadyEvent = new Event("sprintReady");
-              document.dispatchEvent(sprintReadyEvent);
-              clearInterval(sprintReady);
-            }
-          }
-  
-          , 500);
-  
-  
-          
+          /* eslint-disable no-undef */
+          pagePath = this.pages["404"];
+          /* eslint-enable no-undef */
+          path = "404";
         }
-      } else {
+      }
   
       const interval = setInterval(async () => {
         if (this.isLoading) {
           await this.addHooks(path);
           await this.addAssets(path);
-          this.isLoading = false;
-
+    
           
         const { states } = this;
         const { localStorage, sessionStorage } = window;
         
-        let html = page;
+        let html = pagePath;
         
-        html = html.replace(/\${(.*?)}/g, function (match, stateName) {
+        html = html.replace(/\\$\{(.*?)}/g, function (match, stateName) {
           const stateNameMatch = stateName.match("or") ? stateName.split("or") : [stateName];
           const name = stateNameMatch[0].trim();
           const type = name.split(".")[0];
@@ -1074,7 +967,11 @@ async function main() {
         
             case "ss":
               return getValue(sessionStorage, objectName) || defaultValue;
-        
+
+            case "u":
+            
+              return app.urlParams[objectName] || defaultValue;
+
             default:
               return "";
           }
@@ -1083,6 +980,8 @@ async function main() {
         
         
           rootElement.innerHTML = html; 
+                this.isLoading = false;
+
           clearInterval(interval);
           const sprintReady = setInterval(async () => {
             if (this.assetsLoaded && this.hooksLoaded) {
@@ -1093,9 +992,8 @@ async function main() {
           }, 500);
         }
       }, 500);
-    }
+    
     },
-  
     async init(notFoundMessage, loadingMessage) {
       this.notFoundMessage = notFoundMessage;
       this.loadingMessage = loadingMessage;
@@ -1137,8 +1035,9 @@ async function main() {
   
   app.init();
 `;
-  let minified = UglifyJS.minify(finalScript);
-  //create a folder called build if it doesnt exist
+
+  let minified = await Terser.minify(finalScript);
+
   if (!fs.existsSync("build")) {
     fs.mkdirSync("build");
   }
@@ -1148,14 +1047,14 @@ async function main() {
   }
 
   //copy everything in assets except app.js to build2
-  fs.readdirSync("public/assets/").forEach((file) => {
+  fs.readdirSync("assets/").forEach((file) => {
     if (file !== "app.js") {
-      fs.copyFileSync(`public/assets/${file}`, `build/assets/${file}`);
+      fs.copyFileSync(`assets/${file}`, `build/assets/${file}`);
     }
   });
 
   //copy index.html to build
-  fs.copyFileSync("public/index.html", "./build/index.html");
+  fs.copyFileSync("index.html", "./build/index.html");
 
   //replace   <script src="/assets/app.js" id="suia"></script> with app.build.min.js
   let indexHTML = fs.readFileSync("./build/index.html", "utf8");
@@ -1185,12 +1084,12 @@ async function main() {
     "\x1b[36m%s\x1b[0m",
     "Original File Size (app.js + routes): " +
       (
-        (fs.readFileSync("./public/assets/app.js", "utf8").length +
+        (fs.readFileSync("./assets/app.js", "utf8").length +
           fs
-            .readdirSync("./public/pages/")
+            .readdirSync("./pages/")
             .reduce(
               (totalSize, routeFile) =>
-                totalSize + fs.statSync(`./public/pages/${routeFile}`).size,
+                totalSize + fs.statSync(`./pages/${routeFile}`).size,
               0
             )) /
         1024
@@ -1199,12 +1098,12 @@ async function main() {
   );
 
   const originalSize =
-    fs.readFileSync("./public/assets/app.js", "utf8").length +
+    fs.readFileSync("./assets/app.js", "utf8").length +
     fs
-      .readdirSync("./public/pages/")
+      .readdirSync("./pages/")
       .reduce(
         (totalSize, routeFile) =>
-          totalSize + fs.statSync(`./public/pages/${routeFile}`).size,
+          totalSize + fs.statSync(`./pages/${routeFile}`).size,
         0
       );
 
@@ -1217,7 +1116,7 @@ async function main() {
       "%"
   );
 
-  const sV = 1.8;
+  const sV = 2.0;
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
