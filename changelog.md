@@ -267,3 +267,26 @@ Stay tuned for more updates and enhancements in SprintUI! Your feedback and supp
 ### Notes
 
 Several changes have been made to `build.js` to improve functionality. Documentation has been updated to reflect the changes introduced in recent updates. Additionally, issues in `build.js` have been fixed for a more stable build process.
+
+## Version 2.0 - 02/13/2024 - RELEASED
+
+### Added
+
+cookies library imported as a JavaScript library, similar to states.
+URL parameters can now be accessed from functions and states.
+Changed
+
+Restructured file organization:
+public folder is no longer present; pages and assets are now their own folders.
+Modified import statements to import states and cookies from sprintui explicitly.
+### Fixed
+- None
+### Deprecated
+- None
+### Removed
+- None
+### Security
+- None
+### Notes
+
+This version introduces significant changes in file organization and import statements. URL parameters can now be accessed directly from functions and states. No fixes were required in this release.
