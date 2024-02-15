@@ -22,15 +22,13 @@ async function fetchRoutes() {
       },
     });
 
-  
     if (response.ok) {
       let pageContent = await response.text();
-
 
       let routes = pageContent.split("ROUTES=")[1];
       routes = routes.split(",");
       routes = routes.map((route) => route.trim());
-     
+
       return { routes };
     } else {
       console.error(
@@ -412,21 +410,16 @@ const app = {
 
     let path = urlObject.pathname;
 
-
-
     if (path == "/") {
       path = "home";
     } else {
       path = path.substring(1);
     }
 
-
-
     const rootElement = document.getElementById("root");
     const urlSegments = path.split("/");
     const amountOfSlashes = urlSegments.length - 1;
     const startPath = path.split("/")[0];
-  
 
     let pagePath;
 
@@ -435,7 +428,6 @@ const app = {
       const pageKeys = pages.filter((page) => {
         const pageSegments = page.split(/\[([^\]]+)\]/g).filter(Boolean);
         pageSegments.shift();
-    
 
         return pageSegments.length === amountOfSlashes;
       });
@@ -443,7 +435,6 @@ const app = {
       pagePath = this.pages[pageKeys[0]];
 
       path = pageKeys[0];
-      
 
       //get params
       const params = {};
@@ -458,11 +449,9 @@ const app = {
 
       this.urlParams = params;
 
-      if(path.split("[")[0] !== startPath){
+      if (path.split("[")[0] !== startPath) {
         pagePath = undefined;
       }
-
-
     } else {
       pagePath = this.pages[path];
     }
@@ -578,7 +567,7 @@ const app = {
 
       for (let line of lines) {
         let match;
-    
+
         switch (true) {
           case line.includes("useQuery()"):
             //add to textContent
@@ -673,18 +662,15 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
-          
+
             if (hook) {
               hook.textContent += variableName || "";
-            }
-
-            else {
+            } else {
               pageAssets.hooks.push({
                 name: "setBodyClass",
                 textContent: variableName || "",
               });
             }
-
 
             break;
           case line.includes("setTitle("):
@@ -703,14 +689,12 @@ const app = {
             );
             if (hook) {
               hook.textContent += variableName || "";
+            } else {
+              pageAssets.hooks.push({
+                name: "setTitle",
+                textContent: variableName || "",
+              });
             }
-              
-              else {
-                pageAssets.hooks.push({
-                  name: "setTitle",
-                  textContent: variableName || "",
-                });
-              }
             break;
           case line.includes("setRootClass"):
             //add to textContent
@@ -726,18 +710,15 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setRootClass"
             );
-           
+
             if (hook) {
               hook.textContent += variableName || "";
-            }
-
-            else {
+            } else {
               pageAssets.hooks.push({
                 name: "setRootClass",
                 textContent: variableName || "",
               });
             }
-
 
             break;
           case line.includes("setHtmlClass"):
@@ -756,14 +737,12 @@ const app = {
             );
             if (hook) {
               hook.textContent += variableName || "";
-            }
-            else {
+            } else {
               pageAssets.hooks.push({
                 name: "setHtmlClass",
                 textContent: variableName || "",
               });
             }
-            
 
           case (match = line.match(/<UseStyles[^>]*>/)) !== null:
             const href = this.extractCssFileName(line);
@@ -864,55 +843,21 @@ const app = {
 
               const autoReady = line.includes("autoReady={false}");
               const sprintIgnore = line.includes("sprintIgnore={true}");
-              const bringF = line.includes("bringF={false}");
 
               // Initialize scriptContent as an empty string
-
               let scriptContent = "";
-
               // Start from the line following the opening <UseScript> tag
               let i = lines.indexOf(line) + 1;
-
-              const fAndG = {
-                id: "fAndG",
-                src: null,
-                head: false,
-                async: false,
-                defer: false,
-                preload: false,
-                type: type ? type[1] : "text/javascript",
-
-                textContent: scriptContent,
-                autoReady: false,
-                sprintIgnore: false,
-              };
               // Loop through lines until the closing </UseScript> tag is found
               while (i < lines.length && !lines[i].includes("</UseScript>")) {
-                //check for global
-                if (lines[i].includes("global")) {
-                  //remove global
-                  lines[i] = lines[i].replace("global", "");
-
-                  fAndG.textContent += lines[i];
-                  i++;
-                  continue;
+                // Check if the line is a comment
+                if (lines[i].trim().startsWith("//")) {
+                  // If it's a comment, append it to the scriptContent with a newline
+                  scriptContent += lines[i] + "\n";
+                } else {
+                  // Otherwise, append the line as is
+                  scriptContent += lines[i];
                 }
-
-                if (lines[i].includes("function")) {
-                  if (!bringF) {
-                    //search for end of function
-                    let functionContent = "";
-                    let j = i;
-                    while (j < lines.length && !lines[j].includes("}")) {
-                      functionContent += lines[j];
-                      j++;
-                    }
-                    functionContent += lines[j];
-                    fAndG.textContent += functionContent;
-                  }
-                }
-
-                scriptContent += lines[i];
                 i++;
               }
 
@@ -925,13 +870,11 @@ const app = {
                   defer: defer ? true : false,
                   preload: preload ? true : false,
                   type: type ? type[1] : "text/javascript",
-
                   textContent: scriptContent,
                   autoReady: autoReady ? false : true,
                   sprintIgnore: sprintIgnore ? true : false,
                 };
                 pageAssets.scripts.push(newScript);
-                pageAssets.scripts.push(fAndG);
                 lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
               }
             }
