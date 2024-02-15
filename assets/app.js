@@ -958,13 +958,11 @@ const app = {
         if (event.target.location.href.includes("?")) {
           return;
         }
-
-        this.isLoading = true;
-        let currentPath = getCurrentUrl().split("/")[3] || "home";
-        this.removeAssets(currentPath);
-        this.removeHooks(currentPath);
-        this.render();
       }
+      this.isLoading = true;
+      window.location.reload();
+
+
     });
 
     if (pagesToTranspile["404"]) {
