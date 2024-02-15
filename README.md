@@ -80,22 +80,6 @@ This structure may work initially but can result in broken paths in future updat
 
 SprintUI follows a straightforward routing system based on the file structure within the `pages` folder. Here are some best practices for effective routing:
 
-### Nested Folders
-
-Consider creating nested folders for a structured approach to your application's pages. For example:
-
-```
-/pages
-  /dashboard
-    home.suip
-    profile.suip
-  /blog
-    post.suip
-    category.suip
-```
-
-This approach enhances the organization of your SprintUI project, making it easier to manage and navigate.
-
 ### File Naming
 
 For single pages, you can follow the convention of `pageName.suip`. However, for nested folders, it's not recommended to name your pages with a folder prefix, like `folderName/pageName.suip`. For instance:
@@ -103,10 +87,10 @@ For single pages, you can follow the convention of `pageName.suip`. However, for
 ```
 /pages
   home.suip
-    dashboard/home.suip
-    dashboard/profile.suip
-    blog/post.suip
-    blog/category.suip
+    dashboard[home].suip
+    dashboard[profile].suip
+    blog[post].suip
+    blog[category].suip
 ```
 
 This naming convention hardens clarity and starts potential conflicts in page names.
@@ -116,12 +100,7 @@ This naming convention hardens clarity and starts potential conflicts in page na
 SprintUI supports a straightforward URL structure based on the file hierarchy. For example:
 
 - `/` maps to `home.suip`
-- `/blog/post` maps to `blog/post.suip`
-
-### Advanced Routing
-
-For more complex routing, consider creating custom folders to structure your pages. For instance, `/dashboard/home` could map to `dashboard/home.suip`. This approach provides flexibility while maintaining a clear structure.
-
+- `/blog[post]` maps to `blog/post`
 
 ## Production Deployment
 
@@ -341,6 +320,15 @@ Example 404.slip:
 
 </suipMarkup>
 ```
+### URL Parameters
+
+URL parameters are as follows: `view/1233`, where `1233` represents the ID. To create one, make a file named `view[id].suip`.
+
+Here, you can access it using functions in JavaScript or by utilizing the state manager.
+
+You might ask, "Wait, aren't routes like `/test/test2/home` also URL parameters?" Yes, they are, but they remain unused parameters.
+
+Functions to use: `getUrlParam` and `getUrlParams`.
 
 ## Customizing the Loading Page
 
