@@ -388,62 +388,25 @@ function transpilesUIp(page, pageName) {
 
             const autoReady = line.includes("autoReady={false}");
             const sprintIgnore = line.includes("sprintIgnore={true}");
-            const bringF = line.includes("bringF={false}");
+  
 
-            // Initialize scriptContent as an empty string
-
+                      // Initialize scriptContent as an empty string
             let scriptContent = "";
-
             // Start from the line following the opening <UseScript> tag
             let i = lines.indexOf(line) + 1;
-
-            const fAndG = {
-              id: "fAndG",
-              src: null,
-              head: false,
-              async: false,
-              defer: false,
-              preload: false,
-              type: type ? type[1] : "text/javascript",
-
-              textContent: scriptContent,
-              autoReady: false,
-              sprintIgnore: false,
-            };
             // Loop through lines until the closing </UseScript> tag is found
             while (i < lines.length && !lines[i].includes("</UseScript>")) {
-              //check for global
-              if (lines[i].includes("global")) {
-                //remove global
-                lines[i] = lines[i].replace("global", "");
-
-                fAndG.textContent += lines[i];
-                i++;
-                continue;
-              }
-
-              if (lines[i].includes("//")) {
-                lines[i] = lines[i].split("//")[0]; 
-
-              }
-
-              if (lines[i].includes("function")) {
-                if (!bringF) {
-                  //search for end of function
-                  let functionContent = "";
-                  let j = i;
-                  while (j < lines.length && !lines[j].includes("}")) {
-                    functionContent += lines[j];
-                    j++;
-                  }
-                  functionContent += lines[j];
-                  fAndG.textContent += functionContent;
+                // Check if the line is a comment
+                if (lines[i].trim().startsWith("//")) {
+                    // If it's a comment, append it to the scriptContent with a newline
+                    scriptContent += lines[i] + "\n";
+                } else {
+                    // Otherwise, append the line as is
+                    scriptContent += lines[i];
                 }
-              }
-
-              scriptContent += lines[i];
-              i++;
+                i++;
             }
+
 
             if (scriptContent) {
               const newScript = {
@@ -460,7 +423,7 @@ function transpilesUIp(page, pageName) {
                 sprintIgnore: sprintIgnore ? true : false,
               };
               pageAssetsTOBeAdded.scripts.push(newScript);
-              pageAssetsTOBeAdded.scripts.push(fAndG);
+          
               lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
             }
           }
