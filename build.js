@@ -1022,10 +1022,8 @@ async function main() {
           }
           
           this.isLoading = true;
-          let currentPath = getCurrentUrl().split("/")[3] || "home";
-          this.removeAssets(currentPath);
-          this.removeHooks(currentPath);
-          this.render();
+          window.location.reload();
+
         }
       });
       
