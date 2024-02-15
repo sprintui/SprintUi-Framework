@@ -918,6 +918,7 @@ async function main() {
       const rootElement = document.getElementById("root");
       const urlSegments = path.split("/");
       const amountOfSlashes = urlSegments.length - 1;
+      const startPath = path.split("/")[0];
 
       let pagePath;
       
@@ -945,7 +946,9 @@ async function main() {
         });
 
         this.urlParams = params;
-
+        if(path.split("[")[0] !== startPath){
+          pagePath = undefined;
+        }
         
       } else {
         pagePath = this.pages[path];
