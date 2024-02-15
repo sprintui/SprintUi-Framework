@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V1.8
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V2.0
 
 **Welcome to the SprintUI Framework!**
 
@@ -194,7 +194,7 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
 3. **Setting Local Scripts:**
    ```jsx
    <UseScript>
-     /* Your local scripts here */
+     // Your local scripts here, make sure you include at the end; or else you will get errors.
    </UseScript>
    ```
 
