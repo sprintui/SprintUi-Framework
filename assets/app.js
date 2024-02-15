@@ -412,15 +412,21 @@ const app = {
 
     let path = urlObject.pathname;
 
+
+
     if (path == "/") {
       path = "home";
     } else {
       path = path.substring(1);
     }
 
+
+
     const rootElement = document.getElementById("root");
     const urlSegments = path.split("/");
     const amountOfSlashes = urlSegments.length - 1;
+    const startPath = path.split("/")[0];
+  
 
     let pagePath;
 
@@ -429,12 +435,15 @@ const app = {
       const pageKeys = pages.filter((page) => {
         const pageSegments = page.split(/\[([^\]]+)\]/g).filter(Boolean);
         pageSegments.shift();
+    
 
         return pageSegments.length === amountOfSlashes;
       });
 
       pagePath = this.pages[pageKeys[0]];
+
       path = pageKeys[0];
+      
 
       //get params
       const params = {};
@@ -448,6 +457,12 @@ const app = {
       });
 
       this.urlParams = params;
+
+      if(path.split("[")[0] !== startPath){
+        pagePath = undefined;
+      }
+
+
     } else {
       pagePath = this.pages[path];
     }
