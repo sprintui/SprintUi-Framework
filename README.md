@@ -287,7 +287,7 @@ As of the current version, the available hooks along with their descriptions and
 </UseScript>
 
 <suipMarkup>
-  <!-- Your JSX here -->
+  <!-- Your suip here -->
 </suipMarkup>
 ```
 
