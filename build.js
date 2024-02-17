@@ -138,16 +138,7 @@ function transpilesUIp(page, pageName) {
             var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
-            if (hook) { 
-              hook.textContent += variableName || "";
-            }
-            else {
-              pageAssetsTOBeAdded.hooks.push({
-                name: "setBodyClass",
-                textContent: variableName || "",
-              });
-            }
-
+            hook.textContent += variableName || "";
           
 
           break;
@@ -165,17 +156,7 @@ function transpilesUIp(page, pageName) {
             var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setTitle"
             );
-            if (hook) {
-              hook.textContent += variableName || "";
-            }
-
-            else {
-              pageAssetsTOBeAdded.hooks.push({
-                name: "setTitle",
-                textContent: variableName || "",
-              });
-            }
-
+            hook.textContent += variableName || "";
           
 
           break;
@@ -193,17 +174,8 @@ function transpilesUIp(page, pageName) {
             var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setRootClass"
             );
-            if (hook) {
-              hook.textContent += variableName || "";
-            }
-
-            else {
-              pageAssetsTOBeAdded.hooks.push({
-                name: "setRootClass",
-                textContent: variableName || "",
-              });
-            }
-
+            hook.textContent += variableName || "";
+          
 
           break;
         case line.includes("setHtmlClass"):
@@ -220,15 +192,7 @@ function transpilesUIp(page, pageName) {
             var hook = pageAssetsTOBeAdded.hooks.find(
               (hook) => hook.name === "setHtmlClass"
             );
-            if (hook) {
-              hook.textContent += variableName || "";
-            }
-            else {
-              pageAssetsTOBeAdded.hooks.push({
-                name: "setHtmlClass",
-                textContent: variableName || "",
-              });
-            }
+            hook.textContent += variableName || "";
           
 
           break;
@@ -388,25 +352,62 @@ function transpilesUIp(page, pageName) {
 
             const autoReady = line.includes("autoReady={false}");
             const sprintIgnore = line.includes("sprintIgnore={true}");
-  
+            const bringF = line.includes("bringF={false}");
 
-                      // Initialize scriptContent as an empty string
+            // Initialize scriptContent as an empty string
+
             let scriptContent = "";
+
             // Start from the line following the opening <UseScript> tag
             let i = lines.indexOf(line) + 1;
+
+            const fAndG = {
+              id: "fAndG",
+              src: null,
+              head: false,
+              async: false,
+              defer: false,
+              preload: false,
+              type: type ? type[1] : "text/javascript",
+
+              textContent: scriptContent,
+              autoReady: false,
+              sprintIgnore: false,
+            };
             // Loop through lines until the closing </UseScript> tag is found
             while (i < lines.length && !lines[i].includes("</UseScript>")) {
-                // Check if the line is a comment
-                if (lines[i].trim().startsWith("//")) {
-                    // If it's a comment, append it to the scriptContent with a newline
-                    scriptContent += lines[i] + "\n";
-                } else {
-                    // Otherwise, append the line as is
-                    scriptContent += lines[i];
-                }
-                i++;
-            }
+              //check for global
+              if (lines[i].includes("global")) {
+                //remove global
+                lines[i] = lines[i].replace("global", "");
 
+                fAndG.textContent += lines[i];
+                i++;
+                continue;
+              }
+
+              if (lines[i].includes("//")) {
+                lines[i] = lines[i].split("//")[0]; 
+
+              }
+
+              if (lines[i].includes("function")) {
+                if (!bringF) {
+                  //search for end of function
+                  let functionContent = "";
+                  let j = i;
+                  while (j < lines.length && !lines[j].includes("}")) {
+                    functionContent += lines[j];
+                    j++;
+                  }
+                  functionContent += lines[j];
+                  fAndG.textContent += functionContent;
+                }
+              }
+
+              scriptContent += lines[i];
+              i++;
+            }
 
             if (scriptContent) {
               const newScript = {
@@ -423,7 +424,7 @@ function transpilesUIp(page, pageName) {
                 sprintIgnore: sprintIgnore ? true : false,
               };
               pageAssetsTOBeAdded.scripts.push(newScript);
-          
+              pageAssetsTOBeAdded.scripts.push(fAndG);
               lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
             }
           }
@@ -465,6 +466,36 @@ function transpilesUIp(page, pageName) {
               );
 
               html += line;
+            }
+            else if (line.includes("<HImport")) {
+              const fromMatch = line.match(/from=['"]([^'"]+)['"]/);
+              if (fromMatch) {
+                  const from = fromMatch[1];
+                  if (from.includes("https://") || from.includes("http://")) {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("GET", from, false);
+                    xhr.send();
+                    if (xhr.status === 200) {
+                      line = xhr.responseText;
+                      html += line;
+                    }
+                
+                  }
+                  else 
+                  {
+                    const file = fs.readFileSync(`./comps/${from}.suic`, "utf8");
+                    line = file;
+                    html += line;
+                  }
+                  
+
+              }
+
+
+              
+
+
+              
             }
             else {
               html += line;
@@ -881,7 +912,6 @@ async function main() {
       const rootElement = document.getElementById("root");
       const urlSegments = path.split("/");
       const amountOfSlashes = urlSegments.length - 1;
-      const startPath = path.split("/")[0];
 
       let pagePath;
       
@@ -899,19 +929,33 @@ async function main() {
 
 
         const params = {};
-        const pageSegments = path.split(/\\[([^\\]]+)\\]/g);
+        const pageSegments = path.split(/(!?\\[[^\\]]+\\])/g);
         urlSegments.shift();
         pageSegments.shift();
-        pageSegments.forEach((segment, index)  => {
-          const urlSegment = urlSegments[index];
-          const key = segment.split("=")[0];
-          params[key] = urlSegment;
+        pageSegments.forEach((segment, index) => {
+          //if any variable has ! in front of it, make sure the url has the same value or return 404 else add to params
+          if (segment.includes("[!") && urlSegments[index] !== segment) {
+            const variable = segment.replace(/\\[\\]!/g, "");
+
+  
+            if (urlSegments[index] !== variable) {
+              pagePath = null;
+            }
+  
+          }
+  
+          if (segment.includes("[")) {
+            const urlSegment = urlSegments[index];
+            const key = segment.split("=")[0].replace(/\\[\\]/g, "");
+            params[key] = urlSegment;
+          }
+  
+  
+          
         });
 
         this.urlParams = params;
-        if(path.split("[")[0] !== startPath){
-          pagePath = undefined;
-        }
+
         
       } else {
         pagePath = this.pages[path];
@@ -1022,8 +1066,10 @@ async function main() {
           }
           
           this.isLoading = true;
-          window.location.reload();
-
+          let currentPath = getCurrentUrl().split("/")[3] || "home";
+          this.removeAssets(currentPath);
+          this.removeHooks(currentPath);
+          this.render();
         }
       });
       
@@ -1116,7 +1162,7 @@ async function main() {
       "%"
   );
 
-  const sV = 2.0;
+  const sV = 2.1;
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
