@@ -343,7 +343,7 @@ To customize the 404 page, developers are required to create their suip file. If
 
 1. Create 404.suip in the pages folder 
 
-Example 404.slip:
+Example 404.suip:
 
 ```jsx
 <UseScript src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" head={true} />
