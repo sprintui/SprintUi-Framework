@@ -6,7 +6,7 @@ require("dotenv").config();
 const fs = require("node:fs");
 const path = require("path");
 const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
-const sV =2.0;
+const sV =2.1;
 function getVersion(url) {
   return new Promise((resolve, reject) => {
     https.get(url, (response) => {
@@ -320,6 +320,12 @@ if (!fs.existsSync(path.join(__dirname,  "plugins"))) {
   fs.mkdirSync(path.join(__dirname, "plugins"));
 }
 
+//check if config file exists
+if (!fs.existsSync(path.join(__dirname,  "comps"))) {
+  //create config file
+  fs.mkdirSync(path.join(__dirname, "comps"));
+}
+
 
 
 function readPagesFolder() {
@@ -419,6 +425,20 @@ app.get("*", (req, res, next) => {
         res.send(pageContent);
     }
   } 
+  else if (req.url.includes("/comps")) {
+    // Construct the path to the .suip file based on the URL
+    const pagePath = path.join(__dirname, req.url + ".suic");
+    // Check if the file exists
+    if (!fs.existsSync(pagePath)) {
+      return res.status(404).send("Not found");
+    }
+    // Read the .suip file content
+    const pageContent = fs.readFileSync(pagePath, "utf8");
+
+    // Send the response
+    res.send(pageContent);
+  } 
+
   else {
     //check for asset file:js,css,image file types
     if (assetObject.some((extension) => req.url.includes(extension.extension))) {
