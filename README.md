@@ -5,7 +5,7 @@
 
 We're thrilled to have you on board. Let's get started with building and deploying your projects using this powerful framework.
 
-## Getting Started
+##### Getting Started
 
 1. **Clone the Repository**
    ```bash
@@ -20,7 +20,7 @@ We're thrilled to have you on board. Let's get started with building and deployi
    - `pages`: Folder within `public` where your SprintUI project files reside.
 3. **Remove unnecessary files that we provide: icon.png, version.txt, changelog.md, readme**
 
-## Update Procedure
+### Update Procedure
 
 A new file named `update.js` has been introduced. If you don't have this file already, please follow these steps:
 
@@ -32,7 +32,7 @@ A new file named `update.js` has been introduced. If you don't have this file al
 If this is your first time, you can skip this step, as the file is in update 1.3 and forward!
 
 
-## Development Mode
+### Development Mode
 
 1. Run the server in development mode:
    ```bash
@@ -44,7 +44,7 @@ If this is your first time, you can skip this step, as the file is in update 1.3
 3. For SprintUI syntax, refer to the files in the `pages` folder. It's a mix of HTML and JavaScript. Get familiar with it before moving to production.
  4.Asset Organization and Routing in SprintUI Framework
 
-## Asset Structure
+### Asset Structure
 
 In SprintUI Framework, organizing your assets is crucial for a clean and efficient development experience. Here's a guide to help you understand the correct practices for asset organization:
 
@@ -87,10 +87,10 @@ For single pages, you can follow the convention of `pageName.suip`. However, for
 ```
 /pages
   home.suip
-    dashboard[home].suip
-    dashboard[profile].suip
-    blog[post].suip
-    blog[category].suip
+    dashboard[!home].suip
+    dashboard[!profile].suip
+    blog[!post].suip
+    blog[!category].suip
 ```
 
 This naming convention hardens clarity and starts potential conflicts in page names.
@@ -100,7 +100,17 @@ This naming convention hardens clarity and starts potential conflicts in page na
 SprintUI supports a straightforward URL structure based on the file hierarchy. For example:
 
 - `/` maps to `home.suip`
-- `/blog[post]` maps to `blog/post`
+- `/blog[!post]` maps to `blog/post`
+- 
+### URL Parameters
+
+URL parameters are as follows: `view/1233`, where `1233` represents the ID. To create one, make a file named `view[id].suip`.
+
+Here, you can access it using functions in JavaScript or by utilizing the state manager.
+
+You might ask, "Wait, aren't routes like `/test/test2/home` also URL parameters?" Yes, they are, but they remain unused parameters.
+
+Functions to use: `getUrlParam` and `getUrlParams`.
 
 ## Production Deployment
 
@@ -150,11 +160,11 @@ This argument functions similarly to the `EXCLUDES` setting in `pages.sui` but i
 
 This is a basic setup for deploying SprintUi using Apache in production.
 
-# Learning SprintUI (suip)
+##### Learning SprintUI (suip)
 
 Now that you have the basics down, let's delve into using SprintUI (suip) within your project. Follow the steps below to make the most of this powerful framework:
 
-## Adding Styles and Scripts
+#### Adding Styles and Scripts
 
 1. **Linking External Styles and Scripts:**
    ```jsx
@@ -186,7 +196,7 @@ Now that you have the basics down, let's delve into using SprintUI (suip) within
    ```
 
    This allows you to manage asset removal selectively, ensuring that assets with `sprintIgnore` are ignored during the removal process, providing enhanced control over your SprintUI project's asset management.
-5. **Hooks**
+### Hooks
 
 Hooks in SprintUI can be a complex topic due to its dual nature. There are two types: one that interacts with the real DOM in index.html, and another designed for ease of use.
 
@@ -281,6 +291,45 @@ As of the current version, the available hooks along with their descriptions and
 </suipMarkup>
 ```
 
+
+## SUIP Components
+
+### Title: Link
+**Description:** Link allows you to move to pages without using actual page movement using the history API, which makes everything 10x faster.
+
+**Use Case:**
+```jsx
+<Link to="/" className="btn btn-primary">About</Link>
+<Link to="/test" className="btn btn-primary">About</Link>
+```
+
+### Title: HImport
+**Description:** HImport allows you to import HTML from a file. Create a SUIP file in 'comps' and make sure it's only HTML. It replaces the HImport with that HTML. This is great for pages using navbars and footer since it's just one line now. During building, it's already replaced so no more fetching from the server.
+
+**Use Case:**
+```jsx
+<HImport from="footer">
+<HImport from="test">
+```
+
+**test.suic:**
+```html
+<ul class="nav nav-tabs">
+  <li class="nav-item">
+    <a class="nav-link active" href="#">Active</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Link</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" href="#">Link</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link disabled" href="#">Disabled</a>
+  </li>
+</ul>
+```
+
 Congratulations! Your SprintUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
 
 # Customizing Loading and Not Found Pages
@@ -320,15 +369,6 @@ Example 404.slip:
 
 </suipMarkup>
 ```
-### URL Parameters
-
-URL parameters are as follows: `view/1233`, where `1233` represents the ID. To create one, make a file named `view[id].suip`.
-
-Here, you can access it using functions in JavaScript or by utilizing the state manager.
-
-You might ask, "Wait, aren't routes like `/test/test2/home` also URL parameters?" Yes, they are, but they remain unused parameters.
-
-Functions to use: `getUrlParam` and `getUrlParams`.
 
 ## Customizing the Loading Page
 
