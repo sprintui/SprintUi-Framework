@@ -82,7 +82,7 @@ SprintUI follows a straightforward routing system based on the file structure wi
 
 ### File Naming
 
-For single pages, you can follow the convention of `pageName.suip`. However, for nested folders, it's not recommended to name your pages with a folder prefix, like `folderName[!pageName].suip`. For instance:
+For single pages, you can follow the convention of `pageName.suip`. However, for nested folders, name your pages with a folder prefix, like `folderName[!pageName].suip`. For instance:
 
 ```
 /pages
