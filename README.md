@@ -304,7 +304,7 @@ As of the current version, the available hooks along with their descriptions and
 ```
 
 ### Title: HImport
-***Description**: HImport allows you to import HTML from a file. You can create a SUIP file in 'comps' or import HTML from an external source, ensuring it's only HTML. It replaces the HImport tag with the specified HTML content. This feature is beneficial for pages utilizing navbars and footers since it condenses multiple lines of code into just one. During building, it's already replaced, eliminating the need for fetching from the server. Ensure to provide a link to the component if importing from an external source.
+**Description**: HImport allows you to import HTML from a file. You can create a SUIP file in 'comps' or import HTML from an external source, ensuring it's only HTML. It replaces the HImport tag with the specified HTML content. This feature is beneficial for pages utilizing navbars and footers since it condenses multiple lines of code into just one. During building, it's already replaced, eliminating the need for fetching from the server. Ensure to provide a link to the component if importing from an external source.
 
 **Use Case:**
 ```jsx
