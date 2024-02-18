@@ -83,7 +83,7 @@ Avoid placing assets directly in the root directory, as this may lead to problem
 
 This structure may work initially but can result in broken paths in future updates, causing issues with your application's functionality.
 
-## Routing Best Practices
+## Routing
 
 SprintUI follows a straightforward routing system based on the file structure within the `pages` folder. Here are some best practices for effective routing:
 
