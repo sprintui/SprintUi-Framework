@@ -100,7 +100,6 @@ For single pages, you can follow the convention of `pageName.suip`. However, for
     blog[!category].suip
 ```
 
-This naming convention hardens clarity and starts potential conflicts in page names.
 
 ### URL Structure
 
