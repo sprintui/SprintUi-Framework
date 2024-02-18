@@ -675,7 +675,14 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setBodyClass"
             );
-            hook.textContent += variableName || "";
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+            else
+            {
+              pageAssetsTOBeAdded.hooks.push({ name: "setBodyClass", textContent: variableName || "" });
+            }
+
 
             break;
           case line.includes("setTitle("):
@@ -692,7 +699,14 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setTitle"
             );
-            hook.textContent += variableName || "";
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+            else
+            {
+              pageAssetsTOBeAdded.hooks.push({ name: "setTitle", textContent: variableName || "" });
+            }
+
 
             break;
           case line.includes("setRootClass"):
@@ -709,7 +723,14 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setRootClass"
             );
-            hook.textContent += variableName || "";
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+            else
+            {
+              pageAssetsTOBeAdded.hooks.push({ name: "setRootClass", textContent: variableName || "" });
+            }
+            
 
             break;
           case line.includes("setHtmlClass"):
@@ -726,7 +747,14 @@ const app = {
             var hook = pageAssets.hooks.find(
               (hook) => hook.name === "setHtmlClass"
             );
-            hook.textContent += variableName || "";
+            if (hook) {
+              hook.textContent += variableName || "";
+            }
+            else
+            {
+              pageAssetsTOBeAdded.hooks.push({ name: "setHtmlClass", textContent: variableName || "" });
+            }
+            
 
             break;
 
