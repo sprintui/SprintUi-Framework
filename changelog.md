@@ -292,3 +292,29 @@ Modified import statements to import states and cookies from sprintui explicitly
 
 This version introduces significant changes in file organization and import statements. URL parameters can now be accessed directly from functions and states. No fixes were required in this release.
 You will need to update update.js
+## Version 2.1 - 02/18/2024 - RELEASED
+
+### Added
+- Introducing Himport Import: This feature allows you to import HTML from a file using the `Himport` tag. You can create a SUIP file in the `comps` directory or import HTML from an external source, ensuring it's only HTML. Himport replaces the tag with the specified HTML content. It's particularly useful for pages with components like navbars and footers, condensing multiple lines of code into just one. During building, it's automatically replaced, eliminating the need for fetching from the server. Ensure to provide a link to the component if importing from an external source.
+- SprintUI Project Creator: You can now quickly create a SprintUI project using `npm install -g create-sprintui`. After installation, run `create-sprintui` where you want to set up your project, and it will be ready for use.
+
+### Changed
+- Documentation has been updated and revised to ensure clarity and accuracy.
+
+### Fixed
+- Spelling issues have been corrected for improved readability.
+- Bugs in URL routes have been fixed for smoother navigation.
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+
+This release brings significant enhancements and additions to the SprintUI framework. Himport Import allows for seamless HTML importing, streamlining the development process by condensing code and improving organization. The SprintUI Project Creator simplifies project setup, allowing users to create a new SprintUI project with a single command. Additionally, documentation has been updated and revised to ensure clarity and accuracy. Several bugs in URL routes have been fixed, enhancing the overall stability and usability of the framework.
+
