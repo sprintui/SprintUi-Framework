@@ -7,18 +7,24 @@ We're thrilled to have you on board. Let's get started with building and deployi
 
 ##### Getting Started
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/sprintui/SprintUi-Framework 
-   cd SprintUi-Framework 
-   ```
+1. **Clone the Repository or use create-sprintui**
+   -Github
+      ```bash
+      git clone https://github.com/sprintui/SprintUi-Framework 
+      cd SprintUi-Framework 
+      ```
+   -NPM
+     ```bash
+     npm install -g create-sprintui
+     create-sprintui
+     ```
 
-2. **Understanding the Project Structure**
+3. **Understanding the Project Structure**
    - `server.js`: Basic project setup in development mode.
    - `public`: All your public files, including a `pages` folder.
    - `build.js`: Script for production build. After running this, `server.js` is not needed, and routes will point to `index.html`.
    - `pages`: Folder within `public` where your SprintUI project files reside.
-3. **Remove unnecessary files that we provide: icon.png, version.txt, changelog.md, readme**
+4. **Remove unnecessary files that we provide: icon.png, version.txt, changelog.md, readme**
 
 ### Update Procedure
 
