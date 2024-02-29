@@ -948,6 +948,11 @@ const app = {
                 
               }
               
+              else {
+                html += line;
+              }
+              
+              
             
             } else {
               html += line;
