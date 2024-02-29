@@ -9,7 +9,7 @@ program
 
   .parse(process.argv);
 const options = program.opts();
-const Terser = require('terser');
+const Terser = require("terser");
 async function fetchRoutes() {
   const pagesPath = path.join(__dirname, "pages");
 
@@ -92,7 +92,6 @@ function transpilesUIp(page, pageName) {
       hooks: [],
     };
 
-
     for (let line of lines) {
       let match;
 
@@ -105,95 +104,85 @@ function transpilesUIp(page, pageName) {
         case line.includes("</suipMarkup>"):
           inSUIP = false;
           break;
-  
+
         case line.includes("useQuery()"):
-         
-          
-            //add to textContent
-            var variableName = line.split("useQuery(")[0];
+          //add to textContent
+          var variableName = line.split("useQuery(")[0];
 
-            variableName = variableName.replace("=", "");
-            variableName = variableName.trim();
+          variableName = variableName.replace("=", "");
+          variableName = variableName.trim();
 
-            var script = pageAssetsTOBeAdded.scripts.find(
-              (script) => script.id === "sUIp"
-            );
-            if (!script.textContent.includes("function useQuery()")) {
-              script.textContent += `${variableName} = getQueryParams()`;
-            }
-          
+          var script = pageAssetsTOBeAdded.scripts.find(
+            (script) => script.id === "sUIp"
+          );
+          if (!script.textContent.includes("function useQuery()")) {
+            script.textContent += `${variableName} = getQueryParams()`;
+          }
+
           break;
 
         case line.includes("setBodyClass("):
-      
-            //add to textContent
-            var variableName = line.split("setBodyClass(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
+          //add to textContent
+          var variableName = line.split("setBodyClass(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
 
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
 
-            var hook = pageAssetsTOBeAdded.hooks.find(
-              (hook) => hook.name === "setBodyClass"
-            );
-            hook.textContent += variableName || "";
-          
+          var hook = pageAssetsTOBeAdded.hooks.find(
+            (hook) => hook.name === "setBodyClass"
+          );
+          hook.textContent += variableName || "";
 
           break;
         case line.includes("setTitle("):
-        
-            //add to textContent
-            var variableName = line.split("setTitle(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
+          //add to textContent
+          var variableName = line.split("setTitle(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
 
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
 
-            var hook = pageAssetsTOBeAdded.hooks.find(
-              (hook) => hook.name === "setTitle"
-            );
-            hook.textContent += variableName || "";
-          
+          var hook = pageAssetsTOBeAdded.hooks.find(
+            (hook) => hook.name === "setTitle"
+          );
+          hook.textContent += variableName || "";
 
           break;
         case line.includes("setRootClass"):
-          
-            //add to textContent
-            var variableName = line.split("setRootClass(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
+          //add to textContent
+          var variableName = line.split("setRootClass(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
 
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
 
-            var hook = pageAssetsTOBeAdded.hooks.find(
-              (hook) => hook.name === "setRootClass"
-            );
-            hook.textContent += variableName || "";
-          
+          var hook = pageAssetsTOBeAdded.hooks.find(
+            (hook) => hook.name === "setRootClass"
+          );
+          hook.textContent += variableName || "";
 
           break;
         case line.includes("setHtmlClass"):
-        
-            //add to textContent
-            var variableName = line.split("setHtmlClass(")[1];
-            variableName = variableName.split(")")[0];
-            variableName = variableName.trim();
+          //add to textContent
+          var variableName = line.split("setHtmlClass(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
 
-            //remove " and '
-            variableName = variableName.replace(/['"]+/g, "");
-            variableName = variableName.trim();
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
 
-            var hook = pageAssetsTOBeAdded.hooks.find(
-              (hook) => hook.name === "setHtmlClass"
-            );
-            hook.textContent += variableName || "";
-          
+          var hook = pageAssetsTOBeAdded.hooks.find(
+            (hook) => hook.name === "setHtmlClass"
+          );
+          hook.textContent += variableName || "";
 
           break;
 
@@ -252,12 +241,11 @@ function transpilesUIp(page, pageName) {
           }
           break;
         case line.includes("import states from sprintui"):
-         
-            var script = pageAssetsTOBeAdded.scripts.find(
-              (script) => script.id === "sUIp"
-            );
-            if (!script.textContent.includes("function addState()")) {
-              script.textContent += `function addState(name,value) {
+          var script = pageAssetsTOBeAdded.scripts.find(
+            (script) => script.id === "sUIp"
+          );
+          if (!script.textContent.includes("function addState()")) {
+            script.textContent += `function addState(name,value) {
                   app.states.push({name:name,value:value});
                 }
                 function fetchStates() {
@@ -283,15 +271,15 @@ function transpilesUIp(page, pageName) {
 
 
                 `;
-            }
-          
+          }
+
           break;
-          case line.includes("import cookies from sprintui"):
-            var script = pageAssetsTOBeAdded.scripts.find(
-              (script) => script.id === "sUIp"
-            );
-            if (!script.textContent.includes("function setCookie()")) {
-              script.textContent += `
+        case line.includes("import cookies from sprintui"):
+          var script = pageAssetsTOBeAdded.scripts.find(
+            (script) => script.id === "sUIp"
+          );
+          if (!script.textContent.includes("function setCookie()")) {
+            script.textContent += `
               function setCookie(name,value,expires) {
                 document.cookie = name + "=" + value + ";expires=" + expires;
               }
@@ -309,9 +297,9 @@ function transpilesUIp(page, pageName) {
 
 
               `;
-            }
+          }
 
-            break;
+          break;
         case (match = line.match(/<UseScript[^>]*>/)) !== null:
           const src = extractScriptSrc(line);
 
@@ -386,23 +374,9 @@ function transpilesUIp(page, pageName) {
                 continue;
               }
 
-              if (lines[i].includes("//")) {
-                lines[i] = lines[i].split("//")[0]; 
-
-              }
-
-              if (lines[i].includes("function")) {
-                if (!bringF) {
-                  //search for end of function
-                  let functionContent = "";
-                  let j = i;
-                  while (j < lines.length && !lines[j].includes("}")) {
-                    functionContent += lines[j];
-                    j++;
-                  }
-                  functionContent += lines[j];
-                  fAndG.textContent += functionContent;
-                }
+              if (lines[i].startsWith("//")) {
+                i++;
+                continue;
               }
 
               scriptContent += lines[i];
@@ -466,38 +440,25 @@ function transpilesUIp(page, pageName) {
               );
 
               html += line;
-            }
-            else if (line.includes("<HImport")) {
+            } else if (line.includes("<HImport")) {
               const fromMatch = line.match(/from=['"]([^'"]+)['"]/);
               if (fromMatch) {
-                  const from = fromMatch[1];
-                  if (from.includes("https://") || from.includes("http://")) {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open("GET", from, false);
-                    xhr.send();
-                    if (xhr.status === 200) {
-                      line = xhr.responseText;
-                      html += line;
-                    }
-                
-                  }
-                  else 
-                  {
-                    const file = fs.readFileSync(`./comps/${from}.suic`, "utf8");
-                    line = file;
+                const from = fromMatch[1];
+                if (from.includes("https://") || from.includes("http://")) {
+                  const xhr = new XMLHttpRequest();
+                  xhr.open("GET", from, false);
+                  xhr.send();
+                  if (xhr.status === 200) {
+                    line = xhr.responseText;
                     html += line;
                   }
-                  
-
+                } else {
+                  const file = fs.readFileSync(`./comps/${from}.suic`, "utf8");
+                  line = file;
+                  html += line;
+                }
               }
-
-
-              
-
-
-              
-            }
-            else {
+            } else {
               html += line;
             }
           } else {
@@ -542,10 +503,7 @@ async function fetchPagesToTranspile(routes) {
         }
       }
 
-      const pageContent = fs.readFileSync(
-        `./pages/${route}.suip`,
-        "utf8"
-      );
+      const pageContent = fs.readFileSync(`./pages/${route}.suip`, "utf8");
 
       pagesToTranspile[route] = pageContent;
     } catch (error) {
@@ -1119,7 +1077,7 @@ async function main() {
       "%"
   );
 
-  const sV = 2.2;
+  const sV = 2.1;
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
