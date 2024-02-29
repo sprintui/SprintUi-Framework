@@ -239,100 +239,37 @@ const app = {
 
   async removeAssets(pageKey) {
     const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-    let scripts = document.querySelectorAll("script");
-    let styles = document.querySelectorAll("style");
-
+    
     if (pageAssets) {
+      // Reset stylesAdded and scriptsAdded sets for the current page
+      this.stylesAdded = new Set();
+      this.scriptsAdded = new Set();
+      
       for (let i = 0; i < pageAssets.styles.length; i++) {
         const style = pageAssets.styles[i];
-
-        if (style.href) {
-          const linkElement = document.querySelector(
-            `link[href="${style.href}"]`
-          );
-
-          // Check if other pages are using the same style
-          const otherPagesUsingStyle = this.pageAssets.filter(
-            (asset) =>
-              asset.page !== pageKey &&
-              asset.styles.some((s) => s.href === style.href)
-          );
-
-          if (
-            linkElement &&
-            otherPagesUsingStyle.length === 0 &&
-            !style.sprintIgnore
-          ) {
-            linkElement.remove();
-          }
-        } else if (style.textContent) {
-          for (let j = 0; j < styles.length; j++) {
-            const s = styles[j];
-
-            // Check if other pages are using the same style
-            const otherPagesUsingStyle = this.pageAssets.filter(
-              (asset) =>
-                asset.page !== pageKey &&
-                asset.styles.some((s) => s.textContent === style.textContent)
-            );
-
-            if (
-              s.textContent.includes(style.textContent) &&
-              otherPagesUsingStyle.length === 0 &&
-              !style.sprintIgnore
-            ) {
-              s.remove();
-            }
-          }
-        }
-      }
-
+        
+        // Remove by href only when it exists, else remove by textContent
+        if (style.href && document.querySelector(`link[href="${style.href}"]`)) { 
+          document.querySelector(`link[href="${style.href}"]`).remove();        
+         } else if (style.textContent) {  
+           Array.from(document.head.getElementsByTagName('style')).forEach((s, j) => {
+             if (s.textContent === style.textContent) s.remove();
+            });
+          } 
+       }
+       
       for (let i = 0; i < pageAssets.scripts.length; i++) {
         const script = pageAssets.scripts[i];
-
-        if (script.src) {
-          const scriptElement = document.querySelector(
-            `script[src="${script.src}"]`
-          );
-
-          // Check if other pages are using the same script
-          const otherPagesUsingScript = this.pageAssets.filter(
-            (asset) =>
-              asset.page !== pageKey &&
-              asset.scripts.some((s) => s.src === script.src)
-          );
-
-          if (
-            scriptElement &&
-            otherPagesUsingScript.length === 0 &&
-            !script.sprintIgnore
-          ) {
-            scriptElement.remove();
-          }
-        } else if (script.textContent) {
-          for (let j = 0; j < scripts.length; j++) {
-            const s = scripts[j];
-
-            // Check if other pages are using the same script
-            const otherPagesUsingScript = this.pageAssets.filter(
-              (asset) =>
-                asset.page !== pageKey &&
-                asset.scripts.some((s) => s.textContent === script.textContent)
-            );
-
-            if (
-              (s.textContent.includes(script.textContent) ||
-                !script.id === "suia") &&
-              otherPagesUsingScript.length === 0 &&
-              !script.sprintIgnore
-            ) {
-              s.remove();
-            }
-          }
-        }
-      }
-
-      this.assetsLoaded = false;
+        
+        if (script.src && document.querySelector(`script[src="${script.src}"]`)) { 
+          document.querySelector(`script[src="${script.src}"]`).remove();        
+         } else if (script.textContent) {  
+          Array.from(document.getElementsByTagName('script')).forEach((s, j) => {
+            if (s.textContent === script.textContent) s.remove();
+           });
+         } 
+       }    
+      this.assetsLoaded = false;  
     }
   },
 
@@ -394,16 +331,16 @@ const app = {
     }
   },
 
-  navigateTo(path) {
+  async navigateTo(path) {
     this.isLoading = true;
     let currentPath = getCurrentUrl().split("/")[3] || "home";
     window.history.pushState(null, "", path);
 
-    this.removeAssets(currentPath);
+    await this.removeAssets(currentPath);
 
-    this.removeHooks(currentPath);
+    await this.removeHooks(currentPath);
 
-    this.render();
+    await this.render();
   },
 
   async render() {
@@ -1003,16 +940,15 @@ const app = {
                     
 
                 }
-
+                
 
                 
 
 
                 
               }
-               else {
-                html += line;
-              }
+              
+            
             } else {
               html += line;
             }
@@ -1046,9 +982,8 @@ const app = {
 
         this.isLoading = true;
         let currentPath = getCurrentUrl().split("/")[3] || "home";
-        this.removeAssets(currentPath);
-        this.removeHooks(currentPath);
-        this.render();
+        this.navigateTo(currentPath);
+        
       }
     });
 
