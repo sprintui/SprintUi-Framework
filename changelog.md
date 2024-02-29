@@ -317,4 +317,26 @@ You will need to update update.js
 ### Notes
 
 This release brings significant enhancements and additions to the SprintUI framework. Himport Import allows for seamless HTML importing, streamlining the development process by condensing code and improving organization. The SprintUI Project Creator simplifies project setup, allowing users to create a new SprintUI project with a single command. Additionally, documentation has been updated and revised to ensure clarity and accuracy. Several bugs in URL routes have been fixed, enhancing the overall stability and usability of the framework.
+## Version 2.2 - 02/29/2024 - RELEASED
+
+### Added
+- None
+### Changed
+- Popstate/Back and Forward system to be faster.
+
+### Fixed
+- Remove assets being buggy.
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+
+We're very sorry since the update is very small, as of now we don't have any ideas of what to add next please be sure to tell us if you have any ideas.
 
