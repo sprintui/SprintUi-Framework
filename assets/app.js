@@ -795,13 +795,15 @@ const app = {
               const autoReady = line.includes("autoReady={false}");
               const sprintIgnore = line.includes("sprintIgnore={true}");
               const bringF = line.includes("bringF={false}");
-
+            
               // Initialize scriptContent as an empty string
 
               let scriptContent = "";
 
               // Start from the line following the opening <UseScript> tag
               let i = lines.indexOf(line) + 1;
+             
+ 
 
               const fAndG = {
                 id: "fAndG",
@@ -818,6 +820,12 @@ const app = {
               };
               // Loop through lines until the closing </UseScript> tag is found
               while (i < lines.length && !lines[i].includes("</UseScript>")) {
+                //remove white space
+                lines[i] = lines[i].trim();
+        
+ 
+              
+          
                 //check for global
                 if (lines[i].includes("global")) {
                   //remove global
@@ -825,25 +833,21 @@ const app = {
 
                   fAndG.textContent += lines[i];
                   i++;
+                  
                   continue;
+                  
                 }
 
-                if (lines[i].includes("function")) {
-                  if (!bringF) {
-                    //search for end of function
-                    let functionContent = "";
-                    let j = i;
-                    while (j < lines.length && !lines[j].includes("}")) {
-                      functionContent += lines[j];
-                      j++;
-                    }
-                    functionContent += lines[j];
-                    fAndG.textContent += functionContent;
-                  }
+                if (lines[i].startsWith("//")) {
+                  i++;
+                  continue;
+                  
                 }
 
-                scriptContent += lines[i];
+                scriptContent += lines[i];  
                 i++;
+
+
               }
 
               if (scriptContent) {
@@ -872,7 +876,7 @@ const app = {
 
             break;
 
-          case line.includes("<suipMarkup>          "):
+          case line.includes("<suipMarkup>"):
             inSUIP = false;
 
             break;
@@ -947,11 +951,10 @@ const app = {
 
                 
               }
-              
+
               else {
                 html += line;
               }
-              
               
             
             } else {
