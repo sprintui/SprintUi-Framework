@@ -617,7 +617,7 @@ const app = {
             }
             else
             {
-              pageAssetsTOBeAdded.hooks.push({ name: "setBodyClass", textContent: variableName || "" });
+              pageAssets.hooks.push({ name: "setBodyClass", textContent: variableName || "" });
             }
 
 
@@ -641,7 +641,7 @@ const app = {
             }
             else
             {
-              pageAssetsTOBeAdded.hooks.push({ name: "setTitle", textContent: variableName || "" });
+              pageAssets.hooks.push({ name: "setTitle", textContent: variableName || "" });
             }
 
 
@@ -665,7 +665,7 @@ const app = {
             }
             else
             {
-              pageAssetsTOBeAdded.hooks.push({ name: "setRootClass", textContent: variableName || "" });
+              pageAssets.hooks.push({ name: "setRootClass", textContent: variableName || "" });
             }
             
 
@@ -689,7 +689,7 @@ const app = {
             }
             else
             {
-              pageAssetsTOBeAdded.hooks.push({ name: "setHtmlClass", textContent: variableName || "" });
+              pageAssets.hooks.push({ name: "setHtmlClass", textContent: variableName || "" });
             }
             
 
