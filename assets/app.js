@@ -22,15 +22,19 @@ async function fetchRoutes() {
       },
     });
 
-  
     if (response.ok) {
       let pageContent = await response.text();
-
 
       let routes = pageContent.split("ROUTES=")[1];
       routes = routes.split(",");
       routes = routes.map((route) => route.trim());
-     
+      let ell = pageContent.split("ELL=")[1];
+
+      ell = ell.trim();
+      if (ell == "true") {
+        app.enableLongLoading = true;
+      }
+      routes.pop();
       return { routes };
     } else {
       console.error(
@@ -98,6 +102,18 @@ function handleScriptLoadError(scriptElement, src) {
 function handleScriptError(src) {
   console.error(`Failed to load script: ${src}`);
 }
+let sprintEvents = [];
+const orig = EventTarget.prototype.addEventListener;
+EventTarget.prototype.addEventListener = function (...args) {
+  sprintEvents.push({
+    type: args[0],
+    fn: args[1],
+    target: this,
+    useCapture: args[2],
+  });
+
+  return orig.apply(this, args);
+};
 
 const app = {
   isLoading: true,
@@ -111,6 +127,8 @@ const app = {
   stylesAdded: new Set(),
   scriptsAdded: new Set(),
   urlParams: {},
+  enableLongLoading: false,
+
   extractCssFileName(line) {
     const importMatch = line.match(/href=['"]([^'"]+)['"]/);
     return importMatch ? importMatch[1] : null;
@@ -120,7 +138,6 @@ const app = {
     const srcMatch = line.match(/src=['"]([^'"]+)['"]/);
     return srcMatch ? srcMatch[1] : null;
   },
-
   transpileAndStorePage(pageKey, pageContent) {
     const transpiledHtml = this.transpilesUIp(pageContent, pageKey);
     //remove first <div and the end </div>
@@ -239,37 +256,69 @@ const app = {
 
   async removeAssets(pageKey) {
     const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-    
+
     if (pageAssets) {
       // Reset stylesAdded and scriptsAdded sets for the current page
       this.stylesAdded = new Set();
       this.scriptsAdded = new Set();
-      
+
       for (let i = 0; i < pageAssets.styles.length; i++) {
         const style = pageAssets.styles[i];
-        
+
         // Remove by href only when it exists, else remove by textContent
-        if (style.href && document.querySelector(`link[href="${style.href}"]`)) { 
-          document.querySelector(`link[href="${style.href}"]`).remove();        
-         } else if (style.textContent) {  
-           Array.from(document.head.getElementsByTagName('style')).forEach((s, j) => {
-             if (s.textContent === style.textContent) s.remove();
-            });
-          } 
-       }
-       
+        if (
+          style.href &&
+          document.querySelector(`link[href="${style.href}"]`)
+        ) {
+          document.querySelector(`link[href="${style.href}"]`).remove();
+        } else if (style.textContent) {
+          Array.from(document.head.getElementsByTagName("style")).forEach(
+            (s, j) => {
+              if (s.textContent === style.textContent) s.remove();
+            }
+          );
+        }
+      }
+
       for (let i = 0; i < pageAssets.scripts.length; i++) {
         const script = pageAssets.scripts[i];
-        
-        if (script.src && document.querySelector(`script[src="${script.src}"]`)) { 
-          document.querySelector(`script[src="${script.src}"]`).remove();        
-         } else if (script.textContent) {  
-          Array.from(document.getElementsByTagName('script')).forEach((s, j) => {
-            if (s.textContent === script.textContent) s.remove();
-           });
-         } 
-       }    
-      this.assetsLoaded = false;  
+
+        if (
+          script.src &&
+          document.querySelector(`script[src="${script.src}"]`)
+        ) {
+          document.querySelector(`script[src="${script.src}"]`).remove();
+        } else if (script.textContent) {
+          Array.from(document.getElementsByTagName("script")).forEach(
+            (s, j) => {
+              if (script.autoReady) {
+                //add sprintReady event listene to the script textContent to check if the same
+                if (
+                  s.textContent ===
+                  `document.addEventListener("sprintReady", () => {${script.textContent}});`
+                ) {
+                  s.remove();
+                  for (let k = 0; k < sprintEvents.length; k++) {
+                    const event = sprintEvents[k];
+                    if (
+                      event.type == "sprintReady" &&
+                      event.fn.toString() === `() => {${script.textContent}}`
+                    ) {
+                      document.removeEventListener("sprintReady", event.fn);
+                      window.removeEventListener("sprintReady", event.fn);
+
+                      sprintEvents.splice(k, 1);
+                    }
+                  }
+                }
+              } else if (s.textContent === script.textContent) {
+                s.remove();
+              }
+            }
+          );
+        }
+      }
+      this.assetsLoaded = false;
     }
   },
 
@@ -376,7 +425,7 @@ const app = {
       //get params
       const params = {};
       const pageSegments = path.split(/(!?\[[^\]]+\])/g).filter(Boolean);
-     
+
       urlSegments.shift();
       pageSegments.shift();
       pageSegments.forEach((segment, index) => {
@@ -387,7 +436,6 @@ const app = {
           if (urlSegments[index] !== variable) {
             pagePath = null;
           }
-
         }
 
         if (segment.includes("[")) {
@@ -395,18 +443,13 @@ const app = {
           const key = segment.split("=")[0].replace(/[\[\]]/g, "");
           params[key] = urlSegment;
         }
-
-
-        
       });
-      console.log(params);
-      console.log(urlSegments);
+
       this.urlParams = params;
     } else {
       pagePath = this.pages[path];
     }
 
-    rootElement.innerHTML = this.loadingMessage || "Loading...";
     if (!pagePath) {
       if (!this.notFoundMessage) {
         rootElement.innerHTML = `    <h1 style="text-align:center">404 Not Found</h1>
@@ -416,6 +459,17 @@ const app = {
         pagePath = this.pages["404"];
         path = "404";
       }
+    }
+    if (this.enableLongLoading) {
+      if (this.pages["loading"]) {
+        rootElement.innerHTML = this.pages["loading"];
+        this.addHooks("loading");
+        this.addAssets("loading");
+      } else {
+        rootElement.innerHTML = this.loadingMessage || "Loading...";
+      }
+    } else {
+      rootElement.innerHTML = this.loadingMessage || "Loading...";
     }
     const interval = setInterval(async () => {
       if (this.isLoading) {
@@ -465,7 +519,14 @@ const app = {
           }
         });
 
-        rootElement.innerHTML = html;
+        if (this.enableLongLoading) {
+          this.removeAssets("loading");
+          this.removeHooks("loading");
+          rootElement.innerHTML = html;
+        } else {
+          rootElement.innerHTML = html;
+        }
+
         this.isLoading = false;
 
         clearInterval(interval);
@@ -480,7 +541,7 @@ const app = {
     }, 500);
   },
 
-   transpilesUIp(page, pageName) {
+  transpilesUIp(page, pageName) {
     const lines = page.split(/\r?\n/);
     try {
       let html = "";
@@ -517,7 +578,7 @@ const app = {
 
       for (let line of lines) {
         let match;
-    
+
         switch (true) {
           case line.includes("useQuery()"):
             //add to textContent
@@ -614,12 +675,12 @@ const app = {
             );
             if (hook) {
               hook.textContent += variableName || "";
+            } else {
+              pageAssets.hooks.push({
+                name: "setBodyClass",
+                textContent: variableName || "",
+              });
             }
-            else
-            {
-              pageAssets.hooks.push({ name: "setBodyClass", textContent: variableName || "" });
-            }
-
 
             break;
           case line.includes("setTitle("):
@@ -638,12 +699,12 @@ const app = {
             );
             if (hook) {
               hook.textContent += variableName || "";
+            } else {
+              pageAssets.hooks.push({
+                name: "setTitle",
+                textContent: variableName || "",
+              });
             }
-            else
-            {
-              pageAssets.hooks.push({ name: "setTitle", textContent: variableName || "" });
-            }
-
 
             break;
           case line.includes("setRootClass"):
@@ -662,12 +723,12 @@ const app = {
             );
             if (hook) {
               hook.textContent += variableName || "";
+            } else {
+              pageAssets.hooks.push({
+                name: "setRootClass",
+                textContent: variableName || "",
+              });
             }
-            else
-            {
-              pageAssets.hooks.push({ name: "setRootClass", textContent: variableName || "" });
-            }
-            
 
             break;
           case line.includes("setHtmlClass"):
@@ -686,12 +747,12 @@ const app = {
             );
             if (hook) {
               hook.textContent += variableName || "";
+            } else {
+              pageAssets.hooks.push({
+                name: "setHtmlClass",
+                textContent: variableName || "",
+              });
             }
-            else
-            {
-              pageAssets.hooks.push({ name: "setHtmlClass", textContent: variableName || "" });
-            }
-            
 
             break;
 
@@ -795,15 +856,13 @@ const app = {
               const autoReady = line.includes("autoReady={false}");
               const sprintIgnore = line.includes("sprintIgnore={true}");
               const bringF = line.includes("bringF={false}");
-            
+
               // Initialize scriptContent as an empty string
 
               let scriptContent = "";
 
               // Start from the line following the opening <UseScript> tag
               let i = lines.indexOf(line) + 1;
-             
- 
 
               const fAndG = {
                 id: "fAndG",
@@ -822,10 +881,7 @@ const app = {
               while (i < lines.length && !lines[i].includes("</UseScript>")) {
                 //remove white space
                 lines[i] = lines[i].trim();
-        
- 
-              
-          
+
                 //check for global
                 if (lines[i].includes("global")) {
                   //remove global
@@ -833,21 +889,17 @@ const app = {
 
                   fAndG.textContent += lines[i];
                   i++;
-                  
+
                   continue;
-                  
                 }
 
                 if (lines[i].startsWith("//")) {
                   i++;
                   continue;
-                  
                 }
 
-                scriptContent += lines[i];  
+                scriptContent += lines[i];
                 i++;
-
-
               }
 
               if (scriptContent) {
@@ -916,10 +968,49 @@ const app = {
                 );
 
                 html += line;
-              }
-              else if (line.includes("<HImport")) {
+              } else if (line.includes("<HImport")) {
                 const fromMatch = line.match(/from=['"]([^'"]+)['"]/);
                 if (fromMatch) {
+                  const from = fromMatch[1];
+                  if (from.includes("https://") || from.includes("http://")) {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open("GET", from, false);
+                    xhr.send();
+                    if (xhr.status === 200) {
+                      line = xhr.responseText;
+                      html += line;
+                    }
+                  } else {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open(
+                      "GET",
+                      "http://localhost:3000/comps/" + from,
+                      false
+                    );
+                    xhr.send();
+                    if (xhr.status === 200) {
+                      line = xhr.responseText;
+                      html += line;
+                    }
+                  }
+                }
+              } else if (line.includes("<CImport")) {
+                const fromMatch = line.match(/from=['"]([^'"]+)['"]/);
+                const paramsMatch = line.match(/\{([^{}]+)\}/);
+                if (paramsMatch) {
+                  const insideBraces = paramsMatch[1].replace(
+                    /["'\\\/\[\]\(\)\{\}<>]/g,
+                    ""
+                  );
+                  const keyValuePairs = insideBraces.split(/\s*,\s*/);
+
+                  //make a object of the key value pairs
+                  const params = keyValuePairs.map((pair) => {
+                    const [key, value] = pair.split("=");
+                    return { key, value };
+                  });
+
+                  if (fromMatch) {
                     const from = fromMatch[1];
                     if (from.includes("https://") || from.includes("http://")) {
                       const xhr = new XMLHttpRequest();
@@ -927,36 +1018,36 @@ const app = {
                       xhr.send();
                       if (xhr.status === 200) {
                         line = xhr.responseText;
+
+                        for (const param of params) {
+                          //remove " and ' from the value and any other special characters
+                          line = line.replace(`\${${param.key}}`, param.value);
+                        }
+
                         html += line;
                       }
-                  
+                    } else {
+                      const xhr = new XMLHttpRequest();
+                      xhr.open(
+                        "GET",
+                        "http://localhost:3000/comps/" + from,
+                        false
+                      );
+                      xhr.send();
+                      if (xhr.status === 200) {
+                        line = xhr.responseText;
+                        //replace the params with the actual values line replace ${key} with value from the params
+                        for (const param of params) {
+                          line = line.replace(`\${${param.key}}`, param.value);
+                        }
+                        html += line;
+                      }
                     }
-                    else 
-                    {
-                          const xhr = new XMLHttpRequest();
-                          xhr.open("GET", "http://localhost:3000/comps/" + from, false);
-                          xhr.send();
-                          if (xhr.status === 200) {
-                            line = xhr.responseText;
-                            html += line;
-                          }
-                    }
-                    
-
+                  }
                 }
-                
-
-                
-
-
-                
-              }
-
-              else {
+              } else {
                 html += line;
               }
-              
-            
             } else {
               html += line;
             }
@@ -991,7 +1082,6 @@ const app = {
         this.isLoading = true;
         let currentPath = getCurrentUrl().split("/")[3] || "home";
         this.navigateTo(currentPath);
-        
       }
     });
 
