@@ -340,3 +340,25 @@ This release brings significant enhancements and additions to the SprintUI frame
 
 We're very sorry since the update is very small, as of now we don't have any ideas of what to add next please be sure to tell us if you have any ideas.
 
+Version 2.3 - 03/7/2024 - RELEASED
+
+Added
+
+CImport: A new feature similar to HImport but allows passing parameters to the component and modifying some HTML of the component.
+Custom loading pages: Must be enabled in the config.sui. If no file is found, the framework will default to the loading page provided in the pages folder or use the default one named 'longloading' within the framework.
+Changed
+
+Components now use .suip file extension, even though they are not using the suipmarkup but HTML.
+Fixed
+
+removeScripts: Previously, it didn't remove old scripts; this has been rectified.
+HImport and CImport from third-party components were not working due to the usage of XMLHttpRequest (XHR) in a Node.js environment. This has been fixed by switching to HTTPS.
+Fixed an issue where if a user tries to go to a page that does not exist with more than one slash, it would be stuck on loading and not redirect to a 404 page.
+Deprecated
+None
+
+Removed
+None
+
+Security
+None
