@@ -2,7 +2,7 @@ const fs = require("node:fs");
 const program = require("commander");
 const path = require("path");
 var minify = require("html-minifier").minify;
-
+const https = require("https");
 program
 
   .option("-ex, --exclude <value>", "Exclude files from the build", "")
@@ -55,9 +55,7 @@ function extractScriptSrc(line) {
 let pageAssets = [];
 
 function transpilesUIp(page, pageName) {
-  if (pageName == "loading") {
-    return page;
-  }
+
   const lines = page.split(/\r?\n/);
   try {
     let html = "";
@@ -445,17 +443,65 @@ function transpilesUIp(page, pageName) {
               if (fromMatch) {
                 const from = fromMatch[1];
                 if (from.includes("https://") || from.includes("http://")) {
-                  const xhr = new XMLHttpRequest();
-                  xhr.open("GET", from, false);
-                  xhr.send();
-                  if (xhr.status === 200) {
-                    line = xhr.responseText;
-                    html += line;
-                  }
+                  https.get(from, (response) => {
+                    let data = "";
+                    response.on("data", (chunk) => {
+                      data += chunk;
+                    });
+                    response.on("end", () => {
+                      line = data;
+                    });
+                  });
                 } else {
-                  const file = fs.readFileSync(`./comps/${from}.suic`, "utf8");
-                  line = file;
-                  html += line;
+                  let file = fs.readFileSync(`./comps/${from}.suip`, "utf8");
+                  if(file) html += file;
+                  
+                }
+              }
+            } else if (line.includes("<CImport")) {
+              const fromMatch = line.match(/from=['"]([^'"]+)['"]/);
+              const paramsMatch = line.match(/\{([^{}]+)\}/);
+              if (paramsMatch) {
+                const insideBraces = paramsMatch[1].replace(
+                  /["'\\\/\[\]\(\)\{\}<>]/g,
+                  ""
+                );
+                const keyValuePairs = insideBraces.split(/\s*,\s*/);
+                const params = keyValuePairs.map((pair) => {
+                  const [key, value] = pair.split("=");
+                  return { key, value };
+                });
+
+                if (fromMatch) {
+                  const from = fromMatch[1];
+                  if (from.includes("https://") || from.includes("http://")) {
+                    https.get(from, (response) => {
+                      let data = "";
+                      response.on("data", (chunk) => {
+                        data += chunk;
+                      });
+                      response.on("end", () => {
+                        line = data;
+
+                        for (const param of params) {
+                          line = line.replace(`\${${param.key}}`, param.value);
+                        }
+
+                        html += line;
+                      });
+                    });
+                  } else {
+                    let  file = fs.readFileSync(`./comps/${from}.suip`, "utf8");
+                    if (file) {
+                 
+
+                      for (const param of params) {
+                        file = file.replace(`\${${param.key}}`, param.value);
+                      }
+                      html += file;
+                    }
+
+                  }
                 }
               }
             } else {
@@ -529,9 +575,27 @@ async function fetchPagesToTranspile(routes) {
     });
 }
 
+function getLongLoading() {
+  let longLoading = false;
+  let configPath = path.join(__dirname, "config.sui");
+  let config = fs.readFileSync(configPath, "utf8");
+  let configArray = config.split(/\r?\n/);
+  configArray.forEach((line) => {
+    if (line.includes("ELL")) {
+      let value = line.split("=");
+      if (value[1].toLowerCase() == "true") {
+        longLoading = true;
+      }
+    }
+  });
+
+  return longLoading;
+}
+
 let pages = {};
 
 function transpileAndStorePage(pageKey, pageContent) {
+  console.log(`Transpiling ${pageKey}...`);
   const transpiledHtml = transpilesUIp(pageContent, pageKey);
 
   //remove first <div and the end </div>
@@ -576,6 +640,21 @@ async function main() {
       // Handle the error as needed
     };
   }
+  let sprintEvents =[];
+const orig = EventTarget.prototype.addEventListener;
+EventTarget.prototype.addEventListener = function(...args) {
+ 
+  sprintEvents.push({
+      type: args[0],
+      fn: args[1],
+      target: this,
+      useCapture: args[2],
+    });
+  
+  return orig.apply(this, args);
+
+
+};
   
   const app = {
     isLoading: true,
@@ -589,6 +668,7 @@ async function main() {
     stylesAdded: new Set(),
     scriptsAdded: new Set(),
     urlParams:{},
+    enableLongLoading: ${getLongLoading()},
     
     async addAssets(pageKey) {
       // Add a check if assets are already loaded for this page
@@ -704,7 +784,6 @@ async function main() {
     },
   
   
-  
     async removeAssets(pageKey) {
       const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
       
@@ -718,7 +797,7 @@ async function main() {
           
           // Remove by href only when it exists, else remove by textContent
           if (style.href && document.querySelector('link[href="' + style.href + '"]')) {
-            document.querySelector('link[href="' + style.href + '"]').remove();     
+            document.querySelector('link[href="' + style.href + '"]').remove();    
            } else if (style.textContent) {  
              Array.from(document.head.getElementsByTagName('style')).forEach((s, j) => {
                if (s.textContent === style.textContent) s.remove();
@@ -730,10 +809,42 @@ async function main() {
           const script = pageAssets.scripts[i];
           
           if (script.src && document.querySelector('script[src="' + script.src + '"]')) {
-            document.querySelector('script[src="' + script.src + '"]').remove();   
+            document.querySelector('script[src="' + script.src + '"]').remove();        
            } else if (script.textContent) {  
             Array.from(document.getElementsByTagName('script')).forEach((s, j) => {
-              if (s.textContent === script.textContent) s.remove();
+              if(script.autoReady){
+          
+                if (s.textContent === 'document.addEventListener("sprintReady", () => {' + script.textContent + '});') {
+                  s.remove();
+                  for (let k = 0; k < sprintEvents.length; k++) {
+                    const event = sprintEvents[k];
+                    if (event.type == "sprintReady" && event.fn.toString() === '() => {'+script.textContent+'}') {
+                      
+                      document.removeEventListener("sprintReady", event.fn);
+                      window.removeEventListener("sprintReady", event.fn);
+              
+  
+                      
+                      sprintEvents.splice(k, 1);
+                      
+  
+                    }
+                 
+                  }
+  
+                
+  
+  
+                }
+  
+              }
+              else if (s.textContent === script.textContent) {
+             
+                s.remove();
+              
+              }
+  
+           
              });
            } 
          }    
@@ -845,6 +956,21 @@ async function main() {
         path = pageKeys[0];
 
 
+        if (!pagePath) {
+          if (!this.notFoundMessage) {
+            rootElement.innerHTML = "404";
+          } else {
+    
+            /* eslint-disable no-undef */
+            pagePath = this.pages["404"];
+            /* eslint-enable no-undef */
+            path = "404";
+          }
+        }
+
+        
+
+
         const params = {};
         const pageSegments = path.split(/(!?\\[[^\\]]+\\])/g);
         urlSegments.shift();
@@ -878,7 +1004,7 @@ async function main() {
         pagePath = this.pages[path];
 
       }
-      rootElement.innerHTML = this.loadingMessage || "Loading...";
+     
       if (!pagePath) {
         if (!this.notFoundMessage) {
           rootElement.innerHTML = "404";
@@ -889,6 +1015,22 @@ async function main() {
           /* eslint-enable no-undef */
           path = "404";
         }
+      }
+        if (this.enableLongLoading) {
+          if(this.pages["loading"]){
+          rootElement.innerHTML = this.pages["loading"];
+          this.addHooks("loading");
+          this.addAssets("loading");
+          }
+          else{
+            rootElement.innerHTML = this.loadingMessage || "Loading...";
+          }
+  
+        
+      }
+ 
+      else{
+        rootElement.innerHTML = this.loadingMessage || "Loading...";
       }
   
       const interval = setInterval(async () => {
@@ -1077,7 +1219,7 @@ async function main() {
       "%"
   );
 
-  const sV = 2.1;
+  const sV = 2.3;
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
