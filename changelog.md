@@ -345,7 +345,7 @@ We're very sorry since the update is very small, as of now we don't have any ide
 ### Added
 
 CImport: A new feature similar to HImport but allows passing parameters to the component and modifying some HTML of the component.
-Custom loading pages: Must be enabled in the config.sui. If no file is found, the framework will default to the loading page provided in the pages folder or use the default one named 'longloading' within the framework.
+Custom loading pages: Must be enabled in the config.sui. If no file is found, the framework will default to the loading page provided in the pages folder or use the default text 'Loading...' within the framework.
 ### Changed
 
  Components now use .suip file extension, even though they are not using the suipmarkup but HTML.
