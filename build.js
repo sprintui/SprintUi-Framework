@@ -102,6 +102,7 @@ function transpilesUIp(page, pageName) {
         case line.includes("</suipMarkup>"):
           inSUIP = false;
           break;
+         
 
         case line.includes("useQuery()"):
           //add to textContent
@@ -132,7 +133,17 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setBodyClass"
           );
-          hook.textContent += variableName || "";
+          if(hook && hook.name.includes("setBodyClass")){
+            hook.textContent += variableName || "";
+          }
+          else{
+            pageAssetsTOBeAdded.hooks.push({
+              name: "setBodyClass",
+              textContent: variableName,
+            });
+          }
+
+
 
           break;
         case line.includes("setTitle("):
@@ -148,7 +159,17 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setTitle"
           );
-          hook.textContent += variableName || "";
+          
+          if(hook &&hook.name.includes("setTitle")){
+            hook.textContent += variableName || "";
+          }
+          else{
+            pageAssetsTOBeAdded.hooks.push({
+              name: "setTitle",
+              textContent: variableName,
+            });
+          }
+
 
           break;
         case line.includes("setRootClass"):
@@ -164,7 +185,15 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setRootClass"
           );
-          hook.textContent += variableName || "";
+          if(hook &&hook.name.includes("setRootClass")){
+            hook.textContent += variableName || "";
+          }
+          else{
+            pageAssetsTOBeAdded.hooks.push({
+              name: "setRootClass",
+              textContent: variableName,
+            });
+          }
 
           break;
         case line.includes("setHtmlClass"):
@@ -180,8 +209,15 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setHtmlClass"
           );
-          hook.textContent += variableName || "";
-
+          if(hook &&hook.name.includes("setHtmlClass")){
+            hook.textContent += variableName || "";
+          }
+          else{
+            pageAssetsTOBeAdded.hooks.push({
+              name: "setHtmlClass",
+              textContent: variableName,
+            });
+          }
           break;
 
         case (match = line.match(/<UseStyles[^>]*>/)) !== null:
