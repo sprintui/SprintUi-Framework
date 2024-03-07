@@ -321,8 +321,8 @@ app.get("*", (req, res, next) => {
 
     res.sendFile(assetPath);
   } else {
-    console.log('sending index.html');
-    return res.sendFile(path.join(__dirname,  "build/index.html"));
+   
+    return res.sendFile(path.join(__dirname,  "build", "index.html"));
   }
    
 });
