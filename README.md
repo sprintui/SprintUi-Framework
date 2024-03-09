@@ -7,6 +7,8 @@ We're thrilled to have you on board. Let's get started with building and deployi
 
 ##### Getting Started
 
+![Watch this YT Tutorial](https://www.youtube.com/watch?v=lX3HIbiGiEo)
+
 1. **Clone the Repository or use create-sprintui**
  
    -Github
