@@ -5,9 +5,15 @@ const port = process.env.PORT || 3000;
 require("dotenv").config();
 const fs = require("node:fs");
 const path = require("path");
+const EventEmitter = require('events');
+const eventEmitter = new EventEmitter();
+let clients = [];
+var mime = require('mime-types')
 const versionFileURL =
   "https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt";
-const sV = 2.3;
+const sV = fs.readFileSync(".v", "utf8");
+console.log(sV);
+
 function getVersion(url) {
   return new Promise((resolve, reject) => {
     https
@@ -37,211 +43,8 @@ function getVersion(url) {
   });
 }
 const cors = require("cors");
-let assetObject = [
-  {
-    extension: ".js",
-    contentType: "text/javascript",
-  },
-  {
-    extension: ".css",
-    contentType: "text/css",
-  },
-  {
-    extension: ".png",
-    contentType: "image/png",
-  },
-  {
-    extension: ".jpg",
-    contentType: "image/jpg",
-  },
-  {
-    extension: ".jpeg",
-    contentType: "image/jpeg",
-  },
-  {
-    extension: ".gif",
-    contentType: "image/gif",
-  },
-  {
-    extension: ".svg",
-    contentType: "image/svg+xml",
-  },
-  {
-    extension: ".ico",
-    contentType: "image/x-icon",
-  },
-  {
-    extension: ".json",
-    contentType: "application/json",
-  },
-  {
-    extension: ".map",
-    contentType: "application/json",
-  },
-  {
-    extension: ".woff",
-    contentType: "font/woff",
-  },
-  {
-    extension: ".woff2",
-    contentType: "font/woff2",
-  },
-  {
-    extension: ".ttf",
-    contentType: "font/ttf",
-  },
-  {
-    extension: ".eot",
-    contentType: "font/eot",
-  },
-  {
-    extension: ".otf",
-    contentType: "font/otf",
-  },
-  {
-    extension: ".mp4",
-    contentType: "video/mp4",
-  },
-  {
-    extension: ".webm",
-    contentType: "video/webm",
-  },
-  {
-    extension: ".ogg",
-    contentType: "video/ogg",
-  },
-  {
-    extension: ".mp3",
-    contentType: "audio/mpeg",
-  },
-  {
-    extension: ".wav",
-    contentType: "audio/wav",
-  },
-  {
-    extension: ".flac",
-    contentType: "audio/flac",
-  },
-  {
-    extension: ".aac",
-    contentType: "audio/aac",
-  },
-  {
-    extension: ".oga",
-    contentType: "audio/ogg",
-  },
-  {
-    extension: ".m4a",
-    contentType: "audio/mp4",
-  },
-  {
-    extension: ".txt",
-    contentType: "text/plain",
-  },
-  {
-    extension: ".pdf",
-    contentType: "application/pdf",
-  },
-  {
-    extension: ".csv",
-    contentType: "text/csv",
-  },
-  {
-    extension: ".doc",
-    contentType: "application/msword",
-  },
-  {
-    extension: ".docx",
-    contentType:
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  },
-  {
-    extension: ".xls",
-    contentType: "application/vnd.ms-excel",
-  },
-  {
-    extension: ".xlsx",
-    contentType:
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  },
-  {
-    extension: ".ppt",
-    contentType: "application/vnd.ms-powerpoint",
-  },
-  {
-    extension: ".pptx",
-    contentType:
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  },
-  {
-    extension: ".odt",
-    contentType: "application/vnd.oasis.opendocument.text",
-  },
-  {
-    extension: ".ods",
-    contentType: "application/vnd.oasis.opendocument.spreadsheet",
-  },
-  {
-    extension: ".odp",
-    contentType: "application/vnd.oasis.opendocument.presentation",
-  },
-  {
-    extension: ".xml",
-    contentType: "application/xml",
-  },
-  {
-    extension: ".zip",
-    contentType: "application/zip",
-  },
-  {
-    extension: ".gz",
-    contentType: "application/gzip",
-  },
-  {
-    extension: ".tar",
-    contentType: "application/x-tar",
-  },
-  {
-    extension: ".rar",
-    contentType: "application/vnd.rar",
-  },
-  {
-    extension: ".7z",
-    contentType: "application/x-7z-compressed",
-  },
-  {
-    extension: ".swf",
-    contentType: "application/x-shockwave-flash",
-  },
-  {
-    extension: ".exe",
-    contentType: "application/x-msdownload",
-  },
-  {
-    extension: ".psd",
-    contentType: "application/octet-stream",
-  },
-  {
-    extension: ".ai",
-    contentType: "application/postscript",
-  },
-  {
-    extension: ".eps",
-    contentType: "application/postscript",
-  },
-  {
-    extension: ".ps",
-    contentType: "application/postscript",
-  },
-  {
-    extension: ".torrent",
-    contentType: "application/octet-stream",
-  },
-  {
-    extension: ".bin",
-    contentType: "application/octet-stream",
-  },
-];
+
+
 app.use(cors());
 
 //check if config file exists
@@ -249,7 +52,7 @@ if (!fs.existsSync(path.join(__dirname, "config.sui"))) {
   //create config file
   fs.writeFileSync(
     path.join(__dirname, "config.sui"),
-    "EXCLUDES=\nELL=false\n"
+    "EXCLUDES=\nELL=false\nNL=false\n"
   );
 }
 
@@ -264,6 +67,27 @@ if (!fs.existsSync(path.join(__dirname, "comps"))) {
   //create config file
   fs.mkdirSync(path.join(__dirname, "comps"));
 }
+
+
+
+
+function notifyClients() {
+  clients.forEach(client => {
+    client.write('data: reload\n\n');
+  });
+}
+
+fs.watch(path.join(__dirname, "pages"), { recursive: true }, (eventType, filename) => {
+  if (filename) {
+    eventEmitter.emit('fileChanged');
+  }
+
+});
+
+eventEmitter.on('fileChanged', () => {
+
+  notifyClients();
+});
 
 function readPagesFolder() {
   const pagesPath = path.join(__dirname, "pages");
@@ -285,12 +109,17 @@ function readPagesFolder() {
       subPages = subPages.split(/\r?\n/);
       subPages.forEach((subPage) => {
         if (subPage.includes(".suip"))
+  
           pages.push(file + "/" + subPage.replace(".suip", ""));
+
       });
     } else {
       fileStats.type = "file";
       if (fileStats.file.includes(".suip")) {
+       
         pages.push(file.replace(".suip", ""));
+       
+
       }
     }
   });
@@ -300,6 +129,7 @@ function readPagesFolder() {
 
 function getLongLoading() {
   let longLoading = false;
+  let noLoading = false;
   let configPath = path.join(__dirname, "config.sui");
   let config = fs.readFileSync(configPath, "utf8");
   let configArray = config.split(/\r?\n/);
@@ -310,9 +140,16 @@ function getLongLoading() {
         longLoading = true;
       }
     }
+    else if (line.includes("NL")) {
+      let value = line.split("=");
+      if (value[1].toLowerCase() == "true") {
+        noLoading = true;
+      }
+    }
+
   });
 
-  return longLoading;
+  return { longLoading, noLoading };
 }
 
 function readPlugins() {
@@ -334,16 +171,21 @@ function readPlugins() {
 }
 
 app.get("*", (req, res, next) => {
-  let origin = req.headers["referer"];
-  let host = process.env.HOST + ":" + process.env.PORT;
-
   if (req.url.includes("pages")) {
     //check req.url doesn't have any file requests like /pages/home,etc. send a list of pages
     if (req.url === "/pages") {
       let pages = readPagesFolder();
+      //remove any spacing in the array
+      for (let i = 0; i < pages.length; i++) {
+        pages[i] = pages[i].trim();
+      }
+
       let enableLongLoading = getLongLoading();
 
-      res.send("ROUTES=" + pages + "\n ELL=" + enableLongLoading);
+      res.set("Content-Type", "text/plain");
+
+      res.send(`ROUTES=${pages}\nELL=${enableLongLoading.longLoading}\nNL=${enableLongLoading.noLoading}`
+      );
     } else {
       // Construct the path to the .suip file based on the URL
       const pagePath = path.join(__dirname, req.url + ".suip");
@@ -386,10 +228,25 @@ app.get("*", (req, res, next) => {
 
     // Send the response
     res.send(pageContent);
-  } else {
+  }
+  else if(req.url.includes("/events")){
+  
+      res.setHeader('Content-Type', 'text/event-stream');
+      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Connection', 'keep-alive');
+      res.write(': ping\n\n');
+    
+      clients.push(res);
+    
+      req.on('close', () => {
+        clients = clients.filter(client => client !== res);
+      });
+   }
+   else 
+   {
     //check for asset file:js,css,image file types
     if (
-      assetObject.some((extension) => req.url.includes(extension.extension))
+      mime.lookup(req.url)
     ) {
       // search in the public/assets folder
       const assetPath = path.join(__dirname, req.url);
@@ -399,16 +256,7 @@ app.get("*", (req, res, next) => {
         return res.status(404).send("Not found");
       }
 
-      //set the content type
-      let contentType = "text/plain";
-
-      assetObject.forEach((asset) => {
-        if (req.url.includes(asset.extension)) {
-          contentType = asset.contentType;
-        }
-      });
-
-      res.set("Content-Type", contentType);
+      res.set("Content-Type", mime.lookup(req.url));
 
       res.sendFile(assetPath);
     } else {
@@ -418,17 +266,17 @@ app.get("*", (req, res, next) => {
 });
 
 app.listen(port, async () => {
-  console.log("\x1b[31m%s\x1b[0m", "Swift UIp is running on port " + port);
+  console.log("\x1b[31m%s\x1b[0m", "Sprint UI is running on port " + port);
 
   //check version file
 
   if ((await getVersion(versionFileURL)) != sV) {
     console.log(
       "\x1b[31m%s\x1b[0m",
-      "Swift UIp is not up to date. Please update to the latest version"
+      "Sprint UI is not up to date. Please update to the latest version"
     );
   } else {
-    console.log("\x1b[32m%s\x1b[0m", "Swift UIp is up to date");
+    console.log("\x1b[32m%s\x1b[0m", "SprintUi UI is up to date");
   }
 
   console.log("\x1b[33m%s\x1b[0m", "To go into production run: npm run build");
