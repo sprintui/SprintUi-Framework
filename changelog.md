@@ -362,3 +362,28 @@ None
 
 ### Security
 None
+## Version 2.4 - 03/16/2024 - RELEASED
+
+### Added
+- Automatic page re-rendering upon saving your suip file.
+- No loading feature so switching pages has no loading screen.
+- update.js now properly track the version being used in .v file.
+- Implemented a new .v file to track the current version being used.
+
+### Changed
+- Enhanced server.js by integrating a package to handle sending assets and their content type dynamically, instead of using a fixed array.
+
+### Fixed
+- Fixed build.js by fixing issues with addStyles and removeStyles functions not working properly.
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+We're constantly striving to enhance the framework's functionality. If you have any suggestions or ideas for future updates, please feel free to share them with us.
