@@ -28,13 +28,46 @@ async function fetchRoutes() {
       let routes = pageContent.split("ROUTES=")[1];
       routes = routes.split(",");
       routes = routes.map((route) => route.trim());
-      let ell = pageContent.split("ELL=")[1];
+      routes = routes.filter((route) => route !== "");
+      //trim all the routes
+      for (let i = 0; i < routes.length; i++) {
+    
+        if (routes[i].includes("ELL")) {
+          routes[i] = routes[i].split("ELL")[0];
+        }
 
+        else if (routes[i].includes("NL")) {
+          routes[i] = routes[i].split("NL")[0];
+        }
+
+
+        routes[i] = routes[i].trim();
+
+      }
+
+      
+      let ell = pageContent.split("\nELL=")[1];
       ell = ell.trim();
-      if (ell == "true") {
+  
+      if (ell.startsWith("true")) {
         app.enableLongLoading = true;
       }
-      routes.pop();
+
+      let nl = pageContent.split("\nNL=")[1];
+      nl = nl.trim();
+      
+      if (nl.startsWith("true")) {
+        app.noLoading = true;
+      }
+
+      
+
+ 
+    
+    
+
+
+
       return { routes };
     } else {
       console.error(
@@ -128,6 +161,7 @@ const app = {
   scriptsAdded: new Set(),
   urlParams: {},
   enableLongLoading: false,
+  noLoading: false,
 
   extractCssFileName(line) {
     const importMatch = line.match(/href=['"]([^'"]+)['"]/);
@@ -142,9 +176,11 @@ const app = {
     const transpiledHtml = this.transpilesUIp(pageContent, pageKey);
     //remove first <div and the end </div>
     const html = transpiledHtml;
+
     this.pages[pageKey] = html;
   },
   async addAssets(pageKey) {
+    try{
     // Add a check if assets are already loaded for this page
     if (this.assetsLoaded) {
       return;
@@ -252,6 +288,9 @@ const app = {
       });
     }
     this.assetsLoaded = true;
+  }catch(e){
+    console.error(e + " at line " + lines.indexOf(line));
+  }
   },
 
   async removeAssets(pageKey) {
@@ -320,6 +359,8 @@ const app = {
       }
       this.assetsLoaded = false;
     }
+
+    
   },
 
   async addHooks(pageKey) {
@@ -413,14 +454,44 @@ const app = {
     if (amountOfSlashes >= 1) {
       const pages = Object.keys(this.pages);
       const pageKeys = pages.filter((page) => {
-        const pageSegments = page.split(/\[([^\]]+)\]/g).filter(Boolean);
+    
+    
+        let pageSegments = page.split(/\[([^\]]+)\]/g);
+        pageSegments = pageSegments.filter(entry => entry.trim() !== '');
         pageSegments.shift();
-
+  
         return pageSegments.length === amountOfSlashes;
       });
 
+
+
+
+ 
+
+      
+
       pagePath = this.pages[pageKeys[0]];
       path = pageKeys[0];
+
+
+      if (!path) {
+        
+        if (!this.notFoundMessage) {
+          rootElement.innerHTML = `    <h1 style="text-align:center">404 Not Found</h1>
+          <p style="text-align:center">The page you are looking for does not exist.</p>
+   `;
+        } else {
+        
+          pagePath = this.pages["404"];
+          path = "404";
+          this.addHooks("404");
+          this.addAssets("404");
+
+        }
+
+
+      }
+ 
 
       //get params
       const params = {};
@@ -429,57 +500,101 @@ const app = {
       urlSegments.shift();
       pageSegments.shift();
       pageSegments.forEach((segment, index) => {
-        //if any variable has ! in front of it, make sure the url has the same value or return 404 else add to params
+       
         if (segment.includes("[!") && urlSegments[index] !== segment) {
           const variable = segment.replace(/[\[\]!]/g, "");
-
+      
           if (urlSegments[index] !== variable) {
-            pagePath = null;
+            
+              if (!this.notFoundMessage) {
+                rootElement.innerHTML = `    <h1 style="text-align:center">404 Not Found</h1>
+                <p style="text-align:center">The page you are looking for does not exist.</p>
+         `;
+              } else {
+                pagePath = this.pages["404"];
+                path = "404";
+                this.addHooks("404");
+                this.addAssets("404");
+      
+              }
+      
+      
+          
+            
           }
         }
+        
 
         if (segment.includes("[")) {
           const urlSegment = urlSegments[index];
           const key = segment.split("=")[0].replace(/[\[\]]/g, "");
           params[key] = urlSegment;
         }
+
+
       });
 
       this.urlParams = params;
+
+   
+    
     } else {
       pagePath = this.pages[path];
+    
+      if (!pagePath) {
+        if (!this.notFoundMessage) {
+          rootElement.innerHTML = `    <h1 style="text-align:center">404 Not Found</h1>
+          <p style="text-align:center">The page you are looking for does not exist.</p>
+   `;
+        } else {
+          pagePath = this.pages["404"];
+          path = "404";
+        }
+      }
+
+
     }
 
-    if (!pagePath) {
-      if (!this.notFoundMessage) {
-        rootElement.innerHTML = `    <h1 style="text-align:center">404 Not Found</h1>
-        <p style="text-align:center">The page you are looking for does not exist.</p>
- `;
-      } else {
-        pagePath = this.pages["404"];
-        path = "404";
-      }
-    }
-    if (this.enableLongLoading) {
+    if (this.enableLongLoading && !this.noLoading) 
+    {
+      
       if (this.pages["loading"]) {
         rootElement.innerHTML = this.pages["loading"];
         this.addHooks("loading");
         this.addAssets("loading");
       } else {
-        rootElement.innerHTML = this.loadingMessage || "Loading...";
+        if (!this.noLoading) {
+          rootElement.innerHTML = this.loadingMessage || "Loading...";
+        }
+        
+     
       }
     } else {
-      rootElement.innerHTML = this.loadingMessage || "Loading...";
+      if(!this.noLoading){
+        rootElement.innerHTML = this.loadingMessage || "Loading...";
+      }
+
+
     }
+
+
+
+    
+
+ 
     const interval = setInterval(async () => {
       if (this.isLoading) {
-        await this.addHooks(path);
-        await this.addAssets(path);
-
+  
         const { states } = this;
         const { localStorage, sessionStorage } = window;
 
+      
+        
+
+
         let html = pagePath;
+
+
 
         html = html.replace(/\${(.*?)}/g, function (match, stateName) {
           const stateNameMatch = stateName.match("or")
@@ -519,13 +634,22 @@ const app = {
           }
         });
 
-        if (this.enableLongLoading) {
+        if (this.enableLongLoading && !this.noLoading) {
           this.removeAssets("loading");
           this.removeHooks("loading");
+          await this.addHooks(path);
+          await this.addAssets(path);
           rootElement.innerHTML = html;
         } else {
+          await this.addHooks(path);
+          await this.addAssets(path);
           rootElement.innerHTML = html;
         }
+        
+
+      
+
+
 
         this.isLoading = false;
 
@@ -1056,9 +1180,10 @@ const app = {
 
       this.pageAssets.push(pageAssets);
 
+
       return html;
     } catch (e) {
-      console.error(e);
+      console.error(e + " at line " + lines.indexOf(line));
       return page;
     }
   },
@@ -1097,9 +1222,16 @@ const app = {
         this.transpileAndStorePage(pageKey, pagesToTranspile[pageKey]);
       }
     }
+    const eventSource = new EventSource('/events');
+    eventSource.onmessage = function(event) {
+      if (event.data === 'reload') {
 
+        window.location.reload();
+      }
+    };
     this.render();
   },
 };
 
 app.init();
+
