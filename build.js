@@ -10,6 +10,7 @@ program
   .parse(process.argv);
 const options = program.opts();
 const Terser = require("terser");
+const { Console } = require("node:console");
 async function fetchRoutes() {
   const pagesPath = path.join(__dirname, "pages");
 
@@ -586,6 +587,10 @@ async function fetchPagesToTranspile(routes) {
       }
 
       const pageContent = fs.readFileSync(`./pages/${route}.suip`, "utf8");
+      route = route.trim();
+
+
+
 
       pagesToTranspile[route] = pageContent;
     } catch (error) {
@@ -603,6 +608,7 @@ async function fetchPagesToTranspile(routes) {
           console.error(`Error fetching page: ${result.reason.message}`);
         }
       });
+  
       return pagesToTranspile;
     })
     .catch((error) => {
@@ -613,19 +619,28 @@ async function fetchPagesToTranspile(routes) {
 
 function getLongLoading() {
   let longLoading = false;
+  let noLoading = false;
   let configPath = path.join(__dirname, "config.sui");
   let config = fs.readFileSync(configPath, "utf8");
   let configArray = config.split(/\r?\n/);
   configArray.forEach((line) => {
+ 
     if (line.includes("ELL")) {
       let value = line.split("=");
       if (value[1].toLowerCase() == "true") {
         longLoading = true;
       }
     }
+
+    else if (line.includes("NL")) {
+      let value = line.split("=");
+      if (value[1].toLowerCase() == "true") {
+        noLoading = true;
+      }
+    }
   });
 
-  return longLoading;
+  return { longLoading, noLoading };
 }
 
 let pages = {};
@@ -645,6 +660,7 @@ function transpileAndStorePage(pageKey, pageContent) {
 
   pages[pageKey] = minified;
 }
+let nlandELL = getLongLoading();
 async function main() {
   let routes = await fetchRoutes();
 
@@ -704,189 +720,202 @@ EventTarget.prototype.addEventListener = function(...args) {
     stylesAdded: new Set(),
     scriptsAdded: new Set(),
     urlParams:{},
-    enableLongLoading: ${getLongLoading()},
-    
+    enableLongLoading: ${nlandELL.longLoading},
+    noLoading: ${nlandELL.noLoading},
     async addAssets(pageKey) {
+
+      try{
       // Add a check if assets are already loaded for this page
-      if (this.assetsLoaded) {
+      if (this.assetsLoaded) {  
+
         return;
       }
-    
   
-        const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-        if (pageAssets) {
-          pageAssets.styles.forEach((style) => {
-            if (!this.stylesAdded.has(style.href) && style.href) {
-              const linkElement = document.createElement("link");
-              linkElement.rel = "stylesheet";
-              linkElement.href = style.href;
+      //promise
   
-              if (style.integrity) {
-                linkElement.integrity = style.integrity;
-              }
-              if (style.id) {
-                linkElement.id = style.id;
-              }
-              linkElement.crossOrigin = style.crossorigin;
+      const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
+      if (pageAssets) {
+        pageAssets.styles.forEach((style) => {
+          if (!this.stylesAdded.has(style.href) && style.href) {
+            const linkElement = document.createElement("link");
+            linkElement.rel = "stylesheet";
+            linkElement.href = style.href;
   
-              linkElement.type = style.type || "text/css";
-  
-              linkElement.referrePolicy = style.referrerpolicy;
-  
-  
-  
-              document.head.appendChild(linkElement);
-              this.stylesAdded.add(style.href);
-            } else if (!this.stylesAdded.has(style.textContent) && style.textContent) {
-              const styleElement = document.createElement("style");
-              styleElement.textContent = style.textContent;
-              styleElement.type = style.type || "text/css";
-              if (style.id) {
-                styleElement.id = style.id;
-              }
-              if (style.id) {
-                linkElement.id = style.id;
-              }
-  
-  
-  
-  
-  
-              document.head.appendChild(styleElement);
-              this.stylesAdded.add(style.textContent);
+            if (style.integrity) {
+              linkElement.integrity = style.integrity;
             }
-          });
-  
-          pageAssets.scripts.forEach((script) => {
-            if (!this.scriptsAdded.has(script.src) && script.src) {
-              const scriptElement = document.createElement("script");
-              scriptElement.src = script.src;
-              scriptElement.async = script.async;
-              scriptElement.defer = script.defer;
-              scriptElement.preload = script.preload;
-              if (script.integrity) {
-                scriptElement.integrity = script.integrity;
-              }
-              if (script.id) {
-                scriptElement.id = script.id;
-              }
-              scriptElement.crossOrigin = script.crossorigin;
-  
-              scriptElement.type = script.type;
-  
-              scriptElement.referrePolicy = script.referrerpolicy;
-  
-              handleScriptLoadError(scriptElement, script.src);
-              if (script.head) {
-                document.head.appendChild(scriptElement);
-              } else {
-                document.body.appendChild(scriptElement);
-              }
-              this.scriptsAdded.add(script.src);
-  
-            }  else if (!this.scriptsAdded.has(script.textContent) && script.textContent) {
-              const scriptElement = document.createElement("script");
-              if (script.autoReady) {
-                scriptElement.textContent = 'document.addEventListener("sprintReady", () => {' + script.textContent + '});';
-              } else {
-                scriptElement.textContent = script.textContent;
-              }
-  
-              scriptElement.async = script.async;
-              scriptElement.defer = script.defer;
-              scriptElement.preload = script.preload;
-  
-              scriptElement.type = script.type || "text/javascript";
-  
-              if (script.id) {
-                scriptElement.id = script.id;
-              }
-              handleScriptLoadError(scriptElement, script.src);
-  
-              if (script.head) {
-                document.head.appendChild(scriptElement);
-              } else {
-                document.body.appendChild(scriptElement);
-              }
-  
-              this.scriptsAdded.add(script.textContent);
-         
+            if (style.id) {
+              linkElement.id = style.id;
             }
-          });
-        }
-        this.assetsLoaded = true;
-     
-    
+            linkElement.crossOrigin = style.crossorigin;
+  
+            linkElement.type = style.type || "text/css";
+  
+            linkElement.referrePolicy = style.referrerpolicy;
+  
+            document.head.appendChild(linkElement);
+            this.stylesAdded.add(style.href);
+          } else if (
+            !this.stylesAdded.has(style.textContent) &&
+            style.textContent
+          ) {
+            const styleElement = document.createElement("style");
+            styleElement.textContent = style.textContent;
+            styleElement.type = style.type || "text/css";
+            if (style.id) {
+              styleElement.id = style.id;
+            }
+            if (style.id) {
+              linkElement.id = style.id;
+            }
+  
+            document.head.appendChild(styleElement);
+            this.stylesAdded.add(style.textContent);
+          }
+        });
+  
+        pageAssets.scripts.forEach((script) => {
+          if (!this.scriptsAdded.has(script.src) && script.src) {
+            const scriptElement = document.createElement("script");
+            scriptElement.src = script.src;
+            scriptElement.async = script.async;
+            scriptElement.defer = script.defer;
+            scriptElement.preload = script.preload;
+            if (script.integrity) {
+              scriptElement.integrity = script.integrity;
+            }
+            if (script.id) {
+              scriptElement.id = script.id;
+            }
+            scriptElement.crossOrigin = script.crossorigin;
+  
+            scriptElement.type = script.type;
+  
+            scriptElement.referrePolicy = script.referrerpolicy;
+  
+            handleScriptLoadError(scriptElement, script.src);
+            if (script.head) {
+              document.head.appendChild(scriptElement);
+            } else {
+              document.body.appendChild(scriptElement);
+            }
+            this.scriptsAdded.add(script.src);
+          } else if (
+            !this.scriptsAdded.has(script.textContent) &&
+            script.textContent
+          ) {
+            const scriptElement = document.createElement("script");
+            if (script.autoReady) {
+              scriptElement.textContent = 'document.addEventListener("sprintReady", () => {'+ script.textContent+ '});';
+            } else {
+              scriptElement.textContent = script.textContent;
+            }
+  
+            scriptElement.async = script.async;
+            scriptElement.defer = script.defer;
+            scriptElement.preload = script.preload;
+  
+            scriptElement.type = script.type || "text/javascript";
+  
+            if (script.id) {
+              scriptElement.id = script.id;
+            }
+            handleScriptLoadError(scriptElement, script.src);
+  
+            if (script.head) {
+              document.head.appendChild(scriptElement);
+            } else {
+              document.body.appendChild(scriptElement);
+            }
+  
+            this.scriptsAdded.add(script.textContent);
+          }
+        });
+      }
+      this.assetsLoaded = true;
+    }catch(e){
+      console.error(e + " at line " + lines.indexOf(line));
+    }
     },
-  
   
     async removeAssets(pageKey) {
       const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-      
+  
       if (pageAssets) {
         // Reset stylesAdded and scriptsAdded sets for the current page
         this.stylesAdded = new Set();
         this.scriptsAdded = new Set();
-        
+  
         for (let i = 0; i < pageAssets.styles.length; i++) {
           const style = pageAssets.styles[i];
-          
+  
           // Remove by href only when it exists, else remove by textContent
-          if (style.href && document.querySelector('link[href="' + style.href + '"]')) {
-            document.querySelector('link[href="' + style.href + '"]').remove();    
-           } else if (style.textContent) {  
-             Array.from(document.head.getElementsByTagName('style')).forEach((s, j) => {
-               if (s.textContent === style.textContent) s.remove();
-              });
-            } 
-         }
-         
+          if (
+            style.href &&
+            document.querySelector('link[href="' + CSS.escape(style.href)+ '"]')
+          ) {
+            document.querySelector('link[href="' + style.href + '"]').remove();
+          } else if (style.textContent) {
+            Array.from(document.head.getElementsByTagName("style")).forEach(
+              (s, j) => {
+                if (s.textContent === style.textContent) s.remove();
+              }
+            );
+          }
+        }
+  
         for (let i = 0; i < pageAssets.scripts.length; i++) {
           const script = pageAssets.scripts[i];
-          
-          if (script.src && document.querySelector('script[src="' + script.src + '"]')) {
-            document.querySelector('script[src="' + script.src + '"]').remove();        
-           } else if (script.textContent) {  
-            Array.from(document.getElementsByTagName('script')).forEach((s, j) => {
-              if(script.autoReady){
-          
-                if (s.textContent === 'document.addEventListener("sprintReady", () => {' + script.textContent + '});') {
-                  s.remove();
-                  for (let k = 0; k < sprintEvents.length; k++) {
-                    const event = sprintEvents[k];
-                    if (event.type == "sprintReady" && event.fn.toString() === '() => {'+script.textContent+'}') {
-                      
-                      document.removeEventListener("sprintReady", event.fn);
-                      window.removeEventListener("sprintReady", event.fn);
-              
   
-                      
-                      sprintEvents.splice(k, 1);
-                      
+          if (
+            script.src &&
+            document.querySelector("script[src=" + script.src + "]")
+          ) {
+            document.querySelector('script[src="' + script.src + '"]').remove();
+          } else if (script.textContent) {
+            Array.from(document.getElementsByTagName("script")).forEach(
+              (s, j) => {
+                if (script.autoReady) {
+                  //add sprintReady event listene to the script textContent to check if the same
+                  if (
+                    s.textContent ===
+                    'document.addEventListener("sprintReady", () => {' +
+                      script.textContent +
+                      "});"
+                     
+
+                  ) {
+                    s.remove();
+                    for (let k = 0; k < sprintEvents.length; k++) {
+                      const event = sprintEvents[k];
+                      if (
+                        event.type == "sprintReady" &&
+                        event.fn.toString() === '() => {' + script.textContent + '}'
+
+                      ) {
+                        document.removeEventListener("sprintReady", event.fn);
+                        window.removeEventListener("sprintReady", event.fn);
   
+                        sprintEvents.splice(k, 1);
+                      }
                     }
-                 
                   }
-  
-                
-  
-  
+                } else if (s.textContent === script.textContent) {
+                  s.remove();
                 }
-  
               }
-              else if (s.textContent === script.textContent) {
-             
-                s.remove();
-              
-              }
-  
-           
-             });
-           } 
-         }    
-        this.assetsLoaded = false;  
+            );
+          }
+        }
+        this.assetsLoaded = false;
+        console.log("Assets removed");
+ 
       }
+
+   
+      
     },
+  
 
     async addHooks(pageKey) {
       const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
@@ -946,82 +975,104 @@ EventTarget.prototype.addEventListener = function(...args) {
       }
     },
   
-    navigateTo(path) {
+    async navigateTo(path) {
       this.isLoading = true;
       let currentPath = getCurrentUrl().split("/")[3] || "home";
       window.history.pushState(null, "", path);
-  
-      this.removeAssets(currentPath);
-  
-      this.removeHooks(currentPath);
-  
-      this.render();
+      await this.removeAssets(currentPath);
+
+      await this.removeHooks(currentPath);
+      await this.render();
   
     },
+
     async render() {
       const url = getCurrentUrl();
       const urlObject = new URL(url);
+  
       let path = urlObject.pathname;
   
       if (path == "/") {
         path = "home";
-  
-      }
-      else
-      {
+      } else {
         path = path.substring(1);
-  
       }
   
       const rootElement = document.getElementById("root");
       const urlSegments = path.split("/");
       const amountOfSlashes = urlSegments.length - 1;
-
+  
       let pagePath;
-      
+  
       if (amountOfSlashes >= 1) {
         const pages = Object.keys(this.pages);
         const pageKeys = pages.filter((page) => {
-          const pageSegments =page.split(/\\[([^\\]]+)\\]/g);
+      
+      
+          let pageSegments = page.split(/(!?\\[[^\\]]+\\])/g);
+          pageSegments = pageSegments.filter(entry => entry.trim() !== '');
           pageSegments.shift();
-
+    
           return pageSegments.length === amountOfSlashes;
         });
-
+  
+  
+  
+  
+   
+  
+        
+  
         pagePath = this.pages[pageKeys[0]];
         path = pageKeys[0];
-
-
-        if (!pagePath) {
+  
+  
+        if (!path) {
+          
           if (!this.notFoundMessage) {
-            rootElement.innerHTML = "404";
+            rootElement.innerHTML = '<h1 style="text-align:center">404 Not Found</h1><p style="text-align:center">The page you are looking for does not exist.</p>';
           } else {
-    
-            /* eslint-disable no-undef */
+          
             pagePath = this.pages["404"];
-            /* eslint-enable no-undef */
             path = "404";
+            this.addHooks("404");
+            this.addAssets("404");
+  
           }
+  
+  
         }
-
-        
-
-
+   
+  
+        //get params
         const params = {};
-        const pageSegments = path.split(/(!?\\[[^\\]]+\\])/g);
+        let pageSegments = page.split(/(!?\\[[^\\]]+\\])/g);
+  
         urlSegments.shift();
         pageSegments.shift();
         pageSegments.forEach((segment, index) => {
-          //if any variable has ! in front of it, make sure the url has the same value or return 404 else add to params
+         
           if (segment.includes("[!") && urlSegments[index] !== segment) {
             const variable = segment.replace(/\\[\\]!/g, "");
-
-  
+        
             if (urlSegments[index] !== variable) {
-              pagePath = null;
+              
+                if (!this.notFoundMessage) {
+                  rootElement.innerHTML = '<h1 style="text-align:center">404 Not Found</h1> <p style="text-align:center">The page you are looking for does not exist.</p>';
+                } else {
+                  pagePath = this.pages["404"];
+                  path = "404";
+                  this.addHooks("404");
+                  this.addAssets("404");
+        
+                }
+        
+        
+            
+              
             }
-  
           }
+          
   
           if (segment.includes("[")) {
             const urlSegment = urlSegments[index];
@@ -1030,99 +1081,124 @@ EventTarget.prototype.addEventListener = function(...args) {
           }
   
   
-          
         });
-
+  
         this.urlParams = params;
-
-        
+  
+     
+      
       } else {
         pagePath = this.pages[path];
-
-      }
-     
-      if (!pagePath) {
-        if (!this.notFoundMessage) {
-          rootElement.innerHTML = "404";
-        } else {
-  
-          /* eslint-disable no-undef */
-          pagePath = this.pages["404"];
-          /* eslint-enable no-undef */
-          path = "404";
+      
+        if (!pagePath) {
+          if (!this.notFoundMessage) {
+            rootElement.innerHTML ='<h1 style="text-align:center">404 Not Found</h1><p style="text-align:center">The page you are looking for does not exist.</p>';
+          } else {
+            pagePath = this.pages["404"];
+            path = "404";
+          }
         }
+  
+  
       }
-        if (this.enableLongLoading) {
-          if(this.pages["loading"]){
+  
+      if (this.enableLongLoading && !this.noLoading) {
+        if (this.pages["loading"]) {
           rootElement.innerHTML = this.pages["loading"];
           this.addHooks("loading");
           this.addAssets("loading");
-          }
-          else{
+        } else {
+          if (!this.noLoading) {
             rootElement.innerHTML = this.loadingMessage || "Loading...";
           }
+          
+       
+        }
+      } else {
+        if(!this.noLoading){
+          rootElement.innerHTML = this.loadingMessage || "Loading...";
+        }
   
-        
-      }
- 
-      else{
-        rootElement.innerHTML = this.loadingMessage || "Loading...";
+  
       }
   
+  
+  
+      
+  
+   
       const interval = setInterval(async () => {
         if (this.isLoading) {
-          await this.addHooks(path);
-          await this.addAssets(path);
-    
+  
+  
+          const { states } = this;
+          const { localStorage, sessionStorage } = window;
+  
+        
           
-        const { states } = this;
-        const { localStorage, sessionStorage } = window;
-        
-        let html = pagePath;
-        
-        html = html.replace(/\\$\{(.*?)}/g, function (match, stateName) {
-          const stateNameMatch = stateName.match("or") ? stateName.split("or") : [stateName];
-          const name = stateNameMatch[0].trim();
-          const type = name.split(".")[0];
-          const objectName = name.split(".")[1];
-        
-          const getValue = (storage, key) => {
-            const value = storage.getItem(key);
-            return value ? value : "";
-          };
-        
-          const defaultValue = stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
-        
-          switch (type) {
-            case "s":
-              const state = states.find((state) => state.name === objectName);
-              return state ? state.value : defaultValue;
-        
-            case "l":
-              return getValue(localStorage, objectName) || defaultValue;
-        
-            case "c":
-              const cookieValue = document.cookie.split(objectName + "=")[1];
-
-              return cookieValue ? cookieValue.split(";")[0] : defaultValue;
-        
-            case "ss":
-              return getValue(sessionStorage, objectName) || defaultValue;
-
-            case "u":
-            
-              return app.urlParams[objectName] || defaultValue;
-
-            default:
-              return "";
+  
+  
+          let html = pagePath;
+  
+  
+  
+          html = html.replace(/\\$\{(.*?)}/g, function (match, stateName) {
+            const stateNameMatch = stateName.match("or")
+              ? stateName.split("or")
+              : [stateName];
+            const name = stateNameMatch[0].trim();
+            const type = name.split(".")[0];
+            const objectName = name.split(".")[1];
+  
+            const getValue = (storage, key) => {
+              const value = storage.getItem(key);
+              return value ? value : "";
+            };
+  
+            const defaultValue =
+              stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
+  
+            switch (type) {
+              case "s":
+                const state = states.find((state) => state.name === objectName);
+                return state ? state.value : defaultValue;
+  
+              case "l":
+                return getValue(localStorage, objectName) || defaultValue;
+  
+              case "c":
+                const cookieValue = document.cookie.split("+objectName"+"=")[1];
+                return cookieValue ? cookieValue.split(";")[0] : defaultValue;
+  
+              case "ss":
+                return getValue(sessionStorage, objectName) || defaultValue;
+              case "u":
+                return app.urlParams[objectName] || defaultValue;
+  
+              default:
+                return "";
+            }
+          });
+  
+          if (this.enableLongLoading && !this.noLoading) {
+            this.removeAssets("loading");
+            this.removeHooks("loading");
+            await this.addHooks(path);
+            await this.addAssets(path);
+    
+            rootElement.innerHTML = html;
+          } else {
+            await this.addHooks(path);
+            await this.addAssets(path);
+    
+            rootElement.innerHTML = html;
+         
           }
-        });
-        
-        
-        
-          rootElement.innerHTML = html; 
-                this.isLoading = false;
+          
+       
+          this.isLoading = false;
 
+  
           clearInterval(interval);
           const sprintReady = setInterval(async () => {
             if (this.assetsLoaded && this.hooksLoaded) {
@@ -1133,8 +1209,8 @@ EventTarget.prototype.addEventListener = function(...args) {
           }, 500);
         }
       }, 500);
-    
     },
+  
     async init(notFoundMessage, loadingMessage) {
       this.notFoundMessage = notFoundMessage;
       this.loadingMessage = loadingMessage;
@@ -1176,6 +1252,8 @@ EventTarget.prototype.addEventListener = function(...args) {
 `;
 
   let minified = await Terser.minify(finalScript);
+
+
 
   if (!fs.existsSync("build")) {
     fs.mkdirSync("build");
@@ -1255,7 +1333,7 @@ EventTarget.prototype.addEventListener = function(...args) {
       "%"
   );
 
-  const sV = 2.3;
+  const sV = fs.readFileSync(".v", "utf8");
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
 }
 
