@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V2.3
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V2.4
 
 **Welcome to the SprintUI Framework!**
 
@@ -318,10 +318,10 @@ As of the current version, the available hooks along with their descriptions and
 ```jsx
 <HImport from="footer">
 <HImport from="test">
-<HImport from="http://example.com/navbar"> <!--make sure to have http or https befor and also that the url retuns html and a html content type or text, it doesn't have to be a suic file just html or suic-->
+<HImport from="http://example.com/navbar"> <!--make sure to have http or https befor and also that the url retuns html and a html content type or text, it doesn't have to be a suip file just html or suip-->
 ```
 
-**test.suic:**
+**test.suip:**
 ```html
 <ul class="nav nav-tabs">
   <li class="nav-item">
