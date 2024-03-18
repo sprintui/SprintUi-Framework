@@ -1051,7 +1051,7 @@ EventTarget.prototype.addEventListener = function(...args) {
   
         //get params
         const params = {};
-        let pageSegments = page.split(/(!?\\[[^\\]]+\\])/g);
+        let pageSegments = path.split(/(!?\\[[^\\]]+\\])/g);
   
         urlSegments.shift();
         pageSegments.shift();
