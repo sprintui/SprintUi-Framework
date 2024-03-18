@@ -1021,6 +1021,11 @@ const app = {
                   i++;
                   continue;
                 }
+                else if (lines[i].includes("//")) {
+                 //remove comments
+                  lines[i] = lines[i].split("//")[0];
+                  
+                }
 
                 scriptContent += lines[i];
                 i++;
