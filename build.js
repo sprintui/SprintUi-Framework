@@ -1143,6 +1143,13 @@ EventTarget.prototype.addEventListener = function(...args) {
           
   
   
+              if (pagePath == undefined) {
+          if (!this.notFoundMessage) {
+            rootElement.innerHTML ='<h1 style="text-align:center">404 Not Found</h1><p style="text-align:center">The page you are looking for does not exist.</p>';
+          } else {
+            pagePath = this.pages["404"];
+            path = "404";
+          } else {
           let html = pagePath;
   
   
@@ -1212,6 +1219,7 @@ EventTarget.prototype.addEventListener = function(...args) {
               clearInterval(sprintReady);
             }
           }, 500);
+        }
         }
       }, 500);
     },
