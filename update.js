@@ -5,7 +5,7 @@ const path = require('path');
 const appJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/assets/app.js';
 const buildJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/build.js';
 const serverJSURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/server.js';
-const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt';
+const versionFileURL = 'https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/.v';
 
 function downloadFile(url, localPath) {
   return new Promise((resolve, reject) => {
