@@ -3,14 +3,16 @@ const program = require("commander");
 const path = require("path");
 var minify = require("html-minifier").minify;
 const https = require("https");
+const sass = require("sass"); 
+const {fetch} = require("node-fetch");
 program
 
   .option("-ex, --exclude <value>", "Exclude files from the build", "")
 
   .parse(process.argv);
 const options = program.opts();
-const Terser = require("terser");
-const { Console } = require("node:console");
+const Terser = require("terser")
+
 async function fetchRoutes() {
   const pagesPath = path.join(__dirname, "pages");
 
@@ -44,6 +46,8 @@ async function fetchRoutes() {
   return pages;
 }
 
+let importedComponents = {};
+
 function extractCssFileName(line) {
   const importMatch = line.match(/href=['"]([^'"]+)['"]/);
   return importMatch ? importMatch[1] : null;
@@ -55,7 +59,9 @@ function extractScriptSrc(line) {
 }
 let pageAssets = [];
 
-function transpilesUIp(page, pageName) {
+async function transpilesUIp(page, pageName) {
+  
+
 
   const lines = page.split(/\r?\n/);
   try {
@@ -103,7 +109,6 @@ function transpilesUIp(page, pageName) {
         case line.includes("</suipMarkup>"):
           inSUIP = false;
           break;
-         
 
         case line.includes("useQuery()"):
           //add to textContent
@@ -134,17 +139,14 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setBodyClass"
           );
-          if(hook && hook.name.includes("setBodyClass")){
+          if (hook && hook.name.includes("setBodyClass")) {
             hook.textContent += variableName || "";
-          }
-          else{
+          } else {
             pageAssetsTOBeAdded.hooks.push({
               name: "setBodyClass",
               textContent: variableName,
             });
           }
-
-
 
           break;
         case line.includes("setTitle("):
@@ -160,17 +162,15 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setTitle"
           );
-          
-          if(hook &&hook.name.includes("setTitle")){
+
+          if (hook && hook.name.includes("setTitle")) {
             hook.textContent += variableName || "";
-          }
-          else{
+          } else {
             pageAssetsTOBeAdded.hooks.push({
               name: "setTitle",
               textContent: variableName,
             });
           }
-
 
           break;
         case line.includes("setRootClass"):
@@ -186,10 +186,9 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setRootClass"
           );
-          if(hook &&hook.name.includes("setRootClass")){
+          if (hook && hook.name.includes("setRootClass")) {
             hook.textContent += variableName || "";
-          }
-          else{
+          } else {
             pageAssetsTOBeAdded.hooks.push({
               name: "setRootClass",
               textContent: variableName,
@@ -210,10 +209,9 @@ function transpilesUIp(page, pageName) {
           var hook = pageAssetsTOBeAdded.hooks.find(
             (hook) => hook.name === "setHtmlClass"
           );
-          if(hook &&hook.name.includes("setHtmlClass")){
+          if (hook && hook.name.includes("setHtmlClass")) {
             hook.textContent += variableName || "";
-          }
-          else{
+          } else {
             pageAssetsTOBeAdded.hooks.push({
               name: "setHtmlClass",
               textContent: variableName,
@@ -222,7 +220,26 @@ function transpilesUIp(page, pageName) {
           break;
 
         case (match = line.match(/<UseStyles[^>]*>/)) !== null:
-          const href = extractCssFileName(line);
+          let href = extractCssFileName(line);
+          if (href && (href.includes(".scss") || href.includes(".sass"))) {
+          
+            href = href.replace(".scss", ".min.css");
+            href = href.replace(".sass", ".min.css");
+          }
+          else if (href && ( href.includes(".css"))) {
+
+            if (href.includes("http://") || href.includes("https://")) {
+              //do nothing
+            } else {
+              href = href.replace(".css", ".min.css");
+            }
+
+          }
+      
+
+
+          
+
 
           const id = line.match(/id=['"]([^'"]+)['"]/);
           const integrity = line.match(/integrity=['"]([^'"]+)['"]/);
@@ -242,6 +259,7 @@ function transpilesUIp(page, pageName) {
               sprintIgnore: sprintIgnore ? true : false,
             };
             pageAssetsTOBeAdded.styles.push(newStyle);
+      
           } else {
             // Initialize scriptContent as an empty string
             let styleContent = "";
@@ -275,7 +293,7 @@ function transpilesUIp(page, pageName) {
             }
           }
           break;
-        case line.includes("import states from sprintui"):
+        case line.includes("include states"):
           var script = pageAssetsTOBeAdded.scripts.find(
             (script) => script.id === "sUIp"
           );
@@ -309,7 +327,7 @@ function transpilesUIp(page, pageName) {
           }
 
           break;
-        case line.includes("import cookies from sprintui"):
+        case line.includes("include cookies"):
           var script = pageAssetsTOBeAdded.scripts.find(
             (script) => script.id === "sUIp"
           );
@@ -412,11 +430,9 @@ function transpilesUIp(page, pageName) {
               if (lines[i].startsWith("//")) {
                 i++;
                 continue;
-              }
-               else if (lines[i].includes("//")) {
-                 //remove comments
+              } else if (lines[i].includes("//")) {
+                //remove comments
                 lines[i] = lines[i].split("//")[0];
-                  
               }
 
               scriptContent += lines[i];
@@ -444,6 +460,76 @@ function transpilesUIp(page, pageName) {
           }
 
           break;
+
+          case line.includes("use component"):
+            let promises = [];
+            if (!importedComponents[pageName]) {
+              importedComponents[pageName] = {};
+            }
+           
+            // Format component name from 'url' or component * from 'url'
+            let componentName = line.split("component")[1];
+            componentName = componentName.split("from")[0].trim().replace(/['"]+/g, "").trim();
+            let componentUrl = line.split("from");
+          
+            if (componentUrl.length > 1) {
+              componentUrl = componentUrl[1].trim().replace(/['"]+/g, "").trim();
+          
+              if (componentName == "*") {
+                promises.push(
+                  fetch(componentUrl)
+                    .then((response) => response.text())
+                    .then((data) => {
+                      const lines = data.split(/\r?\n/);
+                      lines.forEach((line) => {
+                        let name = line.split("=")[0].trim();
+                        let urlToComp = line.split("=")[1]?.trim();
+          
+                        if (name && urlToComp) {
+                          importedComponents[pageName][name] = urlToComp;
+                        }
+                      });
+                    })
+                ); 
+                lines.splice(lines.indexOf(line), 1);
+              } else {
+                importedComponents[pageName][componentName] = componentUrl;
+                lines.splice(lines.indexOf(line), 1);
+            
+              }
+            } else {
+              if (componentName == "*") {
+                promises.push(new Promise((resolve, reject) => {
+                  fs.readdir("comps", (err, files) => {
+                    if (err) {
+                      console.error('Error reading comps folder:', err);
+                      reject(err);
+                    } else {
+                      files.forEach((file) => {
+                        const componentName = file.split(".")[0];
+                        importedComponents[pageName][componentName] = `./comps/${file}`;
+                      });
+                      resolve();
+                    }
+                  });
+
+                }));
+
+                lines.splice(lines.indexOf(line), 1);
+           
+               
+              } else if (componentName != "") {
+                componentUrl = componentName;
+              } else {
+                throw new Error("Component name is required");
+              }
+            }
+
+            await Promise.all(promises);
+           
+     
+            break;
+          
 
         default:
           if (inSUIP) {
@@ -480,84 +566,463 @@ function transpilesUIp(page, pageName) {
               );
 
               html += line;
-            } else if (line.includes("<HImport")) {
-              const fromMatch = line.match(/from=['"]([^'"]+)['"]/);
-              if (fromMatch) {
-                const from = fromMatch[1];
-                if (from.includes("https://") || from.includes("http://")) {
-                  https.get(from, (response) => {
-                    let data = "";
-                    response.on("data", (chunk) => {
-                      data += chunk;
-                    });
-                    response.on("end", () => {
-                      line = data;
-                    });
-                  });
-                } else {
-                  let file = fs.readFileSync(`./comps/${from}.suip`, "utf8");
-                  if(file) html += file;
-                  
-                }
-              }
-            } else if (line.includes("<CImport")) {
-              const fromMatch = line.match(/from=['"]([^'"]+)['"]/);
-              const paramsMatch = line.match(/\{([^{}]+)\}/);
-              if (paramsMatch) {
-                const insideBraces = paramsMatch[1].replace(
-                  /["'\\\/\[\]\(\)\{\}<>]/g,
-                  ""
-                );
-                const keyValuePairs = insideBraces.split(/\s*,\s*/);
-                const params = keyValuePairs.map((pair) => {
-                  const [key, value] = pair.split("=");
-                  return { key, value };
-                });
-
-                if (fromMatch) {
-                  const from = fromMatch[1];
-                  if (from.includes("https://") || from.includes("http://")) {
-                    https.get(from, (response) => {
-                      let data = "";
-                      response.on("data", (chunk) => {
-                        data += chunk;
-                      });
-                      response.on("end", () => {
-                        line = data;
-
-                        for (const param of params) {
-                          line = line.replace(`\${${param.key}}`, param.value);
-                        }
-
-                        html += line;
-                      });
-                    });
-                  } else {
-                    let  file = fs.readFileSync(`./comps/${from}.suip`, "utf8");
-                    if (file) {
-                 
-
-                      for (const param of params) {
-                        file = file.replace(`\${${param.key}}`, param.value);
-                      }
-                      html += file;
-                    }
-
-                  }
-                }
-              }
             } else {
-              html += line;
-            }
+          
+              
+              let tag = line.match(/<([^<>]+)>/);
+
+          
+           
+              if (tag) {
+                tag = tag[1];
+
+                if (tag.includes("{")) {
+                  tag = tag.replace(/\{([^{}]+)\}/g, "");
+                  tag = tag.replace(/\s/g, "");
+                  tag = tag.replace(/\//g, "");
+                } else {
+                  tag = tag.replace(/\s/g, "");
+                  tag = tag.replace(/\//g, "");
+                }
+
+          
+                console.log('Found tag:', tag);
+
+
+
+        
+                let component = importedComponents[pageName];
+
+      
+                if (component && component[tag]) {
+                  component = component[tag];
+                  lines.splice(lines.indexOf(line), 1);
+
+                  const paramsMatch = line.match(/\{([^{}]+)\}/);
+
+                  if (paramsMatch) {
+                    const insideBraces = paramsMatch[1].replace(
+                      /["'\\\/\[\]\(\)\{\}<>]/g,
+                      ""
+                    );
+                    const keyValuePairs = insideBraces.split(/\s*,\s*/);
+
+                    //make a object of the key value pairs
+                    const params = keyValuePairs.map((pair) => {
+                      const [key, value] = pair.split("=");
+                      return { key, value };
+                    });
+
+                    if (component.includes("https://") || component.includes("http://")) {
+                      let componentHtml = "";
+                      try {
+                        const response = await fetch(component);
+                        if (response.ok) {
+                          const line = await response.text();
+                          for (const param of params) {
+                            //remove " and ' from the value and any other special characters
+                            line = line.replace(`\${${param.key}}`, param.value);
+                          }
+                          componentHtml += line;
+                          
+                          html += await transpileComp(componentHtml);
+                        }
+                      } catch (error) {
+                        console.error("Error fetching component:", error);
+                      }
+                    } else {
+              
+
+                      const componentHtml = fs.readFileSync(component, 'utf8');
+                      let processedComponentHtml = componentHtml;
+                      
+                      // Replace params with their values
+                      for (const param of params) {
+                        processedComponentHtml = processedComponentHtml.replace(
+                          `\${${param.key}}`,
+                          param.value
+                        );
+
+                      }
+                    
+                      html += await transpileComp(processedComponentHtml);
+                    }
+                    
+                  }
+                  else{
+                    if (
+                      component.includes("https://") ||
+                      component.includes("http://")
+                    ) {
+                       let componentHtml = "";
+                      try {
+                        const response = await fetch(component);
+                        if (response.ok) {
+                          const line = await response.text();
+                          for (const param of params) {
+                            //remove " and ' from the value and any other special characters
+                            line = line.replace(`\${${param.key}}`, param.value);
+                          }
+                          componentHtml += line;
+                          html +=await transpileComp(componentHtml);
+                        }
+                      } catch (error) {
+                        console.error("Error fetching component:", error);
+                      }
+
+                    } else {
+                      const componentHtml = fs.readFileSync(filePath, 'utf8');
+                  
+                      html += await transpileComp(componentHtml);
+
+
+                    }
+                  }
+                } else {
+                  html += line;
+                }
+          
+              }
+            } 
+          
           } else {
             html += line;
           }
-
-          break;
       }
     }
 
     pageAssets.push(pageAssetsTOBeAdded);
+
+    return html;
+  } catch (e) {
+    console.error(e);
+    return page;
+  }
+}
+async function transpileComp(page) {
+  const lines = page.split(/\r?\n/);
+  try {
+    let html = "";
+    let inSUIP = false;
+    let sUIPHooks = false;
+
+    for (let line of lines) {
+      let match;
+
+      switch (true) {
+        case line.includes("useQuery()"):
+          //add to textContent
+          var variableName = line.split("useQuery(")[0];
+
+          variableName = variableName.replace("=", "");
+          variableName = variableName.trim();
+
+          lines.splice(lines.indexOf(line), 1);
+
+          var script = pageAssets.scripts.find(
+            (script) => script.id === "sUIp"
+          );
+          if (!script.textContent.includes("function useQuery()")) {
+            script.textContent +=
+              variableName + " =" + JSON.stringify(getQueryParams()) + ";";
+          }
+
+          break;
+
+        case line.includes("setBodyClass("):
+          //add to textContent
+          var variableName = line.split("setBodyClass(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
+
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
+          lines.splice(lines.indexOf(line), 1);
+
+          var hook = pageAssets.hooks.find(
+            (hook) => hook.name === "setBodyClass"
+          );
+          if (hook) {
+            hook.textContent += variableName || "";
+          } else {
+            pageAssets.hooks.push({
+              name: "setBodyClass",
+              textContent: variableName || "",
+            });
+          }
+
+          break;
+        case line.includes("setTitle("):
+          //add to textContent
+          var variableName = line.split("setTitle(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
+
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
+          lines.splice(lines.indexOf(line), 1);
+
+          var hook = pageAssets.hooks.find(
+            (hook) => hook.name === "setTitle"
+          );
+          if (hook) {
+            hook.textContent += variableName || "";
+          } else {
+            pageAssets.hooks.push({
+              name: "setTitle",
+              textContent: variableName || "",
+            });
+          }
+
+          break;
+        case line.includes("setRootClass"):
+          //add to textContent
+          var variableName = line.split("setRootClass(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
+
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
+          lines.splice(lines.indexOf(line), 1);
+
+          var hook = pageAssets.hooks.find(
+            (hook) => hook.name === "setRootClass"
+          );
+          if (hook) {
+            hook.textContent += variableName || "";
+          } else {
+            pageAssets.hooks.push({
+              name: "setRootClass",
+              textContent: variableName || "",
+            });
+          }
+
+          break;
+        case line.includes("setHtmlClass"):
+          //add to textContent
+          var variableName = line.split("setHtmlClass(")[1];
+          variableName = variableName.split(")")[0];
+          variableName = variableName.trim();
+
+          //remove " and '
+          variableName = variableName.replace(/['"]+/g, "");
+          variableName = variableName.trim();
+          lines.splice(lines.indexOf(line), 1);
+
+          var hook = pageAssets.hooks.find(
+            (hook) => hook.name === "setHtmlClass"
+          );
+          if (hook) {
+            hook.textContent += variableName || "";
+          } else {
+            pageAssets.hooks.push({
+              name: "setHtmlClass",
+              textContent: variableName || "",
+            });
+          }
+
+          break;
+
+        case line.includes("<Link"):
+          let to = line.match(/to=['"]([^'"]+)['"]/);
+          if (to) {
+            to = to[1];
+          } else {
+        
+            throw new Error("to attribute is required");
+          }
+
+          let className = line.match(/className=['"]([^'"]+)['"]/);
+
+          if (className) {
+            className = className[1];
+          } else {
+            className = "";
+          }
+
+          let id = line.match(/id=['"]([^'"]+)['"]/);
+
+          if (id) {
+            id = id[1];
+          } else {
+            id = "";
+          }
+
+          //just replace link with a tag so if its incased on any other tag it will be removed
+          line = line.replace("<Link", "<a");
+          line = line.replace("</Link>", "</a>");
+
+          line = line.replace(
+            `to="${to}"`,
+            `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
+          );
+          line = line.replace(
+            `className="${className}"`,
+            `class="${className}"`
+          );
+
+          html += line;
+          break;
+          default:
+            if (inSUIP) {
+              if (line.includes("<Link")) {
+                const to = line.match(/to=['"]([^'"]+)['"]/)[1];
+  
+                let className = line.match(/className=['"]([^'"]+)['"]/);
+  
+                if (className) {
+                  className = className[1];
+                } else {
+                  className = "";
+                }
+  
+                let id = line.match(/id=['"]([^'"]+)['"]/);
+  
+                if (id) {
+                  id = id[1];
+                } else {
+                  id = "";
+                }
+  
+                //just replace link with a tag so if its incased on any other tag it will be removed
+                line = line.replace("<Link", "<a");
+                line = line.replace("</Link>", "</a>");
+  
+                line = line.replace(
+                  `to="${to}"`,
+                  `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
+                );
+                line = line.replace(
+                  `className="${className}"`,
+                  `class="${className}"`
+                );
+  
+                html += line;
+              } else {
+            
+                
+                let tag = line.match(/<([^<>]+)>/);
+  
+            
+             
+                if (tag) {
+                  tag = tag[1];
+  
+                  if (tag.includes("{")) {
+                    tag = tag.replace(/\{([^{}]+)\}/g, "");
+                    tag = tag.replace(/\s/g, "");
+                    tag = tag.replace(/\//g, "");
+                  } else {
+                    tag = tag.replace(/\s/g, "");
+                    tag = tag.replace(/\//g, "");
+                  }
+  
+            
+                  console.log(importedComponents[pageName]);
+          
+                  let component = importedComponents[pageName];
+  
+        
+                  if (component && component[tag]) {
+                    component = component[tag];
+                    lines.splice(lines.indexOf(line), 1);
+  
+                    const paramsMatch = line.match(/\{([^{}]+)\}/);
+  
+                    if (paramsMatch) {
+                      const insideBraces = paramsMatch[1].replace(
+                        /["'\\\/\[\]\(\)\{\}<>]/g,
+                        ""
+                      );
+                      const keyValuePairs = insideBraces.split(/\s*,\s*/);
+  
+                      //make a object of the key value pairs
+                      const params = keyValuePairs.map((pair) => {
+                        const [key, value] = pair.split("=");
+                        return { key, value };
+                      });
+  
+                      if (component.includes("https://") || component.includes("http://")) {
+                        let componentHtml = "";
+                        try {
+                          const response = await fetch(component);
+                          if (response.ok) {
+                            const line = await response.text();
+                            for (const param of params) {
+                              //remove " and ' from the value and any other special characters
+                              line = line.replace(`\${${param.key}}`, param.value);
+                            }
+                            componentHtml += line;
+                            
+                            html += await transpileComp(componentHtml);
+                          }
+                        } catch (error) {
+                          console.error("Error fetching component:", error);
+                        }
+                      } else {
+                
+  
+                        const componentHtml = fs.readFileSync(component, 'utf8');
+                        let processedComponentHtml = componentHtml;
+                        
+                        // Replace params with their values
+                        for (const param of params) {
+                          processedComponentHtml = processedComponentHtml.replace(
+                            `\${${param.key}}`,
+                            param.value
+                          );
+  
+                        }
+                      
+                        html += await transpileComp(processedComponentHtml);
+                      }
+                      
+                    }
+                    else{
+                      if (
+                        component.includes("https://") ||
+                        component.includes("http://")
+                      ) {
+                         let componentHtml = "";
+                        try {
+                          const response = await fetch(component);
+                          if (response.ok) {
+                            const line = await response.text();
+                            for (const param of params) {
+                              //remove " and ' from the value and any other special characters
+                              line = line.replace(`\${${param.key}}`, param.value);
+                            }
+                            componentHtml += line;
+                            html += await transpileComp(componentHtml);
+                          }
+                        } catch (error) {
+                          console.error("Error fetching component:", error);
+                        }
+  
+                      } else {
+                        const componentHtml = fs.readFileSync(filePath, 'utf8');
+                    
+                        html += await transpileComp(componentHtml);
+  
+  
+                      }
+                    }
+                  } else {
+                    html += line;
+                  }
+            
+                }
+              } 
+            
+            } else {
+              html += line;
+            }
+        
+      }
+    }
 
     return html;
   } catch (e) {
@@ -594,9 +1059,6 @@ async function fetchPagesToTranspile(routes) {
       const pageContent = fs.readFileSync(`./pages/${route}.suip`, "utf8");
       route = route.trim();
 
-
-
-
       pagesToTranspile[route] = pageContent;
     } catch (error) {
       console.error(`Failed to fetch ${route}: ${error.message}`);
@@ -613,7 +1075,7 @@ async function fetchPagesToTranspile(routes) {
           console.error(`Error fetching page: ${result.reason.message}`);
         }
       });
-  
+
       return pagesToTranspile;
     })
     .catch((error) => {
@@ -622,37 +1084,13 @@ async function fetchPagesToTranspile(routes) {
     });
 }
 
-function getLongLoading() {
-  let longLoading = false;
-  let noLoading = false;
-  let configPath = path.join(__dirname, "config.sui");
-  let config = fs.readFileSync(configPath, "utf8");
-  let configArray = config.split(/\r?\n/);
-  configArray.forEach((line) => {
- 
-    if (line.includes("ELL")) {
-      let value = line.split("=");
-      if (value[1].toLowerCase() == "true") {
-        longLoading = true;
-      }
-    }
 
-    else if (line.includes("NL")) {
-      let value = line.split("=");
-      if (value[1].toLowerCase() == "true") {
-        noLoading = true;
-      }
-    }
-  });
-
-  return { longLoading, noLoading };
-}
 
 let pages = {};
 
-function transpileAndStorePage(pageKey, pageContent) {
+async function transpileAndStorePage(pageKey, pageContent) {
   console.log(`Transpiling ${pageKey}...`);
-  const transpiledHtml = transpilesUIp(pageContent, pageKey);
+  const transpiledHtml = await transpilesUIp(pageContent, pageKey);
 
   //remove first <div and the end </div>
   const html = transpiledHtml;
@@ -664,17 +1102,23 @@ function transpileAndStorePage(pageKey, pageContent) {
   });
 
   pages[pageKey] = minified;
+
 }
-let nlandELL = getLongLoading();
 async function main() {
+  let startTime = Date.now();
   let routes = await fetchRoutes();
 
   let pagesToTranspile = await fetchPagesToTranspile(routes);
+  let transpilePromises = [];
 
   for (const [pageKey, pageContent] of Object.entries(pagesToTranspile)) {
-    transpileAndStorePage(pageKey, pageContent);
+    transpilePromises.push(transpileAndStorePage(pageKey, pageContent));
   }
 
+  // Wait for all transpilation promises to resolve
+  await Promise.all(transpilePromises);
+  
+ 
   let finalScript = ` 
   function getCurrentUrl() {
     return window.location.href;
@@ -720,13 +1164,10 @@ EventTarget.prototype.addEventListener = function(...args) {
     hooksLoaded: false,
     assetsLoaded: false,
     notFoundMessage: null,
-    loadingMessage: null,
     states:[],
     stylesAdded: new Set(),
     scriptsAdded: new Set(),
     urlParams:{},
-    enableLongLoading: ${nlandELL.longLoading},
-    noLoading: ${nlandELL.noLoading},
     async addAssets(pageKey) {
 
       try{
@@ -874,10 +1315,11 @@ EventTarget.prototype.addEventListener = function(...args) {
   
           if (
             script.src &&
-            document.querySelector("script[src=" + script.src + "]")
+            document.querySelector('script[src="' + script.src.replace(/"/g, '\\\"') + '"]')
           ) {
-            document.querySelector('script[src="' + script.src + '"]').remove();
-          } else if (script.textContent) {
+            document.querySelector('script[src="' + script.src.replace(/"/g, '\\\"') + '"]').remove();
+          }
+           else if (script.textContent) {
             Array.from(document.getElementsByTagName("script")).forEach(
               (s, j) => {
                 if (script.autoReady) {
@@ -913,7 +1355,7 @@ EventTarget.prototype.addEventListener = function(...args) {
           }
         }
         this.assetsLoaded = false;
-        console.log("Assets removed");
+  
  
       }
 
@@ -979,18 +1421,157 @@ EventTarget.prototype.addEventListener = function(...args) {
         this.hooksLoaded = false;
       }
     },
-  
     async navigateTo(path) {
       this.isLoading = true;
       let currentPath = getCurrentUrl().split("/")[3] || "home";
       window.history.pushState(null, "", path);
-      await this.removeAssets(currentPath);
-
-      await this.removeHooks(currentPath);
-      await this.render();
   
+      await this.render(currentPath);
     },
+    async renderString(inputString) {
+      let html = "";
+      const renderDataRegex = /<render[dataData]+\\s+data=['"]([^'"]+)['"]>(.*?)<\\/render[dataData]+>/gi;
 
+      let match;
+      const processedData = new Set();
+      while ((match = renderDataRegex.exec(inputString)) !== null) {
+        const data = match[1];
+        const template = match[2];
+        if (processedData.has(data)) {
+          continue; // Skip processing if already processed
+        }
+    
+        let dataType = data.split(".")[0];
+    
+        const getValue = (storage, key) => {
+          switch (storage) {
+            case "s":
+              const state = this.states.find((state) => state.name === key);
+              return state;
+    
+            case "l":
+              let value = localStorage.getItem(key);
+              return value ? value : "";
+    
+            case "c":
+              const cookieValue = document.cookie.split(key + "=")[1];
+              return cookieValue ? cookieValue.split(";")[0] : "";
+    
+            case "ss":
+              return sessionStorage.getItem(key) || "";
+            case "u":
+              return this.urlParams[key] || "";
+    
+            default:
+              return "";
+          }
+        };
+        let value = getValue(dataType, data.split(".")[1]);
+        if(value === "" || value === null || value === undefined){
+          value = "{}";
+        } 
+
+        let dataValue = JSON.parse(value);
+    
+        if (dataValue && dataValue instanceof Object) {
+          let renderedData = "";
+          let genAmount = 0;
+    
+          for (const key in dataValue) {
+            let data = dataValue[key];
+    
+            let newTemplate = template.split(/\\r?\\n/).map((line) => {
+              let newLine = line;
+    
+              const matches = newLine.match(/{(.*?)}/g);
+    
+              if (matches) {
+                for (const match of matches) {
+                  let key = match.replace(/{|}/g, "");
+    
+                  if (key == "index") newLine = newLine.replace(match, genAmount);
+                  else newLine = newLine.replace(match, data[key] || "");
+                }
+              }
+    
+              return newLine;
+            });
+    
+            renderedData += newTemplate.join("\\n");
+            genAmount++;
+          }
+    
+          html += renderedData;
+        }
+    
+        processedData.add(data);
+      }
+    
+      return inputString.replace(renderDataRegex, html);
+    },
+    async updateDOM(oldHtml, newHtml) {
+      // Parse the old and new HTML strings into DOM elements
+      const parser = new DOMParser();
+      const oldDoc = parser.parseFromString(oldHtml, 'text/html');
+      const newDoc = parser.parseFromString(newHtml, 'text/html');
+  
+      // Get the root elements
+      const oldRoot = oldDoc.body;
+      const newRoot = newDoc.body;
+  
+      // Helper function to recursively update the DOM
+      const updateElements = (oldEl, newEl) => {
+          // Update or add new children
+          const newChildren = Array.from(newEl.childNodes);
+          newChildren.forEach((newChild, index) => {
+              const oldChild = oldEl.childNodes[index];
+              if (oldChild) {
+                  if (newChild.nodeType === Node.ELEMENT_NODE && oldChild.nodeType === Node.ELEMENT_NODE) {
+                      // Update attributes and recursive call for children
+                      updateElements(oldChild, newChild);
+                  } else if (newChild.nodeType !== Node.ELEMENT_NODE || oldChild.nodeType !== Node.ELEMENT_NODE || newChild.nodeName !== oldChild.nodeName) {
+                      // Replace if node types or names differ
+                      oldEl.replaceChild(newChild, oldChild);
+                  }
+              } else {
+                  // Append new child
+                  oldEl.appendChild(newChild);
+              }
+          });
+  
+          // Remove any extra old children
+          while (oldEl.childNodes.length > newChildren.length) {
+              oldEl.removeChild(oldEl.lastChild);
+          }
+  
+          // Update element attributes
+          if (oldEl.nodeType === Node.ELEMENT_NODE && newEl.nodeType === Node.ELEMENT_NODE) {
+              const oldAttributes = Array.from(oldEl.attributes);
+              const newAttributes = Array.from(newEl.attributes);
+  
+              // Remove old attributes not present in new element
+              oldAttributes.forEach(attr => {
+                  if (!newEl.hasAttribute(attr.name)) {
+                      oldEl.removeAttribute(attr.name);
+                  }
+              });
+  
+              // Add/update attributes from new element
+              newAttributes.forEach(attr => {
+                  if (oldEl.getAttribute(attr.name) !== attr.value) {
+                      oldEl.setAttribute(attr.name, attr.value);
+                  }
+              });
+          }
+      };
+  
+      // Start the recursive updating process from the root elements
+      updateElements(oldRoot, newRoot);
+  
+      // Replace the old root element's inner HTML with the updated HTML
+      const rootElement = document.getElementById("root");
+      rootElement.innerHTML = oldRoot.innerHTML;
+  },  
     async render() {
       const url = getCurrentUrl();
       const urlObject = new URL(url);
@@ -1008,6 +1589,7 @@ EventTarget.prototype.addEventListener = function(...args) {
       const amountOfSlashes = urlSegments.length - 1;
   
       let pagePath;
+  
   
       if (amountOfSlashes >= 1) {
         const pages = Object.keys(this.pages);
@@ -1028,42 +1610,42 @@ EventTarget.prototype.addEventListener = function(...args) {
   
         
   
-        pagePath = this.pages[pageKeys[0]];
-        path = pageKeys[0];
-  
+        pagePath = await this.pages[pageKeys[0]];
+      path = pageKeys[0];
+
   
         if (!path) {
-          
           if (!this.notFoundMessage) {
             rootElement.innerHTML = '<h1 style="text-align:center">404 Not Found</h1><p style="text-align:center">The page you are looking for does not exist.</p>';
+            return;
           } else {
-          
             pagePath = this.pages["404"];
             path = "404";
             this.addHooks("404");
             this.addAssets("404");
-  
           }
-  
-  
         }
+  
+  
+
    
   
         //get params
         const params = {};
         let pageSegments = path.split(/(!?\\[[^\\]]+\\])/g);
   
-        urlSegments.shift();
-        pageSegments.shift();
-        pageSegments.forEach((segment, index) => {
-         
-          if (segment.includes("[!") && urlSegments[index] !== segment) {
+        
+      urlSegments.shift();
+      pageSegments.shift();
+      pageSegments.forEach(async (segment, index) => {
+        if (segment.includes("[!") && urlSegments[index] !== segment) {
             const variable = segment.replace(/\\[\\]!/g, "");
         
             if (urlSegments[index] !== variable) {
               
                 if (!this.notFoundMessage) {
                   rootElement.innerHTML = '<h1 style="text-align:center">404 Not Found</h1> <p style="text-align:center">The page you are looking for does not exist.</p>';
+                  return;
                 } else {
                   pagePath = this.pages["404"];
                   path = "404";
@@ -1095,149 +1677,135 @@ EventTarget.prototype.addEventListener = function(...args) {
       } else {
         pagePath = this.pages[path];
       
-        if (!pagePath) {
+        if (!this.pages[path]) {
           if (!this.notFoundMessage) {
             rootElement.innerHTML ='<h1 style="text-align:center">404 Not Found</h1><p style="text-align:center">The page you are looking for does not exist.</p>';
+            return;
           } else {
             pagePath = this.pages["404"];
             path = "404";
+            this.addHooks("404");
+            this.addAssets("404");
+
           }
         }
   
   
       }
   
-      if (this.enableLongLoading && !this.noLoading) {
-        if (this.pages["loading"]) {
-          rootElement.innerHTML = this.pages["loading"];
-          this.addHooks("loading");
-          this.addAssets("loading");
-        } else {
-          if (!this.noLoading) {
-            rootElement.innerHTML = this.loadingMessage || "Loading...";
-          }
-          
-       
-        }
-      } else {
-        if(!this.noLoading){
-          rootElement.innerHTML = this.loadingMessage || "Loading...";
-        }
   
-  
-      }
-  
-  
-  
-      
   
    
-      const interval = setInterval(async () => {
-        if (this.isLoading) {
-  
-  
-          const { states } = this;
-          const { localStorage, sessionStorage } = window;
-  
+     
+    if (this.isLoading) {
+      const { states } = this;
+      const { localStorage, sessionStorage } = window;
+
+      let html = await pagePath;
         
-          
-  
-  
-              if (pagePath == undefined) {
-          if (!this.notFoundMessage) {
-            rootElement.innerHTML ='<h1 style="text-align:center">404 Not Found</h1><p style="text-align:center">The page you are looking for does not exist.</p>';
-          } else {
-            pagePath = this.pages["404"];
-            path = "404";
-          } else {
-          let html = pagePath;
-  
-  
-  
-          html = html.replace(/\\$\{(.*?)}/g, function (match, stateName) {
-            const stateNameMatch = stateName.match("or")
-              ? stateName.split("or")
-              : [stateName];
-            const name = stateNameMatch[0].trim();
-            const type = name.split(".")[0];
-            const objectName = name.split(".")[1];
-  
-            const getValue = (storage, key) => {
-              const value = storage.getItem(key);
-              return value ? value : "";
-            };
-  
-            const defaultValue =
-              stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
-  
-            switch (type) {
-              case "s":
-                const state = states.find((state) => state.name === objectName);
-                return state ? state.value : defaultValue;
-  
-              case "l":
-                return getValue(localStorage, objectName) || defaultValue;
-  
-              case "c":
-                const cookieValue = document.cookie.split("+objectName"+"=")[1];
-                return cookieValue ? cookieValue.split(";")[0] : defaultValue;
-  
-              case "ss":
-                return getValue(sessionStorage, objectName) || defaultValue;
-              case "u":
-                return app.urlParams[objectName] || defaultValue;
-  
-              default:
-                return "";
-            }
-          });
-  
-          if (this.enableLongLoading && !this.noLoading) {
-            this.removeAssets("loading");
-            this.removeHooks("loading");
-            await this.addHooks(path);
-            await this.addAssets(path);
-    
-            rootElement.innerHTML = html;
-          } else {
-            await this.addHooks(path);
-            await this.addAssets(path);
-    
-            rootElement.innerHTML = html;
-         
-          }
-          
-       
-          this.isLoading = false;
 
   
-          clearInterval(interval);
-          const sprintReady = setInterval(async () => {
-            if (this.assetsLoaded && this.hooksLoaded) {
-              const sprintReadyEvent = new Event("sprintReady");
-              document.dispatchEvent(sprintReadyEvent);
-              clearInterval(sprintReady);
-            }
-          }, 500);
-        }
-        }
-      }, 500);
-    },
+        
+      
   
-    async init(notFoundMessage, loadingMessage) {
+  
+          html = html.replace(/\\$\\{(.*?)}/g, function (match, stateName) {
+            const stateNameMatch = stateName.match("or")
+            ? stateName.split("or")
+            : [stateName];
+          
+          if (stateNameMatch && stateNameMatch.length > 1) {
+            throw new Error("Invalid state name");
+          }
+  
+          const name = stateNameMatch[0].split(".")[1].trim();
+  
+          const type = stateNameMatch[0].split(".")[0].trim().charAt(0);
+  
+          const getValue = async (storage, key) => {
+            const value = await storage.getItem(key);
+            return value ? value : "";
+          };
+  
+          const defaultValue = stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
+  
+            switch (type) {
+                case "s":
+                
+                    const state = states.find((state) => state.name === name);
+                    return state ? state.value : defaultValue;
+  
+                case "l":{
+                    let value =  getValue(localStorage, name.split(".")[1]);
+                    return value ? value : defaultValue;
+                }
+  
+                case "c":
+                    const cookieValue =document.cookie.split(name + "=")[1];
+                    return cookieValue ? cookieValue.split(";")[0] : defaultValue;
+  
+                case "ss":
+                  {
+                    let value =  getValue(sessionStorage, name);
+                    return value !== "" ? value : defaultValue;
+                  }
+  
+                case "u":{
+  
+        
+               
+                    let value =  app.urlParams[name];
+                    return value ? value : defaultValue;
+                }
+  
+                default:
+                    return "";
+            }
+        });
+
+      
+        html = await this.renderString(html);
+        await this.removeAssets(path);
+        await this.removeHooks(path);
+  
+      
+        await Promise.all([this.addHooks(path), this.addAssets(path)]);
+        if (this.pages[path]) {
+      
+       
+            await this.updateDOM(rootElement, await html);
+        
+        }
+        else{
+          rootElement.innerHTML = await html;
+  
+        }
+  
+        this.isLoading = false;
+        
+        const sprintReady = async () => {
+          if (this.assetsLoaded && this.hooksLoaded) {
+            const sprintReadyEvent = new Event("sprintReady");
+            document.dispatchEvent(sprintReadyEvent);
+          } else {
+            setTimeout(sprintReady, 100);
+          }
+        };
+  
+        await sprintReady();
+        
+    }
+  },
+  
+    async init(notFoundMessage) {
       this.notFoundMessage = notFoundMessage;
-      this.loadingMessage = loadingMessage;
   `;
   if (pages["404"]) {
     finalScript += `
     this.notFoundMessage = ${JSON.stringify(pages["404"])};
     `;
   }
-  if (pages["loading"]) {
-    finalScript += `
-    this.loadingMessage = ${JSON.stringify(pages["loading"])};
-    `;
-  }
+
   finalScript += `
 
       window.addEventListener("popstate", (event) => {
@@ -1264,9 +1832,9 @@ EventTarget.prototype.addEventListener = function(...args) {
   app.init();
 `;
 
-  let minified = await Terser.minify(finalScript);
 
-
+ 
+   let minified = await Terser.minify(finalScript);
 
   if (!fs.existsSync("build")) {
     fs.mkdirSync("build");
@@ -1277,25 +1845,56 @@ EventTarget.prototype.addEventListener = function(...args) {
   }
 
   //copy everything in assets except app.js to build2
-  fs.readdirSync("assets/").forEach((file) => {
+  fs.readdirSync("assets/").forEach(async (file) => {
+
     if (file !== "app.js") {
+      
+      if (file.includes(".scss") || file.includes(".sass")) {
+        let fsSass = fs.readFileSync(`assets/${file}`, "utf8");
+        fsSass = sass.compileString(fsSass, { style: "compressed" }).css.toString();
+        fs.writeFileSync(`build/assets/${file.replace(".scss", ".min.css").replace(".sass", ".min.css")}`, fsSass);
+
+        console.log(`Compiled ${file} to css`);
+
+  
+      }
+      else if (file.includes(".js")) {
+        console.log(`Minified ${file}`);
+      
+        const minified = await Terser.minify(fs.readFileSync(`assets/${file}`, "utf8"), {
+          sourceMap:true
+        });
+        fs.writeFileSync(`build/assets/${file.replace(".js", ".min.js")}`, minified.code);
+       
+        
+      }
+      else if(file.includes(".css")){
+       let fsSass = fs.readFileSync(`assets/${file}`, "utf8");
+        fsSass = sass.compileString(fsSass, { style: "compressed" }).css.toString();
+        fs.writeFileSync(`build/assets/${file.replace(".css", ".min.css")}`, fsSass);
+        console.log(`Minified ${file}`);
+
+      }
+     
+       else {
       fs.copyFileSync(`assets/${file}`, `build/assets/${file}`);
+      }
     }
   });
 
   //copy index.html to build
   fs.copyFileSync("index.html", "./build/index.html");
 
-  //replace   <script src="/assets/app.js" id="suia"></script> with app.build.min.js
+  //replace   <script src="/assets/app.js" id="suia"></script> with app.min.js
   let indexHTML = fs.readFileSync("./build/index.html", "utf8");
   indexHTML = indexHTML.replace(
     '<script src="/assets/app.js" id="suia"></script>',
-    '<script src="/assets/app.build.min.js" id="suia"></script>'
+    '<script src="/assets/app.min.js" id="suia"></script>'
   );
   fs.writeFileSync("build/index.html", indexHTML);
 
-  //write app.build.min.js
-  fs.writeFileSync("build/assets/app.build.min.js", minified.code);
+  //write app.min.js
+  fs.writeFileSync("build/assets/app.min.js", minified.code);
 
   //write routes
 
@@ -1345,6 +1944,11 @@ EventTarget.prototype.addEventListener = function(...args) {
       ) +
       "%"
   );
+
+  console.log("\x1b[36m%s\x1b[0m", "Build Time: " + (Date.now() - startTime) + "ms");
+
+  
+
 
   const sV = fs.readFileSync(".v", "utf8");
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);

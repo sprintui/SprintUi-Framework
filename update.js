@@ -91,8 +91,8 @@ async function downloadAndSave() {
     fs.writeFileSync(path.join(__dirname, 'server.js'), updatedServerJSContent);
 
     console.log('server.js download complete.');
+    fs.writeFileSync(".v", parseFloat(latestVersion) + 0.1);
 
-    
     
 
     console.log('Done!');
