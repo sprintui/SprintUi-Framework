@@ -387,3 +387,34 @@ None
 
 ### Notes
 We're constantly striving to enhance the framework's functionality. If you have any suggestions or ideas for future updates, please feel free to share them with us.
+Got it! Here's a draft for your version 2.5 update:
+
+## Version 2.5 -6/24/2024
+
+### Added
+- Enhanced rendering with async functions, significantly improving page load times.
+- Integrated a built-in Sass compiler and JavaScript minifier for optimizing styles and scripts.
+- Introduced `renderData` functionality to render data from any states provider seamlessly.
+- Enhanced component management with "use component" directives:
+  - Use `"use component from 'url'"` for library components.
+  - Use `"use component *"` to import all local components.
+- Added `installComponents` script for downloading components from a specified URL into the local components folder.
+
+### Changed
+- Updated `transpileSuip` function to be asynchronous, improving overall performance.
+### Fixed
+- Addressed bugs in `transpileSuip` function to ensure smoother processing and functionality.
+
+### Deprecated
+- None
+
+### Removed
+- None
+
+### Security
+- None
+
+### Notes
+- Documentation updates and GitHub push scheduled to reflect these changes.
+- Version number updated to 2.5 to denote major enhancements and optimizations.
+
