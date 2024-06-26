@@ -283,15 +283,7 @@ async function transpilesUIp(page, pageName) {
             href = href.replace(".scss", ".css");
             href = href.replace(".sass", ".css");
           }
-          else if (href && ( href.includes(".css"))) {
-
-            if (href.includes("http://") || href.includes("https://")) {
-              //do nothing
-            } else {
-              href = href.replace(".css", ".css");
-            }
-
-          }
+          
       
 
 
