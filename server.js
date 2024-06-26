@@ -12,7 +12,7 @@ const eventEmitter = new EventEmitter();
 let clients = [];
 var mime = require("mime-types");
 const versionFileURL =
-  "https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/version.txt";
+  "https://raw.githubusercontent.com/sprintui/SprintUi-Framework/main/.v";
 const sV = fs.readFileSync(".v", "utf8");
 console.log(sV);
 const sass = require("sass");
