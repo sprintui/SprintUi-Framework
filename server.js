@@ -284,10 +284,6 @@ async function transpilesUIp(page, pageName) {
             href = href.replace(".sass", ".css");
           }
           
-      
-
-
-          
 
 
           const id = line.match(/id=['"]([^'"]+)['"]/);
@@ -1705,12 +1701,15 @@ EventTarget.prototype.addEventListener = function(...args) {
           }
           
   
-          if (segment.includes("[")) {
+             if (segment.includes("[")) {
+           index--;
             const urlSegment = urlSegments[index];
-            const key = segment.split("=")[0].replace(/\\[\\]/g, "");
+          
+            const key = segment.split("=")[0].replace(/\\[\\]/g, "").replace("[", "").replace("]", "");
+      
             params[key] = urlSegment;
+         
           }
-  
   
         });
   
@@ -1746,7 +1745,7 @@ EventTarget.prototype.addEventListener = function(...args) {
       const { localStorage, sessionStorage } = window;
 
       let html = await pagePath;
-        
+
 
   
         
@@ -1776,6 +1775,7 @@ EventTarget.prototype.addEventListener = function(...args) {
             switch (type) {
                 case "s":
                 
+
                     const state = states.find((state) => state.name === name);
                     return state ? state.value : defaultValue;
   
@@ -1807,8 +1807,12 @@ EventTarget.prototype.addEventListener = function(...args) {
             }
         });
 
+
+
+
       
         html = await this.renderString(html);
+
         await this.removeAssets(path);
         await this.removeHooks(path);
   
@@ -1816,8 +1820,7 @@ EventTarget.prototype.addEventListener = function(...args) {
         await Promise.all([this.addHooks(path), this.addAssets(path)]);
         if (this.pages[path]) {
       
-       
-            await this.updateDOM(rootElement, await html);
+          rootElement.innerHTML = await html;
         
         }
         else{
