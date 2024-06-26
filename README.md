@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V2.4
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V2.5
 
 **Welcome to the SprintUI Framework!**
 
