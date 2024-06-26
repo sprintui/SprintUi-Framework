@@ -70,7 +70,7 @@
         </UseStyles>
          
         
-        import states
+        include states
         <UseScript head={false}>
         
             
