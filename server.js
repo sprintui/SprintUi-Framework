@@ -280,15 +280,15 @@ async function transpilesUIp(page, pageName) {
           let href = extractCssFileName(line);
           if (href && (href.includes(".scss") || href.includes(".sass"))) {
           
-            href = href.replace(".scss", ".min.css");
-            href = href.replace(".sass", ".min.css");
+            href = href.replace(".scss", ".css");
+            href = href.replace(".sass", ".css");
           }
           else if (href && ( href.includes(".css"))) {
 
             if (href.includes("http://") || href.includes("https://")) {
               //do nothing
             } else {
-              href = href.replace(".css", ".min.css");
+              href = href.replace(".css", ".css");
             }
 
           }
