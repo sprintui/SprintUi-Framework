@@ -70,17 +70,11 @@
         </UseStyles>
          
         
-        import states from sprintui
+        import states
         <UseScript head={false}>
         
             
              console.log("Sprint is ready to use, do your stuff here");
-        
-            global var test = "Hello World";
-            function testF(){
-              console.log(test);
-            }
-        
         
         
         
