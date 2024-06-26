@@ -1,3 +1,0 @@
-<div style="display:flex;justify-content:center;align-items:center;flex-direction:column;height:100vh">
-    <img src="/assets/spinner.gif" alt="Spinner" loading="lazy" />
-</div>
