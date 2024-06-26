@@ -1604,8 +1604,7 @@ EventTarget.prototype.addEventListener = function(...args) {
         });
   
   
-  
-  
+   
    
   
         
@@ -1662,9 +1661,13 @@ EventTarget.prototype.addEventListener = function(...args) {
           
   
           if (segment.includes("[")) {
+           index--;
             const urlSegment = urlSegments[index];
-            const key = segment.split("=")[0].replace(/\\[\\]/g, "");
+          
+            const key = segment.split("=")[0].replace(/\\[\\]/g, "").replace("[", "").replace("]", "");
+      
             params[key] = urlSegment;
+         
           }
   
   
@@ -1694,7 +1697,7 @@ EventTarget.prototype.addEventListener = function(...args) {
       }
   
   
-  
+   
    
      
     if (this.isLoading) {
@@ -1702,6 +1705,8 @@ EventTarget.prototype.addEventListener = function(...args) {
       const { localStorage, sessionStorage } = window;
 
       let html = await pagePath;
+
+   
         
 
   
@@ -1728,6 +1733,7 @@ EventTarget.prototype.addEventListener = function(...args) {
           };
   
           const defaultValue = stateNameMatch[1]?.replace(/['"]+/g, "").trim() || "";
+
   
             switch (type) {
                 case "s":
@@ -1751,10 +1757,10 @@ EventTarget.prototype.addEventListener = function(...args) {
                   }
   
                 case "u":{
-  
-        
-               
+           
+                
                     let value =  app.urlParams[name];
+             
                     return value ? value : defaultValue;
                 }
   
@@ -1765,15 +1771,16 @@ EventTarget.prototype.addEventListener = function(...args) {
 
       
         html = await this.renderString(html);
+
+        console.log(html);
+      
         await this.removeAssets(path);
         await this.removeHooks(path);
   
       
         await Promise.all([this.addHooks(path), this.addAssets(path)]);
         if (this.pages[path]) {
-      
-       
-            await this.updateDOM(rootElement, await html);
+          rootElement.innerHTML = await html;
         
         }
         else{
