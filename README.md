@@ -341,10 +341,6 @@ As of the current version, the available hooks along with their descriptions and
 
 Congratulations! Your SprintUI project is now ready for the world to see. Simply clone the repository, follow the steps, and showcase your creation to the world. Happy coding!
 
-# Customizing Loading and Not Found Pages
-
-Starting from the latest update, SprintUI allows developers to customize the 404 page and loading screen without the need for custom CSS. Follow the instructions below to tailor these pages to your application's design:
-
 ## Customizing the 404 Page
 
 To customize the 404 page, developers are required to create their suip file. If not provided, SprintUI will default to a minimal HTML code. Follow these steps:
@@ -379,25 +375,7 @@ Example 404.suip:
 </suipMarkup>
 ```
 
-## Customizing the Loading Page
 
-To customize the loading page, developers should follow these guidelines:
-
-1. Create a custom HTML file for the loading page loading.suip in the pages folder.
-
-2. Use only HTML syntax within this file.
-
-3. Optionally, use the `style` attribute for styling.
-
-Example loading.suip:
-
-```html
-
-<div style="display:flex;justify-content:center;align-items:center;flex-direction:column;height:100vh">
-    <img src="/assets/spinner.gif" alt="Spinner" loading="lazy" />
-</div>
-
-```
 
 
 # See a Working Example
