@@ -1330,89 +1330,100 @@ function getCurrentUrl() {
     },
   
   
-        
-  
     async renderString(inputString) {
-      let html = "";
-      const renderDataRegex = /<render[dataData]+\s+data=['"]([^'"]+)['"]>(.*?)<\/render[dataData]+>/gi;
-  
+      let html = inputString; // Initialize html with inputString
+      const renderDataRegex = /<renderData\s+data=['"]([^'"]+)['"]>(.*?)<\/renderData>/gis; // Adjusted regex
+    
       let match;
       const processedData = new Set();
+    
       while ((match = renderDataRegex.exec(inputString)) !== null) {
         const data = match[1];
         const template = match[2];
+    
         if (processedData.has(data)) {
           continue; // Skip processing if already processed
         }
-  
+    
         let dataType = data.split(".")[0];
-  
+    
         const getValue = (storage, key) => {
           switch (storage) {
             case "s":
-              //check if name has.map or forEach and they want to do this: ${data.forEach((element) => (<div>{element.name}</div>))}
               const state = this.states.find((state) => state.name === key);
-              return state;
-  
+              return state ? state.value : {};
             case "l":
               let value = localStorage.getItem(key);
-              return value ? value : "";
-  
+              return value ? JSON.parse(value) : {};
             case "c":
               const cookieValue = document.cookie.split(`${key}=`)[1];
-              return cookieValue ? cookieValue.split(";")[0] : "";
-  
+              return cookieValue ? JSON.parse(cookieValue.split(";")[0]) : {};
             case "ss":
-              return sessionStorage.getItem(key) || "";
+              return JSON.parse(sessionStorage.getItem(key) || "{}");
             case "u":
-              return this.urlParams[key] || "";
-  
+              return this.urlParams[key] || {};
             default:
-              return "";
+              return {};
           }
         };
-  
-        let dataValue = JSON.parse(
-          getValue(dataType, data.split(".")[1]) || "{}"
-        );
-  
-        if (dataValue && dataValue instanceof Object) {
+    
+        let dataValue = getValue(dataType, data.split(".")[1]);
+    
+        if (dataValue && typeof dataValue === "object") {
           let renderedData = "";
           let genAmount = 0;
-  
+    
           for (const key in dataValue) {
-            let data = dataValue[key];
-  
+            let dataItem = dataValue[key];
+    
             let newTemplate = template.split(/\r?\n/).map((line) => {
               let newLine = line;
-  
-              const matches = newLine.match(/\{(.*?)}/g);
-  
-              if (matches) {
-                for (const match of matches) {
-                  let key = match.replace(/\{|}/g, "");
-  
-                  if (key == "index") newLine = newLine.replace(match, genAmount);
-                  else newLine = newLine.replace(match, data[key] || "");
+    
+              newLine = newLine.replace(/\{index}/g, genAmount);
+                  
+         
+
+              newLine = newLine.replace(/<if\s*(not)?\s*(\w+?)>([\s\S]*?)<\/if>(?:\s*<else>([\s\S]*?)<\/else>)?/g, (match, not, key, ifContent, elseContent) => {
+                if (!ifContent)
+                  return "";
+              
+                let condition = not ? !dataItem[key.trim()] : dataItem[key.trim()];
+              
+                if (condition) {
+                  return ifContent;
+                } else if (elseContent) {
+                  return elseContent;
+                } else {
+                  return ""; // or handle the absence of elseContent as needed
                 }
-              }
-  
+              });
+              
+              //else 
+
+              // Handle expressions
+              newLine = newLine.replace(/\{(.*?)}/g, (match, expression) => {
+                try {
+                  return new Function("data", `with (data) { return ${expression}; }`)(dataItem) || "";
+                } catch (error) {
+                  return "";
+                }
+              });
+    
               return newLine;
-            });
-  
-            renderedData += newTemplate.join("\n");
+            }).join("\n");
+    
+            renderedData += newTemplate; // Accumulate rendered template
             genAmount++;
           }
-  
-          html += renderedData;
+    
+          html = html.replace(match[0], renderedData); // Replace original tag with rendered content
         }
-  
+    
         processedData.add(data);
       }
-  
-      return inputString.replace(renderDataRegex, html);
-    },
-  
+    
+      return html;
+    },    
       //only remove the elements that are not in the new html and keep the ones that are in the new html even if they have different content
       
       async updateDOM(oldHtml, newHtml) {
