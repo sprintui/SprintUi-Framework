@@ -1,7 +1,6 @@
 const fs = require("node:fs");
 const program = require("commander");
 const path = require("path");
-var minify = require("html-minifier").minify;
 const https = require("https");
 const sass = require("sass"); 
 const {fetch} = require("node-fetch");
@@ -47,6 +46,7 @@ async function fetchRoutes() {
 }
 
 let importedComponents = {};
+
 
 function extractCssFileName(line) {
   const importMatch = line.match(/href=['"]([^'"]+)['"]/);
@@ -99,7 +99,7 @@ async function transpilesUIp(page, pageName) {
 
     for (let line of lines) {
       let match;
-
+    
       switch (true) {
         case line.includes("<suipMarkup>"):
           inSUIP = true;
@@ -218,9 +218,12 @@ async function transpilesUIp(page, pageName) {
             });
           }
           break;
-
+      
         case (match = line.match(/<UseStyles[^>]*>/)) !== null:
+        
           let href = extractCssFileName(line);
+       
+      
           if (href && (href.includes(".scss") || href.includes(".sass"))) {
           
             href = href.replace(".scss", ".min.css");
@@ -586,7 +589,7 @@ async function transpilesUIp(page, pageName) {
                 }
 
           
-                console.log('Found tag:', tag);
+              
 
 
 
@@ -1092,16 +1095,7 @@ async function transpileAndStorePage(pageKey, pageContent) {
   console.log(`Transpiling ${pageKey}...`);
   const transpiledHtml = await transpilesUIp(pageContent, pageKey);
 
-  //remove first <div and the end </div>
-  const html = transpiledHtml;
-  const minified = minify(html, {
-    collapseWhitespace: true,
-    removeComments: true,
-    minifyCSS: true,
-    minifyJS: true,
-  });
-
-  pages[pageKey] = minified;
+  pages[pageKey] = transpiledHtml;
 
 }
 async function main() {
@@ -1119,6 +1113,8 @@ async function main() {
   await Promise.all(transpilePromises);
   
  
+  
+
   let finalScript = ` 
   function getCurrentUrl() {
     return window.location.href;
@@ -1428,15 +1424,18 @@ EventTarget.prototype.addEventListener = function(...args) {
   
       await this.render(currentPath);
     },
-    async renderString(inputString) {
-      let html = "";
-      const renderDataRegex = /<render[dataData]+\\s+data=['"]([^'"]+)['"]>(.*?)<\\/render[dataData]+>/gi;
 
+     async renderString(inputString) {
+      let html = inputString; // Initialize html with inputString
+      const renderDataRegex = /<renderData\\s+data=['"]([^'"]+)['"]>(.*?)<\\/renderData>/gis; // Adjusted regex
+    
       let match;
       const processedData = new Set();
+    
       while ((match = renderDataRegex.exec(inputString)) !== null) {
         const data = match[1];
         const template = match[2];
+    
         if (processedData.has(data)) {
           continue; // Skip processing if already processed
         }
@@ -1447,131 +1446,80 @@ EventTarget.prototype.addEventListener = function(...args) {
           switch (storage) {
             case "s":
               const state = this.states.find((state) => state.name === key);
-              return state;
-    
+              return state ? state.value : {};
             case "l":
               let value = localStorage.getItem(key);
-              return value ? value : "";
-    
+              return value ? JSON.parse(value) : {};
             case "c":
-              const cookieValue = document.cookie.split(key + "=")[1];
-              return cookieValue ? cookieValue.split(";")[0] : "";
-    
+              const cookieValue = document.cookie.split(\`\${key}=\`)[1];
+              return cookieValue ? JSON.parse(cookieValue.split(";")[0]) : {};
             case "ss":
-              return sessionStorage.getItem(key) || "";
+              return JSON.parse(sessionStorage.getItem(key) || "{}");
             case "u":
-              return this.urlParams[key] || "";
-    
+              return this.urlParams[key] || {};
             default:
-              return "";
+              return {};
           }
         };
-        let value = getValue(dataType, data.split(".")[1]);
-        if(value === "" || value === null || value === undefined){
-          value = "{}";
-        } 
-
-        let dataValue = JSON.parse(value);
     
-        if (dataValue && dataValue instanceof Object) {
+        let dataValue = getValue(dataType, data.split(".")[1]);
+    
+        if (dataValue && typeof dataValue === "object") {
           let renderedData = "";
           let genAmount = 0;
     
           for (const key in dataValue) {
-            let data = dataValue[key];
+            let dataItem = dataValue[key];
     
             let newTemplate = template.split(/\\r?\\n/).map((line) => {
               let newLine = line;
     
-              const matches = newLine.match(/{(.*?)}/g);
-    
-              if (matches) {
-                for (const match of matches) {
-                  let key = match.replace(/{|}/g, "");
-    
-                  if (key == "index") newLine = newLine.replace(match, genAmount);
-                  else newLine = newLine.replace(match, data[key] || "");
+              newLine = newLine.replace(/\\{index}/g, genAmount);
+                  
+         
+
+              newLine = newLine.replace(/<if\\s*(not)?\\s*(\\w+?)>([\\s\\S]*?)<\\/if>(?:\\s*<else>([\\s\\S]*?)<\\/else>)?/g, (match, not, key, ifContent, elseContent) => {
+                if (!ifContent)
+                  return "";
+              
+                let condition = not ? !dataItem[key.trim()] : dataItem[key.trim()];
+              
+                if (condition) {
+                  return ifContent;
+                } else if (elseContent) {
+                  return elseContent;
+                } else {
+                  return ""; // or handle the absence of elseContent as needed
                 }
-              }
+              });
+              
+              //else 
+
+              // Handle expressions
+              newLine = newLine.replace(/\\{(.*?)}/g, (match, expression) => {
+                try {
+                  return new Function("data", \`with (data) { return \${expression}; }\`)(dataItem) || "";
+                } catch (error) {
+                  return "";
+                }
+              });
     
               return newLine;
-            });
+            }).join("\\n");
     
-            renderedData += newTemplate.join("\\n");
+            renderedData += newTemplate; // Accumulate rendered template
             genAmount++;
           }
     
-          html += renderedData;
+          html = html.replace(match[0], renderedData); // Replace original tag with rendered content
         }
     
         processedData.add(data);
       }
     
-      return inputString.replace(renderDataRegex, html);
-    },
-    async updateDOM(oldHtml, newHtml) {
-      // Parse the old and new HTML strings into DOM elements
-      const parser = new DOMParser();
-      const oldDoc = parser.parseFromString(oldHtml, 'text/html');
-      const newDoc = parser.parseFromString(newHtml, 'text/html');
-  
-      // Get the root elements
-      const oldRoot = oldDoc.body;
-      const newRoot = newDoc.body;
-  
-      // Helper function to recursively update the DOM
-      const updateElements = (oldEl, newEl) => {
-          // Update or add new children
-          const newChildren = Array.from(newEl.childNodes);
-          newChildren.forEach((newChild, index) => {
-              const oldChild = oldEl.childNodes[index];
-              if (oldChild) {
-                  if (newChild.nodeType === Node.ELEMENT_NODE && oldChild.nodeType === Node.ELEMENT_NODE) {
-                      // Update attributes and recursive call for children
-                      updateElements(oldChild, newChild);
-                  } else if (newChild.nodeType !== Node.ELEMENT_NODE || oldChild.nodeType !== Node.ELEMENT_NODE || newChild.nodeName !== oldChild.nodeName) {
-                      // Replace if node types or names differ
-                      oldEl.replaceChild(newChild, oldChild);
-                  }
-              } else {
-                  // Append new child
-                  oldEl.appendChild(newChild);
-              }
-          });
-  
-          // Remove any extra old children
-          while (oldEl.childNodes.length > newChildren.length) {
-              oldEl.removeChild(oldEl.lastChild);
-          }
-  
-          // Update element attributes
-          if (oldEl.nodeType === Node.ELEMENT_NODE && newEl.nodeType === Node.ELEMENT_NODE) {
-              const oldAttributes = Array.from(oldEl.attributes);
-              const newAttributes = Array.from(newEl.attributes);
-  
-              // Remove old attributes not present in new element
-              oldAttributes.forEach(attr => {
-                  if (!newEl.hasAttribute(attr.name)) {
-                      oldEl.removeAttribute(attr.name);
-                  }
-              });
-  
-              // Add/update attributes from new element
-              newAttributes.forEach(attr => {
-                  if (oldEl.getAttribute(attr.name) !== attr.value) {
-                      oldEl.setAttribute(attr.name, attr.value);
-                  }
-              });
-          }
-      };
-  
-      // Start the recursive updating process from the root elements
-      updateElements(oldRoot, newRoot);
-  
-      // Replace the old root element's inner HTML with the updated HTML
-      const rootElement = document.getElementById("root");
-      rootElement.innerHTML = oldRoot.innerHTML;
-  },  
+      return html;
+    },    
+   
     async render() {
       const url = getCurrentUrl();
       const urlObject = new URL(url);
@@ -1772,7 +1720,6 @@ EventTarget.prototype.addEventListener = function(...args) {
       
         html = await this.renderString(html);
 
-        console.log(html);
       
         await this.removeAssets(path);
         await this.removeHooks(path);
