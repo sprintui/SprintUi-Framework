@@ -402,7 +402,7 @@ const app = {
     window.history.pushState(null, "", path);
     await this.removeAssets(currentPath);
     await this.removeHooks(currentPath);
-    console.log(this.pages);
+
     await this.render(path);
   },
   async transpilesUIp(page, pageName) {
@@ -1837,8 +1837,11 @@ const app = {
       html = await this.renderString(html);
 
       await Promise.all([this.addHooks(path), this.addAssets(path)]);
-         rootElement.innerHTML = await html;
-      
+      if (this.pages[page]) {
+        await this.updateDOM(rootElement, await html);
+      } else {
+        rootElement.innerHTML = await html;
+      }
 
       this.isLoading = false;
 
