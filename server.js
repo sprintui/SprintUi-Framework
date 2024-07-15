@@ -1,14 +1,14 @@
-const express = require("express");
+const express = require('express');
+const mysql = require('mysql2/promise');
+const bcrypt = require('bcrypt');
+const passport = require('passport');
+const DiscordStrategy = require('passport-discord').Strategy;
+const session = require('express-session');
 const https = require("https");
 const app = express();
 const port = 3000;
 const fs = require("node:fs");
 const path = require("path");
-var minify = require("html-minifier").minify;
-const {fetch} = require("node-fetch");
-const Terser = require("terser");
-const EventEmitter = require("events");
-const eventEmitter = new EventEmitter();
 let clients = [];
 var mime = require("mime-types");
 const versionFileURL =
@@ -102,14 +102,25 @@ directoriesToWatch.forEach((directory) => {
   );
 });
 
-eventEmitter.on("fileChanged", () => {
-  notifyClients();
-});
-
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Session middleware
+app.use(session({ secret: 'secret', resave: false, saveUninitialized: true }));
+
+// Passport initialization
+app.use(passport.initialize());
+app.use(passport.session());
+
+const db = mysql.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: '',
+  database: 'cheaplolboosting'
+});
+
+
 
 function readPagesFolder() {
   const pagesPath = path.join(__dirname, "pages");
@@ -144,6 +155,32 @@ function readPagesFolder() {
   return pages;
 }
 
+// Discord OAuth
+passport.use(new DiscordStrategy({
+  clientID: '1260496859999244349',
+  clientSecret: 'mJB0WDxnHzKISEiKZKfjse18BlVebLoH',
+  callbackURL: 'http://localhost:3000/auth/discord/callback',
+  scope: ['identify', 'email']
+
+}, async (accessToken, refreshToken, profile, done) => {
+   console.log(profile);
+   console.log(accessToken);
+    console.log(refreshToken);
+
+  try {
+    const [rows] = await db.query('SELECT * FROM Users WHERE email = ?', [profile.email]);
+    if (rows.length > 0) {
+      done(null, rows[0]);
+    } else {
+      const [result] = await db.query('INSERT INTO Users (username, email, role) VALUES (?, ?, ?)', [profile.username, profile.email, 'customer']);
+      const [newUser] = await db.query('SELECT * FROM Users WHERE user_id = ?', [result.insertId]);
+      done(null, newUser[0]);
+    }
+  } catch (error) {
+    done(error);
+  }
+}));
+
 function readPlugins() {
   const pluginsFolderPath = path.join(__dirname, "plugins");
   let pages = [];
@@ -162,7 +199,7 @@ function readPlugins() {
   return pages;
 }
 
-app.get("*", (req, res, next) => {
+app.get("*", async (req, res, next) => {
   if (req.url.includes("pages")) {
     //check req.url doesn't have any file requests like /pages/home,etc. send a list of pages
     if (req.url === "/pages") {
@@ -230,7 +267,35 @@ app.get("*", (req, res, next) => {
       // Send the response
       res.send(pageContent);
     }
-  } else if (req.url.includes("/events")) {
+  }
+
+  else if (req.url === "/logout") {
+    req.logout(function(err) {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+     res.redirect('/');
+    });
+
+  }
+
+    
+  else if (req.url === "/user") {
+    res.json({ user: req.user });
+  }
+  else if (req.url === "/auth/discord") {
+    passport.authenticate('discord')(req, res, next);
+  }
+  else if (req.url.includes("/auth/discord/callback")) {
+    passport.authenticate('discord', {
+      failureMessage: true
+    })(req, res, next, function() {
+      res.redirect('/');
+      
+    });
+  }
+   
+  else if (req.url.includes("/events")) {
     res.setHeader("Content-Type", "text/event-stream");
     res.setHeader("Cache-Control", "no-cache");
     res.setHeader("Connection", "keep-alive");
@@ -242,7 +307,8 @@ app.get("*", (req, res, next) => {
       clients = clients.filter((client) => client !== res);
     });
   
-  } else {
+  }
+   else {
     let type = mime.lookup(req.url);
     if (type) {
       // search in the public/assets folder
@@ -255,11 +321,10 @@ app.get("*", (req, res, next) => {
 
       //check if the file is a scss or css file or sass
       if (assetPath.includes(".scss") || assetPath.includes(".sass")) {
-        let content = fs.readFileSync(assetPath, "utf8");
-        let result = sass.compileString(content, {
+        let result = await sass.compileAsync(assetPath,{
           style: "compressed",
+          
         });
-
         res.set("Content-Type", "text/css");
         return res.send(result.css.toString());
       }
@@ -272,6 +337,62 @@ app.get("*", (req, res, next) => {
     }
   }
 });
+// User registration
+app.post('/register', async (req, res) => {
+  const { username, password, email,lolUsername,role } = req.body;
+  if (!username || !password || !email || !lolUsername) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+  const hashedPassword = await bcrypt.hash(password, 10);
+  try {
+    const [result] = await db.query('INSERT INTO Users (username, password_hash, email, role,gamename,role) VALUES (?, ?, ?, ?,?)', [username, hashedPassword, email, 'customer', lolUsername,role]);
+    res.status(201).json({ message: 'User registered', userId: result.insertId });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+// User login
+app.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const [rows] = await db.query('SELECT * FROM Users WHERE username = ?', [username]);
+    if (rows.length === 0 || !await bcrypt.compare(password, rows[0].password_hash)) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+    //set the last login time
+    await db.query('UPDATE Users SET last_login_date = CURRENT_TIMESTAMP WHERE user_id = ?', [rows[0].user_id]);
+
+    req.login(rows[0], err => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      res.json({ message: 'Logged in', user: rows[0] });
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
+
+// Passport configuration
+passport.serializeUser((user, done) => {
+  done(null, user.user_id);
+});
+passport.deserializeUser(async (id, done) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM Users WHERE user_id = ?', [id]);
+    done(null, rows[0]);
+  } catch (error) {
+    done(error, null);
+  }
+});
+
+
+
 
 app.listen(port, async () => {
   console.log("\x1b[31m%s\x1b[0m", "Sprint UI is running on port " + port);
