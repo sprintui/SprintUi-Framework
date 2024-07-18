@@ -356,6 +356,112 @@ async function transpilesUIp(page, pageName) {
           }
 
           break;
+          case (match = line.match(
+            /<render[dataData]+\s+data=['"]([^'"]+)['"]>(.*?)<\/render[dataData]+>/gi
+          )):
+            // Skip all lines until the end tag of <renderData> is found
+            while (!line.includes("</renderData>") && i < lines.length) {
+              i++;
+              line = lines[i];
+            }
+            break;
+
+            
+            case (match = line.match(/<script>/)) !== null: {
+         
+              const head = line.includes("head={true}");
+              const preload = line.includes("preload={true}");
+              const async = line.includes("async={true}");
+              const defer = line.includes("defer={true}");
+              const type = line.match(/type=['"]([^'"]+)['"]/);
+
+              const autoReady = line.includes("autoReady={false}");
+              const sprintIgnore = line.includes("sprintIgnore={true}");
+           
+
+              // Initialize scriptContent as an empty string
+
+              let scriptContent = "";
+
+              // Start from the line following the opening <UseScript> tag
+              let i = lines.indexOf(line) + 1;
+              // Loop through lines until the closing </UseScript> tag is found
+              while (i < lines.length && !lines[i].includes("</script>")) {
+                //remove white space
+                lines[i] = lines[i].trim();
+
+                //check for global
+                if (lines[i].includes("global")) {
+                  //remove global
+                  lines[i] = lines[i].replace("global", "");
+
+                  fAndG.textContent += lines[i];
+                  i++;
+
+                  continue;
+                }
+
+                const urlPattern = /https?:\/\/[^\s]+/;
+                const commentPattern = /\/\/.*/;
+                
+                for (let i = 0; i < lines.length; i++) {
+                  if (lines[i].trim().startsWith("//")) {
+                    lines.splice(i, 1);
+                    i--; // Adjust the index after removing the element
+                  } else if (lines[i].includes("//")) {
+                    const urlMatch = lines[i].match(urlPattern);
+                    if (urlMatch) {
+                      // Preserve URL and remove the comment
+                      const url = urlMatch[0];
+                      const lineWithoutComment = lines[i].split(commentPattern)[0].trim();
+                      lines[i] = `${lineWithoutComment} ${url}`;
+                    } else {
+                      // No URL, just remove the comment
+                      lines[i] = lines[i].split("//")[0].trim();
+                    }
+                  }
+                }
+                
+
+                scriptContent += lines[i];
+                i++;
+              }
+
+              const fAndG = {
+                id: "fAndG",
+                src: null,
+                head: false,
+                async: false,
+                defer: false,
+                preload: false,
+                type: type ? type[1] : "text/javascript",
+
+                textContent: scriptContent,
+                autoReady: false,
+                sprintIgnore: false,
+              };
+              if (scriptContent) {
+                const newScript = {
+                  id: "is" + Math.random(),
+                  src: null,
+                  head: head ? true : false,
+                  async: async ? true : false,
+                  defer: defer ? true : false,
+                  preload: preload ? true : false,
+                  type: type ? type[1] : "text/javascript",
+                  textContent: scriptContent,
+                  autoReady:  false,
+                  sprintIgnore: sprintIgnore ? true : false,
+                };
+                pageAssetsTOBeAdded.scripts.push(newScript);
+                pageAssetsTOBeAdded.scripts.push(fAndG);
+                lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
+              }
+            
+            }
+            break;
+
+
         case (match = line.match(/<UseScript[^>]*>/)) !== null:
           const src = extractScriptSrc(line);
 
@@ -674,9 +780,11 @@ async function transpilesUIp(page, pageName) {
                       }
 
                     } else {
-                      const componentHtml = fs.readFileSync(filePath, 'utf8');
+                      
+                      const componentHtml = fs.readFileSync(component, 'utf8');
                   
                       html += await transpileComp(componentHtml);
+
 
 
                     }
@@ -1006,7 +1114,7 @@ async function transpileComp(page) {
                         }
   
                       } else {
-                        const componentHtml = fs.readFileSync(filePath, 'utf8');
+                        const componentHtml = fs.readFileSync(component, 'utf8');
                     
                         html += await transpileComp(componentHtml);
   
@@ -1246,9 +1354,9 @@ EventTarget.prototype.addEventListener = function(...args) {
             !this.scriptsAdded.has(script.textContent) &&
             script.textContent
           ) {
-            const scriptElement = document.createElement("script");
-            if (script.autoReady) {
-              scriptElement.textContent = 'document.addEventListener("sprintReady", () => {'+ script.textContent+ '});';
+            if (script.autoReady && script.type != "importmap") {
+  
+              scriptElement.textContent = \`document.addEventListener("sprintReady", () => {\${script.textContent}});\`;
             } else {
               scriptElement.textContent = script.textContent;
             }
@@ -1259,7 +1367,7 @@ EventTarget.prototype.addEventListener = function(...args) {
   
             scriptElement.type = script.type || "text/javascript";
   
-            if (script.id) {
+            if (script.id && script.type != "importmap") {
               scriptElement.id = script.id;
             }
             handleScriptLoadError(scriptElement, script.src);
@@ -1421,105 +1529,201 @@ EventTarget.prototype.addEventListener = function(...args) {
       this.isLoading = true;
       let currentPath = getCurrentUrl().split("/")[3] || "home";
       window.history.pushState(null, "", path);
-  
-      await this.render(currentPath);
+      await this.removeAssets(currentPath);
+      await this.removeHooks(currentPath);
+
+      await this.render(path);
     },
 
      async renderString(inputString) {
-      let html = inputString; // Initialize html with inputString
-      const renderDataRegex = /<renderData\\s+data=['"]([^'"]+)['"]>(.*?)<\\/renderData>/gis; // Adjusted regex
-    
-      let match;
-      const processedData = new Set();
-    
-      while ((match = renderDataRegex.exec(inputString)) !== null) {
-        const data = match[1];
-        const template = match[2];
-    
-        if (processedData.has(data)) {
-          continue; // Skip processing if already processed
-        }
-    
-        let dataType = data.split(".")[0];
-    
-        const getValue = (storage, key) => {
-          switch (storage) {
-            case "s":
-              const state = this.states.find((state) => state.name === key);
-              return state ? state.value : {};
-            case "l":
-              let value = localStorage.getItem(key);
-              return value ? JSON.parse(value) : {};
-            case "c":
-              const cookieValue = document.cookie.split(\`\${key}=\`)[1];
-              return cookieValue ? JSON.parse(cookieValue.split(";")[0]) : {};
-            case "ss":
-              return JSON.parse(sessionStorage.getItem(key) || "{}");
-            case "u":
-              return this.urlParams[key] || {};
-            default:
-              return {};
-          }
-        };
-    
-        let dataValue = getValue(dataType, data.split(".")[1]);
-    
-        if (dataValue && typeof dataValue === "object") {
-          let renderedData = "";
-          let genAmount = 0;
-    
-          for (const key in dataValue) {
-            let dataItem = dataValue[key];
-    
-            let newTemplate = template.split(/\\r?\\n/).map((line) => {
-              let newLine = line;
-    
-              newLine = newLine.replace(/\\{index}/g, genAmount);
-                  
-         
+    let html = inputString; // Initialize html with inputString
+    const renderDataRegex = /<renderData\\s+data=['"]([^'"]+)['"]>(.*?)<\\/renderData>/gis; // Adjusted regex
 
-              newLine = newLine.replace(/<if\\s*(not)?\\s*(\\w+?)>([\\s\\S]*?)<\\/if>(?:\\s*<else>([\\s\\S]*?)<\\/else>)?/g, (match, not, key, ifContent, elseContent) => {
-                if (!ifContent)
-                  return "";
-              
-                let condition = not ? !dataItem[key.trim()] : dataItem[key.trim()];
-              
-                if (condition) {
-                  return ifContent;
-                } else if (elseContent) {
-                  return elseContent;
-                } else {
-                  return ""; // or handle the absence of elseContent as needed
+    let match;
+    const processedData = new Set();
+
+    while ((match = renderDataRegex.exec(inputString)) !== null) {
+      const data = match[1];
+      const template = match[2];
+
+      if (processedData.has(data)) {
+        continue; // Skip processing if already processed
+      }
+
+      let dataType = data.split(".")[0];
+
+      const getValue = (storage, key) => {
+        switch (storage) {
+          case "s":
+            const state = this.states.find((state) => state.name === key);
+            return state ? state.value : {};
+          case "l":
+            let value = localStorage.getItem(key);
+            return value ? JSON.parse(value) : {};
+          case "c":
+            const cookieValue = document.cookie.split(\`\${key}=\`)[1];
+            return cookieValue ? JSON.parse(cookieValue.split(";")[0]) : {};
+          case "ss":
+            return JSON.parse(sessionStorage.getItem(key) || "{}");
+          case "u":
+            return this.urlParams[key] || {};
+          default:
+            return {};
+        }
+      };
+
+      let dataValue = getValue(dataType, data.split(".")[1]);
+
+      if (dataValue && typeof dataValue === "object") {
+        let renderedData = "";
+        let genAmount = 0;
+
+        for (const key in dataValue) {
+          let dataItem = dataValue[key];
+
+          let newTemplate = template
+            .split(/\\r?\\n/)
+            .map((line) => {
+              let newLine = line;
+
+              newLine = newLine.replace(/\\{index}/g, genAmount);
+
+              newLine = newLine.replace(
+                /<if\\s*(\\w+?)\\s*(more_then|less_then|equal_to_or_more_then|equal_to_or_less_then|equal_to|not_equal_to)?\\s*([\\w\\d]+)?>([\\s\\S]*?)<\\/if>(?:\\s*<else_if\\s*(\\w+?)\\s*(more_then|less_then|equal_to_or_more_then|equal_to_or_less_then|equal_to|not_equal_to)?\\s*([\\w\\d]+)?>([\\s\\S]*?)<\\/else_if>)*(?:\\s*<else>([\\s\\S]*?)<\\/else>)?/g,
+                (
+                  match,
+                  key,
+                  operator,
+                  value,
+                  ifContent,
+                  elseIfKey,
+                  elseIfOperator,
+                  elseIfValue,
+                  elseIfContent,
+                  elseContent
+                ) => {
+                  if (!ifContent) return "";
+
+                  let condition;
+                  let keyValue = dataItem[key.trim()];
+
+                  if (value !== undefined) {
+                    value = isNaN(value) ? value.trim() : parseFloat(value);
+                    keyValue = isNaN(keyValue)
+                      ? keyValue
+                      : parseFloat(keyValue);
+
+                    switch (operator) {
+                      case "more_then":
+                        condition = keyValue > value;
+                        break;
+                      case "less_then":
+                        condition = keyValue < value;
+                        break;
+                      case "equal_to_or_more_then":
+                        condition = keyValue >= value;
+                        break;
+                      case "equal_to_or_less_then":
+                        condition = keyValue <= value;
+                        break;
+                      case "equal_to":
+                        condition = keyValue == value;
+                        break;
+                      case "not_equal_to":
+                        condition = keyValue != value;
+                        break;
+                      default:
+                        condition = keyValue; // if no operator, default to checking if the key exists
+                    }
+                  } else {
+                    condition = keyValue;
+                  }
+
+                  if (condition) {
+                    return ifContent;
+                  } else {
+                    // Process else_if conditions here
+                    // This is a simplified example. You might need to iterate through multiple else_if blocks if they exist.
+                    if (elseIfKey) {
+                      let elseIfKeyValue = dataItem[elseIfKey.trim()];
+                      elseIfValue = isNaN(elseIfValue)
+                        ? elseIfValue.trim()
+                        : parseFloat(elseIfValue);
+                      elseIfKeyValue = isNaN(elseIfKeyValue)
+                        ? elseIfKeyValue
+                        : parseFloat(elseIfKeyValue);
+                      let elseIfCondition = false;
+
+                      switch (elseIfOperator) {
+                        case "more_then":
+                          elseIfCondition = elseIfKeyValue > elseIfValue;
+                          break;
+                        case "less_then":
+                          elseIfCondition = elseIfKeyValue < elseIfValue;
+                          break;
+                        case "equal_to_or_more_then":
+                          elseIfCondition = elseIfKeyValue >= elseIfValue;
+                          break;
+                        case "equal_to_or_less_then":
+                          elseIfCondition = elseIfKeyValue <= elseIfValue;
+                          break;
+                        case "equal_to":
+                          elseIfCondition = elseIfKeyValue == elseIfValue;
+                          break;
+                        case "not_equal_to":
+                          elseIfCondition = elseIfKeyValue != elseIfValue;
+                          break;
+                        default:
+                          elseIfCondition = elseIfKeyValue; // if no operator, default to checking if the key exists
+
+                      }
+
+                      if (elseIfCondition) {
+                        return elseIfContent;
+                      }
+                    }
+
+                    if (elseContent) {
+                      return elseContent;
+                    } else {
+                      return ""; // or handle the absence of elseContent as needed
+                    }
+                  }
                 }
-              });
-              
-              //else 
+              );
+
+              //else
 
               // Handle expressions
               newLine = newLine.replace(/\\{(.*?)}/g, (match, expression) => {
                 try {
-                  return new Function("data", \`with (data) { return \${expression}; }\`)(dataItem) || "";
+                  return (
+                    new Function(
+                      "data",
+                      \`with (data) { return \${expression}; }\`
+                    )(dataItem) || ""
+                  );
                 } catch (error) {
                   return "";
                 }
               });
-    
+
               return newLine;
-            }).join("\\n");
-    
-            renderedData += newTemplate; // Accumulate rendered template
-            genAmount++;
-          }
-    
-          html = html.replace(match[0], renderedData); // Replace original tag with rendered content
+            })
+            .join("\\n");
+
+          renderedData += newTemplate; // Accumulate rendered template
+          genAmount++;
         }
-    
-        processedData.add(data);
+
+        html = html.replace(match[0], renderedData); // Replace original tag with rendered content
       }
-    
-      return html;
-    },    
-   
+
+      processedData.add(data);
+    }
+
+    return html;
+  },
     async render() {
       const url = getCurrentUrl();
       const urlObject = new URL(url);
@@ -1719,11 +1923,6 @@ EventTarget.prototype.addEventListener = function(...args) {
 
       
         html = await this.renderString(html);
-
-      
-        await this.removeAssets(path);
-        await this.removeHooks(path);
-  
       
         await Promise.all([this.addHooks(path), this.addAssets(path)]);
         if (this.pages[path]) {
