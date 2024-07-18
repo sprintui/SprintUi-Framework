@@ -1989,13 +1989,13 @@ EventTarget.prototype.addEventListener = function(...args) {
  
    let minified = await Terser.minify(finalScript);
 
-  if (!fs.existsSync("build")) {
-    fs.mkdirSync("build");
-  }
-
-  if (!fs.existsSync("build/assets")) {
-    fs.mkdirSync("build/assets");
-  }
+   //delete build folder if it exists
+  if (fs.existsSync("build")) {
+    fs.rmdirSync("build", { recursive: true });
+}
+  fs.mkdirSync("build");
+  fs.mkdirSync("build/assets");
+  
 
   //copy everything in assets except app.js to build2
   fs.readdirSync("assets/").forEach(async (file) => {
@@ -2030,7 +2030,14 @@ EventTarget.prototype.addEventListener = function(...args) {
       }
      
        else {
-      fs.copyFileSync(`assets/${file}`, `build/assets/${file}`);
+        //if the file in question is a folder make a folder in build
+        if (fs.statSync(`assets/${file}`).isDirectory()) {
+          fs.mkdirSync(`build/assets/${file}`);
+        } else {
+          fs.copyFileSync(`assets/${file}`, `build/assets/${file}`);
+        }
+
+        
       }
     }
   });
