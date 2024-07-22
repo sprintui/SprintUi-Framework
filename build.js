@@ -2,15 +2,15 @@ const fs = require("node:fs");
 const program = require("commander");
 const path = require("path");
 const https = require("https");
-const sass = require("sass"); 
-const {fetch} = require("node-fetch");
+const sass = require("sass");
+const { fetch } = require("node-fetch");
 program
 
   .option("-ex, --exclude <value>", "Exclude files from the build", "")
 
   .parse(process.argv);
 const options = program.opts();
-const Terser = require("terser")
+const Terser = require("terser");
 
 async function fetchRoutes() {
   const pagesPath = path.join(__dirname, "pages");
@@ -47,7 +47,6 @@ async function fetchRoutes() {
 
 let importedComponents = {};
 
-
 function extractCssFileName(line) {
   const importMatch = line.match(/href=['"]([^'"]+)['"]/);
   return importMatch ? importMatch[1] : null;
@@ -60,9 +59,6 @@ function extractScriptSrc(line) {
 let pageAssets = [];
 
 async function transpilesUIp(page, pageName) {
-  
-
-
   const lines = page.split(/\r?\n/);
   try {
     let html = "";
@@ -99,7 +95,7 @@ async function transpilesUIp(page, pageName) {
 
     for (let line of lines) {
       let match;
-    
+
       switch (true) {
         case line.includes("<suipMarkup>"):
           inSUIP = true;
@@ -218,31 +214,20 @@ async function transpilesUIp(page, pageName) {
             });
           }
           break;
-      
+
         case (match = line.match(/<UseStyles[^>]*>/)) !== null:
-        
           let href = extractCssFileName(line);
-       
-      
+
           if (href && (href.includes(".scss") || href.includes(".sass"))) {
-          
             href = href.replace(".scss", ".min.css");
             href = href.replace(".sass", ".min.css");
-          }
-          else if (href && ( href.includes(".css"))) {
-
+          } else if (href && href.includes(".css")) {
             if (href.includes("http://") || href.includes("https://")) {
               //do nothing
             } else {
               href = href.replace(".css", ".min.css");
             }
-
           }
-      
-
-
-          
-
 
           const id = line.match(/id=['"]([^'"]+)['"]/);
           const integrity = line.match(/integrity=['"]([^'"]+)['"]/);
@@ -262,7 +247,6 @@ async function transpilesUIp(page, pageName) {
               sprintIgnore: sprintIgnore ? true : false,
             };
             pageAssetsTOBeAdded.styles.push(newStyle);
-      
           } else {
             // Initialize scriptContent as an empty string
             let styleContent = "";
@@ -356,111 +340,108 @@ async function transpilesUIp(page, pageName) {
           }
 
           break;
-          case (match = line.match(
-            /<render[dataData]+\s+data=['"]([^'"]+)['"]>(.*?)<\/render[dataData]+>/gi
-          )):
-            // Skip all lines until the end tag of <renderData> is found
-            while (!line.includes("</renderData>") && i < lines.length) {
-              i++;
-              line = lines[i];
-            }
-            break;
+        case (match = line.match(
+          /<render[dataData]+\s+data=['"]([^'"]+)['"]>(.*?)<\/render[dataData]+>/gi
+        )):
+          // Skip all lines until the end tag of <renderData> is found
+          while (!line.includes("</renderData>") && i < lines.length) {
+            i++;
+            line = lines[i];
+          }
+          break;
 
-            
-            case (match = line.match(/<script>/)) !== null: {
-         
-              const head = line.includes("head={true}");
-              const preload = line.includes("preload={true}");
-              const async = line.includes("async={true}");
-              const defer = line.includes("defer={true}");
-              const type = line.match(/type=['"]([^'"]+)['"]/);
+        case (match = line.match(/<script>/)) !== null:
+          {
+            const head = line.includes("head={true}");
+            const preload = line.includes("preload={true}");
+            const async = line.includes("async={true}");
+            const defer = line.includes("defer={true}");
+            const type = line.match(/type=['"]([^'"]+)['"]/);
 
-              const autoReady = line.includes("autoReady={false}");
-              const sprintIgnore = line.includes("sprintIgnore={true}");
-           
+            const autoReady = line.includes("autoReady={false}");
+            const sprintIgnore = line.includes("sprintIgnore={true}");
 
-              // Initialize scriptContent as an empty string
+            // Initialize scriptContent as an empty string
 
-              let scriptContent = "";
+            let scriptContent = "";
 
-              // Start from the line following the opening <UseScript> tag
-              let i = lines.indexOf(line) + 1;
-              // Loop through lines until the closing </UseScript> tag is found
-              while (i < lines.length && !lines[i].includes("</script>")) {
-                //remove white space
-                lines[i] = lines[i].trim();
+            // Start from the line following the opening <UseScript> tag
+            let i = lines.indexOf(line) + 1;
+            // Loop through lines until the closing </UseScript> tag is found
+            while (i < lines.length && !lines[i].includes("</script>")) {
+              //remove white space
+              lines[i] = lines[i].trim();
 
-                //check for global
-                if (lines[i].includes("global")) {
-                  //remove global
-                  lines[i] = lines[i].replace("global", "");
+              //check for global
+              if (lines[i].includes("global")) {
+                //remove global
+                lines[i] = lines[i].replace("global", "");
 
-                  fAndG.textContent += lines[i];
-                  i++;
+                fAndG.textContent += lines[i];
+                i++;
 
-                  continue;
-                }
+                continue;
+              }
 
-                const urlPattern = /https?:\/\/[^\s]+/;
-                const commentPattern = /\/\/.*/;
-                
-                for (let i = 0; i < lines.length; i++) {
-                  if (lines[i].trim().startsWith("//")) {
-                    lines.splice(i, 1);
-                    i--; // Adjust the index after removing the element
-                  } else if (lines[i].includes("//")) {
-                    const urlMatch = lines[i].match(urlPattern);
-                    if (urlMatch) {
-                      // Preserve URL and remove the comment
-                      const url = urlMatch[0];
-                      const lineWithoutComment = lines[i].split(commentPattern)[0].trim();
-                      lines[i] = `${lineWithoutComment} ${url}`;
-                    } else {
-                      // No URL, just remove the comment
-                      lines[i] = lines[i].split("//")[0].trim();
-                    }
+              const urlPattern = /https?:\/\/[^\s]+/;
+              const commentPattern = /\/\/.*/;
+
+              for (let i = 0; i < lines.length; i++) {
+                if (lines[i].trim().startsWith("//")) {
+                  lines.splice(i, 1);
+                  i--; // Adjust the index after removing the element
+                } else if (lines[i].includes("//")) {
+                  const urlMatch = lines[i].match(urlPattern);
+                  if (urlMatch) {
+                    // Preserve URL and remove the comment
+                    const url = urlMatch[0];
+                    const lineWithoutComment = lines[i]
+                      .split(commentPattern)[0]
+                      .trim();
+                    lines[i] = `${lineWithoutComment} ${url}`;
+                  } else {
+                    // No URL, just remove the comment
+                    lines[i] = lines[i].split("//")[0].trim();
                   }
                 }
-                
-
-                scriptContent += lines[i];
-                i++;
               }
 
-              const fAndG = {
-                id: "fAndG",
-                src: null,
-                head: false,
-                async: false,
-                defer: false,
-                preload: false,
-                type: type ? type[1] : "text/javascript",
+              scriptContent += lines[i];
+              i++;
+            }
 
+            const fAndG = {
+              id: "fAndG",
+              src: null,
+              head: false,
+              async: false,
+              defer: false,
+              preload: false,
+              type: type ? type[1] : "text/javascript",
+
+              textContent: scriptContent,
+              autoReady: false,
+              sprintIgnore: false,
+            };
+            if (scriptContent) {
+              const newScript = {
+                id: "is" + Math.random(),
+                src: null,
+                head: head ? true : false,
+                async: async ? true : false,
+                defer: defer ? true : false,
+                preload: preload ? true : false,
+                type: type ? type[1] : "text/javascript",
                 textContent: scriptContent,
                 autoReady: false,
-                sprintIgnore: false,
+                sprintIgnore: sprintIgnore ? true : false,
               };
-              if (scriptContent) {
-                const newScript = {
-                  id: "is" + Math.random(),
-                  src: null,
-                  head: head ? true : false,
-                  async: async ? true : false,
-                  defer: defer ? true : false,
-                  preload: preload ? true : false,
-                  type: type ? type[1] : "text/javascript",
-                  textContent: scriptContent,
-                  autoReady:  false,
-                  sprintIgnore: sprintIgnore ? true : false,
-                };
-                pageAssetsTOBeAdded.scripts.push(newScript);
-                pageAssetsTOBeAdded.scripts.push(fAndG);
-                lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
-              }
-            
+              pageAssetsTOBeAdded.scripts.push(newScript);
+              pageAssetsTOBeAdded.scripts.push(fAndG);
+              lines.splice(lines.indexOf(line) + 1, i - lines.indexOf(line));
             }
-            break;
-
+          }
+          break;
 
         case (match = line.match(/<UseScript[^>]*>/)) !== null:
           const src = extractScriptSrc(line);
@@ -570,75 +551,77 @@ async function transpilesUIp(page, pageName) {
 
           break;
 
-          case line.includes("use component"):
-            let promises = [];
-            if (!importedComponents[pageName]) {
-              importedComponents[pageName] = {};
-            }
-           
-            // Format component name from 'url' or component * from 'url'
-            let componentName = line.split("component")[1];
-            componentName = componentName.split("from")[0].trim().replace(/['"]+/g, "").trim();
-            let componentUrl = line.split("from");
-          
-            if (componentUrl.length > 1) {
-              componentUrl = componentUrl[1].trim().replace(/['"]+/g, "").trim();
-          
-              if (componentName == "*") {
-                promises.push(
-                  fetch(componentUrl)
-                    .then((response) => response.text())
-                    .then((data) => {
-                      const lines = data.split(/\r?\n/);
-                      lines.forEach((line) => {
-                        let name = line.split("=")[0].trim();
-                        let urlToComp = line.split("=")[1]?.trim();
-          
-                        if (name && urlToComp) {
-                          importedComponents[pageName][name] = urlToComp;
-                        }
-                      });
-                    })
-                ); 
-                lines.splice(lines.indexOf(line), 1);
-              } else {
-                importedComponents[pageName][componentName] = componentUrl;
-                lines.splice(lines.indexOf(line), 1);
-            
-              }
+        case line.includes("use component"):
+          let promises = [];
+          if (!importedComponents[pageName]) {
+            importedComponents[pageName] = {};
+          }
+
+          // Format component name from 'url' or component * from 'url'
+          let componentName = line.split("component")[1];
+          componentName = componentName
+            .split("from")[0]
+            .trim()
+            .replace(/['"]+/g, "")
+            .trim();
+          let componentUrl = line.split("from");
+
+          if (componentUrl.length > 1) {
+            componentUrl = componentUrl[1].trim().replace(/['"]+/g, "").trim();
+
+            if (componentName == "*") {
+              promises.push(
+                fetch(componentUrl)
+                  .then((response) => response.text())
+                  .then((data) => {
+                    const lines = data.split(/\r?\n/);
+                    lines.forEach((line) => {
+                      let name = line.split("=")[0].trim();
+                      let urlToComp = line.split("=")[1]?.trim();
+
+                      if (name && urlToComp) {
+                        importedComponents[pageName][name] = urlToComp;
+                      }
+                    });
+                  })
+              );
+              lines.splice(lines.indexOf(line), 1);
             } else {
-              if (componentName == "*") {
-                promises.push(new Promise((resolve, reject) => {
+              importedComponents[pageName][componentName] = componentUrl;
+              lines.splice(lines.indexOf(line), 1);
+            }
+          } else {
+            if (componentName == "*") {
+              promises.push(
+                new Promise((resolve, reject) => {
                   fs.readdir("comps", (err, files) => {
                     if (err) {
-                      console.error('Error reading comps folder:', err);
+                      console.error("Error reading comps folder:", err);
                       reject(err);
                     } else {
                       files.forEach((file) => {
                         const componentName = file.split(".")[0];
-                        importedComponents[pageName][componentName] = `./comps/${file}`;
+                        importedComponents[pageName][
+                          componentName
+                        ] = `./comps/${file}`;
                       });
                       resolve();
                     }
                   });
+                })
+              );
 
-                }));
-
-                lines.splice(lines.indexOf(line), 1);
-           
-               
-              } else if (componentName != "") {
-                componentUrl = componentName;
-              } else {
-                throw new Error("Component name is required");
-              }
+              lines.splice(lines.indexOf(line), 1);
+            } else if (componentName != "") {
+              componentUrl = componentName;
+            } else {
+              throw new Error("Component name is required");
             }
+          }
 
-            await Promise.all(promises);
-           
-     
-            break;
-          
+          await Promise.all(promises);
+
+          break;
 
         default:
           if (inSUIP) {
@@ -676,12 +659,8 @@ async function transpilesUIp(page, pageName) {
 
               html += line;
             } else {
-          
-              
               let tag = line.match(/<([^<>]+)>/);
 
-          
-           
               if (tag) {
                 tag = tag[1];
 
@@ -694,15 +673,8 @@ async function transpilesUIp(page, pageName) {
                   tag = tag.replace(/\//g, "");
                 }
 
-          
-              
-
-
-
-        
                 let component = importedComponents[pageName];
 
-      
                 if (component && component[tag]) {
                   component = component[tag];
                   lines.splice(lines.indexOf(line), 1);
@@ -722,7 +694,10 @@ async function transpilesUIp(page, pageName) {
                       return { key, value };
                     });
 
-                    if (component.includes("https://") || component.includes("http://")) {
+                    if (
+                      component.includes("https://") ||
+                      component.includes("http://")
+                    ) {
                       let componentHtml = "";
                       try {
                         const response = await fetch(component);
@@ -730,72 +705,66 @@ async function transpilesUIp(page, pageName) {
                           const line = await response.text();
                           for (const param of params) {
                             //remove " and ' from the value and any other special characters
-                            line = line.replace(`\${${param.key}}`, param.value);
+                            line = line.replace(
+                              `\${${param.key}}`,
+                              param.value
+                            );
                           }
                           componentHtml += line;
-                          
+
                           html += await transpileComp(componentHtml);
                         }
                       } catch (error) {
                         console.error("Error fetching component:", error);
                       }
                     } else {
-              
-
-                      const componentHtml = fs.readFileSync(component, 'utf8');
+                      const componentHtml = fs.readFileSync(component, "utf8");
                       let processedComponentHtml = componentHtml;
-                      
+
                       // Replace params with their values
                       for (const param of params) {
                         processedComponentHtml = processedComponentHtml.replace(
                           `\${${param.key}}`,
                           param.value
                         );
-
                       }
-                    
+
                       html += await transpileComp(processedComponentHtml);
                     }
-                    
-                  }
-                  else{
+                  } else {
                     if (
                       component.includes("https://") ||
                       component.includes("http://")
                     ) {
-                       let componentHtml = "";
+                      let componentHtml = "";
                       try {
                         const response = await fetch(component);
                         if (response.ok) {
                           const line = await response.text();
                           for (const param of params) {
                             //remove " and ' from the value and any other special characters
-                            line = line.replace(`\${${param.key}}`, param.value);
+                            line = line.replace(
+                              `\${${param.key}}`,
+                              param.value
+                            );
                           }
                           componentHtml += line;
-                          html +=await transpileComp(componentHtml);
+                          html += await transpileComp(componentHtml);
                         }
                       } catch (error) {
                         console.error("Error fetching component:", error);
                       }
-
                     } else {
-                      
-                      const componentHtml = fs.readFileSync(component, 'utf8');
-                  
+                      const componentHtml = fs.readFileSync(component, "utf8");
+
                       html += await transpileComp(componentHtml);
-
-
-
                     }
                   }
                 } else {
                   html += line;
                 }
-          
               }
-            } 
-          
+            }
           } else {
             html += line;
           }
@@ -875,9 +844,7 @@ async function transpileComp(page) {
           variableName = variableName.trim();
           lines.splice(lines.indexOf(line), 1);
 
-          var hook = pageAssets.hooks.find(
-            (hook) => hook.name === "setTitle"
-          );
+          var hook = pageAssets.hooks.find((hook) => hook.name === "setTitle");
           if (hook) {
             hook.textContent += variableName || "";
           } else {
@@ -942,7 +909,6 @@ async function transpileComp(page) {
           if (to) {
             to = to[1];
           } else {
-        
             throw new Error("to attribute is required");
           }
 
@@ -977,161 +943,153 @@ async function transpileComp(page) {
 
           html += line;
           break;
-          default:
-            if (inSUIP) {
-              if (line.includes("<Link")) {
-                const to = line.match(/to=['"]([^'"]+)['"]/)[1];
-  
-                let className = line.match(/className=['"]([^'"]+)['"]/);
-  
-                if (className) {
-                  className = className[1];
-                } else {
-                  className = "";
-                }
-  
-                let id = line.match(/id=['"]([^'"]+)['"]/);
-  
-                if (id) {
-                  id = id[1];
-                } else {
-                  id = "";
-                }
-  
-                //just replace link with a tag so if its incased on any other tag it will be removed
-                line = line.replace("<Link", "<a");
-                line = line.replace("</Link>", "</a>");
-  
-                line = line.replace(
-                  `to="${to}"`,
-                  `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
-                );
-                line = line.replace(
-                  `className="${className}"`,
-                  `class="${className}"`
-                );
-  
-                html += line;
+        default:
+          if (inSUIP) {
+            if (line.includes("<Link")) {
+              const to = line.match(/to=['"]([^'"]+)['"]/)[1];
+
+              let className = line.match(/className=['"]([^'"]+)['"]/);
+
+              if (className) {
+                className = className[1];
               } else {
-            
-                
-                let tag = line.match(/<([^<>]+)>/);
-  
-            
-             
-                if (tag) {
-                  tag = tag[1];
-  
-                  if (tag.includes("{")) {
-                    tag = tag.replace(/\{([^{}]+)\}/g, "");
-                    tag = tag.replace(/\s/g, "");
-                    tag = tag.replace(/\//g, "");
-                  } else {
-                    tag = tag.replace(/\s/g, "");
-                    tag = tag.replace(/\//g, "");
-                  }
-  
-            
-                  console.log(importedComponents[pageName]);
-          
-                  let component = importedComponents[pageName];
-  
-        
-                  if (component && component[tag]) {
-                    component = component[tag];
-                    lines.splice(lines.indexOf(line), 1);
-  
-                    const paramsMatch = line.match(/\{([^{}]+)\}/);
-  
-                    if (paramsMatch) {
-                      const insideBraces = paramsMatch[1].replace(
-                        /["'\\\/\[\]\(\)\{\}<>]/g,
-                        ""
-                      );
-                      const keyValuePairs = insideBraces.split(/\s*,\s*/);
-  
-                      //make a object of the key value pairs
-                      const params = keyValuePairs.map((pair) => {
-                        const [key, value] = pair.split("=");
-                        return { key, value };
-                      });
-  
-                      if (component.includes("https://") || component.includes("http://")) {
-                        let componentHtml = "";
-                        try {
-                          const response = await fetch(component);
-                          if (response.ok) {
-                            const line = await response.text();
-                            for (const param of params) {
-                              //remove " and ' from the value and any other special characters
-                              line = line.replace(`\${${param.key}}`, param.value);
-                            }
-                            componentHtml += line;
-                            
-                            html += await transpileComp(componentHtml);
-                          }
-                        } catch (error) {
-                          console.error("Error fetching component:", error);
-                        }
-                      } else {
-                
-  
-                        const componentHtml = fs.readFileSync(component, 'utf8');
-                        let processedComponentHtml = componentHtml;
-                        
-                        // Replace params with their values
-                        for (const param of params) {
-                          processedComponentHtml = processedComponentHtml.replace(
-                            `\${${param.key}}`,
-                            param.value
-                          );
-  
-                        }
-                      
-                        html += await transpileComp(processedComponentHtml);
-                      }
-                      
-                    }
-                    else{
-                      if (
-                        component.includes("https://") ||
-                        component.includes("http://")
-                      ) {
-                         let componentHtml = "";
-                        try {
-                          const response = await fetch(component);
-                          if (response.ok) {
-                            const line = await response.text();
-                            for (const param of params) {
-                              //remove " and ' from the value and any other special characters
-                              line = line.replace(`\${${param.key}}`, param.value);
-                            }
-                            componentHtml += line;
-                            html += await transpileComp(componentHtml);
-                          }
-                        } catch (error) {
-                          console.error("Error fetching component:", error);
-                        }
-  
-                      } else {
-                        const componentHtml = fs.readFileSync(component, 'utf8');
-                    
-                        html += await transpileComp(componentHtml);
-  
-  
-                      }
-                    }
-                  } else {
-                    html += line;
-                  }
-            
-                }
-              } 
-            
-            } else {
+                className = "";
+              }
+
+              let id = line.match(/id=['"]([^'"]+)['"]/);
+
+              if (id) {
+                id = id[1];
+              } else {
+                id = "";
+              }
+
+              //just replace link with a tag so if its incased on any other tag it will be removed
+              line = line.replace("<Link", "<a");
+              line = line.replace("</Link>", "</a>");
+
+              line = line.replace(
+                `to="${to}"`,
+                `onclick="app.navigateTo('${to}')" title="${to}" id="${id}"`
+              );
+              line = line.replace(
+                `className="${className}"`,
+                `class="${className}"`
+              );
+
               html += line;
+            } else {
+              let tag = line.match(/<([^<>]+)>/);
+
+              if (tag) {
+                tag = tag[1];
+
+                if (tag.includes("{")) {
+                  tag = tag.replace(/\{([^{}]+)\}/g, "");
+                  tag = tag.replace(/\s/g, "");
+                  tag = tag.replace(/\//g, "");
+                } else {
+                  tag = tag.replace(/\s/g, "");
+                  tag = tag.replace(/\//g, "");
+                }
+
+                console.log(importedComponents[pageName]);
+
+                let component = importedComponents[pageName];
+
+                if (component && component[tag]) {
+                  component = component[tag];
+                  lines.splice(lines.indexOf(line), 1);
+
+                  const paramsMatch = line.match(/\{([^{}]+)\}/);
+
+                  if (paramsMatch) {
+                    const insideBraces = paramsMatch[1].replace(
+                      /["'\\\/\[\]\(\)\{\}<>]/g,
+                      ""
+                    );
+                    const keyValuePairs = insideBraces.split(/\s*,\s*/);
+
+                    //make a object of the key value pairs
+                    const params = keyValuePairs.map((pair) => {
+                      const [key, value] = pair.split("=");
+                      return { key, value };
+                    });
+
+                    if (
+                      component.includes("https://") ||
+                      component.includes("http://")
+                    ) {
+                      let componentHtml = "";
+                      try {
+                        const response = await fetch(component);
+                        if (response.ok) {
+                          const line = await response.text();
+                          for (const param of params) {
+                            //remove " and ' from the value and any other special characters
+                            line = line.replace(
+                              `\${${param.key}}`,
+                              param.value
+                            );
+                          }
+                          componentHtml += line;
+
+                          html += await transpileComp(componentHtml);
+                        }
+                      } catch (error) {
+                        console.error("Error fetching component:", error);
+                      }
+                    } else {
+                      const componentHtml = fs.readFileSync(component, "utf8");
+                      let processedComponentHtml = componentHtml;
+
+                      // Replace params with their values
+                      for (const param of params) {
+                        processedComponentHtml = processedComponentHtml.replace(
+                          `\${${param.key}}`,
+                          param.value
+                        );
+                      }
+
+                      html += await transpileComp(processedComponentHtml);
+                    }
+                  } else {
+                    if (
+                      component.includes("https://") ||
+                      component.includes("http://")
+                    ) {
+                      let componentHtml = "";
+                      try {
+                        const response = await fetch(component);
+                        if (response.ok) {
+                          const line = await response.text();
+                          for (const param of params) {
+                            //remove " and ' from the value and any other special characters
+                            line = line.replace(
+                              `\${${param.key}}`,
+                              param.value
+                            );
+                          }
+                          componentHtml += line;
+                          html += await transpileComp(componentHtml);
+                        }
+                      } catch (error) {
+                        console.error("Error fetching component:", error);
+                      }
+                    } else {
+                      const componentHtml = fs.readFileSync(component, "utf8");
+
+                      html += await transpileComp(componentHtml);
+                    }
+                  }
+                } else {
+                  html += line;
+                }
+              }
             }
-        
+          } else {
+            html += line;
+          }
       }
     }
 
@@ -1195,8 +1153,6 @@ async function fetchPagesToTranspile(routes) {
     });
 }
 
-
-
 let pages = {};
 
 async function transpileAndStorePage(pageKey, pageContent) {
@@ -1204,7 +1160,6 @@ async function transpileAndStorePage(pageKey, pageContent) {
   const transpiledHtml = await transpilesUIp(pageContent, pageKey);
 
   pages[pageKey] = transpiledHtml;
-
 }
 async function main() {
   let startTime = Date.now();
@@ -1219,9 +1174,6 @@ async function main() {
 
   // Wait for all transpilation promises to resolve
   await Promise.all(transpilePromises);
-  
- 
-  
 
   let finalScript = ` 
   function getCurrentUrl() {
@@ -1272,25 +1224,26 @@ EventTarget.prototype.addEventListener = function(...args) {
     stylesAdded: new Set(),
     scriptsAdded: new Set(),
     urlParams:{},
-    async addAssets(pageKey) {
 
-      try{
+  async addAssets(pageKey) {
+    try {
       // Add a check if assets are already loaded for this page
-      if (this.assetsLoaded) {  
-
+      if (this.assetsLoaded) {
         return;
       }
-  
+
       //promise
-  
-      const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
+
+      const pageAssets = this.pageAssets.find(
+        (asset) => asset.page === pageKey
+      );
       if (pageAssets) {
         pageAssets.styles.forEach((style) => {
           if (!this.stylesAdded.has(style.href) && style.href) {
             const linkElement = document.createElement("link");
             linkElement.rel = "stylesheet";
             linkElement.href = style.href;
-  
+
             if (style.integrity) {
               linkElement.integrity = style.integrity;
             }
@@ -1298,11 +1251,11 @@ EventTarget.prototype.addEventListener = function(...args) {
               linkElement.id = style.id;
             }
             linkElement.crossOrigin = style.crossorigin;
-  
+
             linkElement.type = style.type || "text/css";
-  
+
             linkElement.referrePolicy = style.referrerpolicy;
-  
+
             document.head.appendChild(linkElement);
             this.stylesAdded.add(style.href);
           } else if (
@@ -1318,12 +1271,12 @@ EventTarget.prototype.addEventListener = function(...args) {
             if (style.id) {
               linkElement.id = style.id;
             }
-  
+
             document.head.appendChild(styleElement);
             this.stylesAdded.add(style.textContent);
           }
         });
-  
+
         pageAssets.scripts.forEach((script) => {
           if (!this.scriptsAdded.has(script.src) && script.src) {
             const scriptElement = document.createElement("script");
@@ -1338,11 +1291,11 @@ EventTarget.prototype.addEventListener = function(...args) {
               scriptElement.id = script.id;
             }
             scriptElement.crossOrigin = script.crossorigin;
-  
+
             scriptElement.type = script.type;
-  
+
             scriptElement.referrePolicy = script.referrerpolicy;
-  
+
             handleScriptLoadError(scriptElement, script.src);
             if (script.head) {
               document.head.appendChild(scriptElement);
@@ -1354,118 +1307,117 @@ EventTarget.prototype.addEventListener = function(...args) {
             !this.scriptsAdded.has(script.textContent) &&
             script.textContent
           ) {
-            if (script.autoReady && script.type != "importmap") {
-  
+            const scriptElement = document.createElement("script");
+            //check if type is importMap
+
+            if (script.autoReady && script.type != "importmap" && script.type != "module") {
+           
               scriptElement.textContent = \`document.addEventListener("sprintReady", () => {\${script.textContent}});\`;
+
             } else {
               scriptElement.textContent = script.textContent;
             }
-  
+
             scriptElement.async = script.async;
             scriptElement.defer = script.defer;
             scriptElement.preload = script.preload;
-  
+
             scriptElement.type = script.type || "text/javascript";
-  
-            if (script.id && script.type != "importmap") {
+
+            if (script.id && script.type != "importmap" && script.type != "module") {
               scriptElement.id = script.id;
             }
             handleScriptLoadError(scriptElement, script.src);
-  
+
             if (script.head) {
               document.head.appendChild(scriptElement);
             } else {
               document.body.appendChild(scriptElement);
             }
-  
+
             this.scriptsAdded.add(script.textContent);
           }
         });
       }
       this.assetsLoaded = true;
-    }catch(e){
-      console.error(e + " at line " + lines.indexOf(line));
+    } catch (e) {
+      console.error(e);
     }
-    },
-  
-    async removeAssets(pageKey) {
-      const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
-  
-      if (pageAssets) {
-        // Reset stylesAdded and scriptsAdded sets for the current page
-        this.stylesAdded = new Set();
-        this.scriptsAdded = new Set();
-  
-        for (let i = 0; i < pageAssets.styles.length; i++) {
-          const style = pageAssets.styles[i];
-  
-          // Remove by href only when it exists, else remove by textContent
-          if (
-            style.href &&
-            document.querySelector('link[href="' + CSS.escape(style.href)+ '"]')
-          ) {
-            document.querySelector('link[href="' + style.href + '"]').remove();
-          } else if (style.textContent) {
-            Array.from(document.head.getElementsByTagName("style")).forEach(
-              (s, j) => {
-                if (s.textContent === style.textContent) s.remove();
-              }
-            );
-          }
-        }
-  
-        for (let i = 0; i < pageAssets.scripts.length; i++) {
-          const script = pageAssets.scripts[i];
-  
-          if (
-            script.src &&
-            document.querySelector('script[src="' + script.src.replace(/"/g, '\\\"') + '"]')
-          ) {
-            document.querySelector('script[src="' + script.src.replace(/"/g, '\\\"') + '"]').remove();
-          }
-           else if (script.textContent) {
-            Array.from(document.getElementsByTagName("script")).forEach(
-              (s, j) => {
-                if (script.autoReady) {
-                  //add sprintReady event listene to the script textContent to check if the same
-                  if (
-                    s.textContent ===
-                    'document.addEventListener("sprintReady", () => {' +
-                      script.textContent +
-                      "});"
-                     
+  },
 
-                  ) {
-                    s.remove();
-                    for (let k = 0; k < sprintEvents.length; k++) {
-                      const event = sprintEvents[k];
-                      if (
-                        event.type == "sprintReady" &&
-                        event.fn.toString() === '() => {' + script.textContent + '}'
+  async removeAssets(pageKey) {
+    const pageAssets = this.pageAssets.find((asset) => asset.page === pageKey);
 
-                      ) {
-                        document.removeEventListener("sprintReady", event.fn);
-                        window.removeEventListener("sprintReady", event.fn);
-  
-                        sprintEvents.splice(k, 1);
-                      }
-                    }
-                  }
-                } else if (s.textContent === script.textContent) {
-                  s.remove();
-                }
-              }
-            );
-          }
+    if (pageAssets) {
+      // Reset stylesAdded and scriptsAdded sets for the current page
+      this.stylesAdded = new Set();
+      this.scriptsAdded = new Set();
+
+      for (let i = 0; i < pageAssets.styles.length; i++) {
+        const style = pageAssets.styles[i];
+
+        // Remove by href only when it exists, else remove by textContent
+        if (
+          style.href &&
+          document.querySelector(\`link[href="\${style.href}"]\`)
+        ) {
+          document.querySelector(\`link[href="\${style.href}"]\`).remove();
+        } else if (style.textContent) {
+          Array.from(document.head.getElementsByTagName("style")).forEach(
+            (s, j) => {
+              if (s.textContent === style.textContent) s.remove();
+            }
+          );
         }
-        this.assetsLoaded = false;
-  
- 
       }
 
-   
-      
-    },
+      for (let i = 0; i < pageAssets.scripts.length; i++) {
+        const script = pageAssets.scripts[i];
+
+        if (
+          script.src &&
+          document.querySelector(
+            'script[src="' + script.src.replace(/"/g, '\\"') + '"]'
+          )
+        ) {
+          document
+            .querySelector(
+              'script[src="' + script.src.replace(/"/g, '\\"') + '"]'
+            )
+            .remove();
+        } else if (script.textContent) {
+          Array.from(document.getElementsByTagName("script")).forEach(
+            (s, j) => {
+              if (script.autoReady) {
+                //add sprintReady event listene to the script textContent to check if the same
+                if (
+                  s.textContent ===
+                  \`document.addEventListener("sprintReady", () => {\${script.textContent}});\`
+                ) {
+                  s.remove();
+                  for (let k = 0; k < sprintEvents.length; k++) {
+                    const event = sprintEvents[k];
+                    if (
+                      event.type == "sprintReady" &&
+                      event.fn.toString() === \`() => {\${script.textContent}}\`
+                    ) {
+                      document.removeEventListener("sprintReady", event.fn);
+                      window.removeEventListener("sprintReady", event.fn);
+
+                      sprintEvents.splice(k, 1);
+                    }
+                  }
+                }
+              } else if (s.textContent === script.textContent) {
+                s.remove();
+              }
+            }
+          );
+        }
+      }
+      this.assetsLoaded = false;
+    }
+  },
   
 
     async addHooks(pageKey) {
@@ -1985,63 +1937,85 @@ EventTarget.prototype.addEventListener = function(...args) {
   app.init();
 `;
 
+  async function minifyAndCopyAssets() {
+    try {
+   
 
- 
-   let minified = await Terser.minify(finalScript);
-
-   //delete build folder if it exists
-  if (fs.existsSync("build")) {
-    fs.rmdirSync("build", { recursive: true });
-}
-  fs.mkdirSync("build");
-  fs.mkdirSync("build/assets");
-  
-
-  //copy everything in assets except app.js to build2
-  fs.readdirSync("assets/").forEach(async (file) => {
-
-    if (file !== "app.js") {
-      
-      if (file.includes(".scss") || file.includes(".sass")) {
-        let fsSass = fs.readFileSync(`assets/${file}`, "utf8");
-        fsSass = sass.compileString(fsSass, { style: "compressed" }).css.toString();
-        fs.writeFileSync(`build/assets/${file.replace(".scss", ".min.css").replace(".sass", ".min.css")}`, fsSass);
-
-        console.log(`Compiled ${file} to css`);
-
-  
+      // Delete build folder if it exists
+      if (fs.existsSync("build")) {
+        fs.rmdirSync("build", { recursive: true });
       }
-      else if (file.includes(".js")) {
-        console.log(`Minified ${file}`);
-      
-        const minified = await Terser.minify(fs.readFileSync(`assets/${file}`, "utf8"), {
-          sourceMap:true
-        });
-        fs.writeFileSync(`build/assets/${file.replace(".js", ".min.js")}`, minified.code);
-       
-        
-      }
-      else if(file.includes(".css")){
-       let fsSass = fs.readFileSync(`assets/${file}`, "utf8");
-        fsSass = sass.compileString(fsSass, { style: "compressed" }).css.toString();
-        fs.writeFileSync(`build/assets/${file.replace(".css", ".min.css")}`, fsSass);
-        console.log(`Minified ${file}`);
 
-      }
-     
-       else {
-        //if the file in question is a folder make a folder in build
-        if (fs.statSync(`assets/${file}`).isDirectory()) {
-          fs.mkdirSync(`build/assets/${file}`);
-        } else {
-          fs.copyFileSync(`assets/${file}`, `build/assets/${file}`);
+      // Create build directories
+      fs.mkdirSync("build");
+      fs.mkdirSync("build/assets");
+
+      // Read assets directory
+      const files = fs.readdirSync("assets/");
+
+      for (const file of files) {
+        const sourcePath = path.join("assets", file);
+        const targetPath = path.join("build/assets", file);
+
+        if (file !== "app.js") {
+          if (fs.statSync(sourcePath).isDirectory()) {
+            // Recursively handle directories
+            fs.mkdirSync(targetPath);
+
+            const nestedFiles = fs.readdirSync(sourcePath);
+
+            for (const newFile of nestedFiles) {
+            
+              await handleFile(sourcePath, newFile, targetPath);
+            }
+          } else {
+          
+            // Handle single files
+            await handleFile("", file, "build/assets");
+          }
         }
-
-        
       }
+    } catch (error) {
+      console.error("Error:", error);
     }
-  });
+  }
 
+  async function handleFile(sourceDir, file, targetDir) {
+    const sourcePath = path.join(sourceDir, file);
+    const targetPath = path.join(targetDir, file);
+
+    if (file.endsWith(".scss") || file.endsWith(".sass")) {
+      const result = await sass.compileAsync(sourcePath,{
+        outputStyle: "compressed",
+      });
+      fs.writeFileSync(targetPath.replace(".scss", ".min.css"), result.css);
+
+    
+      console.log(`Compiled ${file}`);
+    } else if (file.endsWith(".js")) {
+      const minified = await Terser.minify(
+        fs.readFileSync(sourcePath, "utf8"),
+        { sourceMap: true }
+      );
+      fs.writeFileSync(targetPath.replace(".js", ".min.js"), minified.code);
+      console.log(`Minified ${file}`);
+    } else if (file.endsWith(".css")) {
+      const result = await sass.compileAsync(sourcePath,{
+        outputStyle: "compressed",
+      });
+      fs.writeFileSync(targetPath.replace(".css", ".min.css"), result.css);
+      console.log(`Minified ${file}`);
+    } 
+
+    else {
+      fs.copyFileSync(sourcePath, targetPath);
+    }
+  }
+
+
+  let minified = await Terser.minify(finalScript);
+  // Run the function
+  await minifyAndCopyAssets();
   //copy index.html to build
   fs.copyFileSync("index.html", "./build/index.html");
 
@@ -2105,10 +2079,10 @@ EventTarget.prototype.addEventListener = function(...args) {
       "%"
   );
 
-  console.log("\x1b[36m%s\x1b[0m", "Build Time: " + (Date.now() - startTime) + "ms");
-
-  
-
+  console.log(
+    "\x1b[36m%s\x1b[0m",
+    "Build Time: " + (Date.now() - startTime) + "ms"
+  );
 
   const sV = fs.readFileSync(".v", "utf8");
   console.log("\x1b[36m%s\x1b[0m", "Version: " + sV);
