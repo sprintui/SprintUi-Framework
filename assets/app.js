@@ -18,10 +18,8 @@ function print(textArray) {
 }
 
 async function fetchRoutes() {
-  let baseUrl = "http://localhost:3000"; // Replace with your server's URL
-
   try {
-    let response = await fetch(`${baseUrl}/pages`, {
+    let response = await fetch(`/pages`, {
       headers: {
         "x-req-from-sprint": "true",
         mode: "cors",
@@ -49,12 +47,10 @@ async function fetchRoutes() {
 async function fetchPagesToTranspile(routes) {
   const pagesToTranspile = {};
 
-  const baseUrl = "http://localhost:3000"; // Replace with your server's URL
-
   // Define a function to fetch a single page and store it in the object
   async function fetchPage(route) {
     try {
-      const response = await fetch(`${baseUrl}/pages/${route}`, {
+      const response = await fetch(`/pages/${route}`, {
         headers: {
           "x-req-from-sprint": "true",
           mode: "cors",
@@ -922,7 +918,7 @@ const app = {
               }
             } else {
               if (componentName == "*") {
-                await fetch("http://localhost:3000/comps")
+                await fetch("/comps")
                   .then((response) => response.text())
                   .then(async (data) => {
                     const lines = data.split(",");
@@ -930,7 +926,7 @@ const app = {
                     lines.forEach((line) => {
                       new Promise((resolve) => {
                         this.importedComponents[line] =
-                          "http://localhost:3000/comps/" + line;
+                          "/comps/" + line;
                         resolve(); // Resolve the promise after adding the component
                       });
                     });
@@ -1058,7 +1054,7 @@ const app = {
                         const xhr = new XMLHttpRequest();
                         xhr.open(
                           "GET",
-                          "http://localhost:3000/comps/" + component,
+                          "/comps/" + component,
                           false
                         );
                         xhr.send();
@@ -1095,7 +1091,7 @@ const app = {
                         const xhr = new XMLHttpRequest();
                         xhr.open(
                           "GET",
-                          "http://localhost:3000/comps/" + component,
+                          "/comps/" + component,
                           false
                         );
                         xhr.send();
@@ -1358,7 +1354,7 @@ const app = {
                     const xhr = new XMLHttpRequest();
                     xhr.open(
                       "GET",
-                      "http://localhost:3000/comps/" + component,
+                      "/comps/" + component,
                       false
                     );
                     xhr.send();
@@ -1392,7 +1388,7 @@ const app = {
                     const xhr = new XMLHttpRequest();
                     xhr.open(
                       "GET",
-                      "http://localhost:3000/comps/" + component,
+                      "/comps/" + component,
                       false
                     );
                     xhr.send();
