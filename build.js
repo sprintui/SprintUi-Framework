@@ -1939,8 +1939,6 @@ EventTarget.prototype.addEventListener = function(...args) {
 
   async function minifyAndCopyAssets() {
     try {
-   
-
       // Delete build folder if it exists
       if (fs.existsSync("build")) {
         fs.rmdirSync("build", { recursive: true });
@@ -1950,47 +1948,33 @@ EventTarget.prototype.addEventListener = function(...args) {
       fs.mkdirSync("build");
       fs.mkdirSync("build/assets");
 
-      // Read assets directory
-      const files = fs.readdirSync("assets/");
+      // Copy assets
+      const sourceDir = "./assets";
+      const targetDir = "./build/assets";
+
+      const files = fs.readdirSync(sourceDir);
 
       for (const file of files) {
-        const sourcePath = path.join("assets", file);
-        const targetPath = path.join("build/assets", file);
-
-        if (file !== "app.js") {
-          if (fs.statSync(sourcePath).isDirectory()) {
-            // Recursively handle directories
-            fs.mkdirSync(targetPath);
-
-            const nestedFiles = fs.readdirSync(sourcePath);
-
-            for (const newFile of nestedFiles) {
-            
-              await handleFile(sourcePath, newFile, targetPath);
-            }
-          } else {
-          
-            // Handle single files
-            await handleFile("", file, "build/assets");
-          }
-        }
+        await handleFile(sourceDir, file, targetDir);
       }
+
+      
+
     } catch (error) {
       console.error("Error:", error);
     }
   }
 
   async function handleFile(sourceDir, file, targetDir) {
-    const sourcePath = path.join(sourceDir, file);
+    let sourcePath = path.join(sourceDir, file);
     const targetPath = path.join(targetDir, file);
 
     if (file.endsWith(".scss") || file.endsWith(".sass")) {
-      const result = await sass.compileAsync(sourcePath,{
+      const result = await sass.compileAsync(sourcePath, {
         outputStyle: "compressed",
       });
       fs.writeFileSync(targetPath.replace(".scss", ".min.css"), result.css);
 
-    
       console.log(`Compiled ${file}`);
     } else if (file.endsWith(".js")) {
       const minified = await Terser.minify(
@@ -2000,18 +1984,29 @@ EventTarget.prototype.addEventListener = function(...args) {
       fs.writeFileSync(targetPath.replace(".js", ".min.js"), minified.code);
       console.log(`Minified ${file}`);
     } else if (file.endsWith(".css")) {
-      const result = await sass.compileAsync(sourcePath,{
+      const result = await sass.compileAsync(sourcePath, {
         outputStyle: "compressed",
       });
       fs.writeFileSync(targetPath.replace(".css", ".min.css"), result.css);
       console.log(`Minified ${file}`);
-    } 
+    } else {
+      //if its a folder create it in the build folder then call the function again
+      if (
+        fs
+          .lstatSync(sourcePath)
+          .isDirectory()
+      ) {
+        fs.mkdirSync(targetPath);
+        const files = fs.readdirSync(sourcePath);
+        for (const file of files) {
+          await handleFile(sourcePath, file, targetPath);
+        }
+      } else {
+        fs.copyFileSync(sourcePath, targetPath);
+      }
 
-    else {
-      fs.copyFileSync(sourcePath, targetPath);
     }
   }
-
 
   let minified = await Terser.minify(finalScript);
   // Run the function
