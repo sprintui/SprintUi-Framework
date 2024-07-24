@@ -18,6 +18,7 @@ function print(textArray) {
 }
 
 async function fetchRoutes() {
+
   try {
     let response = await fetch(`/pages`, {
       headers: {
@@ -46,7 +47,6 @@ async function fetchRoutes() {
 }
 async function fetchPagesToTranspile(routes) {
   const pagesToTranspile = {};
-
   // Define a function to fetch a single page and store it in the object
   async function fetchPage(route) {
     try {
@@ -1052,9 +1052,10 @@ const app = {
                         html += await this.transpileComp(componentHtml);
                       } else {
                         const xhr = new XMLHttpRequest();
+                  
                         xhr.open(
                           "GET",
-                          "/comps/" + component,
+                          component,
                           false
                         );
                         xhr.send();
@@ -1091,9 +1092,11 @@ const app = {
                         const xhr = new XMLHttpRequest();
                         xhr.open(
                           "GET",
-                          "/comps/" + component,
+                          component,
                           false
                         );
+                   
+
                         xhr.send();
                         let componentHtml = "";
                         if (xhr.status === 200) {
@@ -1354,7 +1357,7 @@ const app = {
                     const xhr = new XMLHttpRequest();
                     xhr.open(
                       "GET",
-                      "/comps/" + component,
+                      component,
                       false
                     );
                     xhr.send();
@@ -1388,7 +1391,7 @@ const app = {
                     const xhr = new XMLHttpRequest();
                     xhr.open(
                       "GET",
-                      "/comps/" + component,
+                     component,
                       false
                     );
                     xhr.send();
