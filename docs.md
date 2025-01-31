@@ -293,11 +293,6 @@ These pages or routes won’t appear in the final build.
    - If `pages/404.suip` exists, it’s shown for unknown routes.
    - If not, SprintUI uses a minimal fallback.
 
-2. **Loading**:
-   - You can define a `pages/loading.suip` (or other config) to show while waiting for page load. If none is found, a default “Loading...” text is used.
-
-As of **v1.8** and higher, you can fully customize them in plain `.suip`. They should not include heavy custom CSS unless you add it via `<UseStyles>`.
-
 ---
 
 ## 13. Deployment (Apache Example)
