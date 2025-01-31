@@ -359,4 +359,3 @@ We’d love your feedback or assistance! If you have ideas (like better reactivi
 3. Drop by our community forum (link TBA) to discuss further.
 
 **Happy Building with SprintUI!** 
-```
