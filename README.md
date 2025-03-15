@@ -1,5 +1,5 @@
 
-![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V2.6 - coming soon still in dev state
+![Sprint UI Logo](https://raw.githubusercontent.com/babymonie/sprintui/main/logo.png) - V2.6 - coming soon in a month o so
 
 **Welcome to the SprintUI Framework!**
 
